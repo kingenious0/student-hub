@@ -1,14 +1,8 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Geist_Mono } from "next/font/google";
+import Navbar from "@/components/navigation/Navbar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -35,20 +29,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          {/* Header with Clerk Components */}
-          <header className="flex justify-between items-center p-4 border-b">
-            <h1 className="text-xl font-bold text-blue-600">Student Hub</h1>
-            <div className="flex gap-4">
-              <SignedOut>
-                <SignInButton />
-                <SignUpButton />
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
-            </div>
-          </header>
-
+          <Navbar />
           <main>{children}</main>
         </body>
       </html>

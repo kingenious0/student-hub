@@ -9,14 +9,31 @@ datasource db {
 }
 
 model User {
-  id         String    @id @default(uuid())
-  clerkId    String    @unique
-  email      String    @unique
-  name       String?
-  role       Role      @default(STUDENT)
-  university String?   // e.g., "KNUST", "UG"
-  createdAt  DateTime  @default(now())
-  products   Product[]
+  id           String    @id @default(uuid())
+  clerkId      String    @unique
+  email        String    @unique
+  name         String?
+  role         Role      @default(STUDENT)
+  university   String?   // e.g., "KNUST", "UG"
+  
+  // Runner Mode fields
+  isRunner     Boolean   @default(false)
+  runnerStatus String?   // "IDLE", "DELIVERING"
+  xp           Int       @default(0)
+  runnerLevel  Int       @default(1)
+  
+  // Location tracking (hotspot-based)
+  currentHotspot String? // e.g., "Balme Library", "Night Market", "Pent Hostel"
+  lastActive     DateTime @default(now())
+  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  products     Product[]
+  orders       Order[]   @relation("StudentOrders")
+  deliveries   Order[]   @relation("RunnerDeliveries")
+  vendorOrders Order[]   @relation("VendorOrders")
 }
 
 enum Role {
@@ -32,10 +49,18 @@ model Product {
   price       Float
   category    Category
   imageUrl    String?  // Cloudinary link
-  location    String?  // For Geofencing (e.g., "Bush Canteen")
+  
+  // Hotspot-based location for Flash-Match
+  hotspot     String?  // e.g., "Bush Canteen", "Balme Library"
+  
   vendorId    String
   vendor      User     @relation(fields: [vendorId], references: [id])
+  
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  orders      Order[]
 }
 
 enum Category {
@@ -43,4 +68,61 @@ enum Category {
   BOOK
   LESSON
   SERVICE
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  
+  // Order status tracking
+  status          OrderStatus @default(PENDING)
+  
+  // Escrow payment tracking
+  escrowStatus    EscrowStatus @default(PENDING)
+  paystackRef     String?     @unique // Paystack payment reference
+  qrCodeValue     String?     @unique // The unique key for Escrow release
+  amount          Float
+  
+  // Product and customer info
+  productId       String
+  product         Product     @relation(fields: [productId], references: [id])
+  
+  studentId       String
+  student         User        @relation("StudentOrders", fields: [studentId], references: [id])
+  
+  vendorId        String
+  vendor          User        @relation("VendorOrders", fields: [vendorId], references: [id])
+  
+  // Runner/delivery info
+  runnerId        String?
+  runner          User?       @relation("RunnerDeliveries", fields: [runnerId], references: [id])
+  runnerEarnings  Float?      // Runner's cut
+  runnerXpAwarded Int?        // XP awarded to runner
+  
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  paidAt          DateTime?
+  deliveredAt     DateTime?
+  
+  @@index([studentId])
+  @@index([vendorId])
+  @@index([status])
+  @@index([escrowStatus])
+}
+
+enum OrderStatus {
+  PENDING      // Order created, awaiting payment
+  PAID         // Payment received, in escrow
+  PREPARING    // Vendor preparing order
+  READY        // Ready for pickup/delivery
+  PICKED_UP    // Runner picked up (if delivery)
+  COMPLETED    // QR scanned, escrow released
+  CANCELLED    // Order cancelled
+  REFUNDED     // Payment refunded
+}
+
+enum EscrowStatus {
+  PENDING      // No payment yet
+  HELD         // Payment received, held in escrow
+  RELEASED     // Released to vendor after QR scan
+  REFUNDED     // Refunded to student
 }
