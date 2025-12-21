@@ -48,14 +48,17 @@ export async function GET(request: NextRequest) {
             take: 10, // Just the recent 10 for the "bin"
         });
 
+        // Define type for completed deliveries with relations
+        type CompletedDelivery = typeof completedDeliveries[number];
+
         // Calculate totals
         const totalEarnings = completedDeliveries.reduce(
-            (sum: number, order) => sum + (order.runnerEarnings || 0),
+            (sum: number, order: CompletedDelivery) => sum + (order.runnerEarnings || 0),
             0
         );
 
         const totalXPEarned = completedDeliveries.reduce(
-            (sum: number, order) => sum + (order.runnerXpAwarded || 0),
+            (sum: number, order: CompletedDelivery) => sum + (order.runnerXpAwarded || 0),
             0
         );
 
@@ -111,7 +114,7 @@ export async function GET(request: NextRequest) {
                 earnings: activeDelivery.runnerEarnings,
                 xp: activeDelivery.runnerXpAwarded,
             } : null,
-            history: completedDeliveries.map((d) => ({
+            history: completedDeliveries.map((d: CompletedDelivery) => ({
                 id: d.id,
                 product: d.product.title,
                 earnings: d.runnerEarnings,
