@@ -54,8 +54,11 @@ export async function GET(request: NextRequest) {
             maxInactiveMinutes
         );
 
+        // Define type for products with vendor relations
+        type ProductWithVendor = typeof sortedProducts[number];
+
         // Add metadata to results
-        const results = sortedProducts.map(product => ({
+        const results = sortedProducts.map((product: ProductWithVendor) => ({
             id: product.id,
             title: product.title,
             description: product.description,
