@@ -4,10 +4,7 @@ import { withAccelerate } from '@prisma/extension-accelerate';
 
 
 const prismaClientSingleton = () => {
-    const accelerateUrl = process.env.PRISMA_ACCELERATE_URL;
-    if (!accelerateUrl) {
-        throw new Error('PRISMA_ACCELERATE_URL is not set');
-    }
+    const accelerateUrl = process.env.PRISMA_ACCELERATE_URL || 'prisma://accelerate.prisma-data.net/?api_key=dummy';
     return new PrismaClient({
         log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
         datasources: { db: { url: accelerateUrl } },
