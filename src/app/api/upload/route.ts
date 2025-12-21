@@ -1,50 +1,72 @@
 
-import { v2 as cloudinary } from 'cloudinary';
 import { NextResponse } from 'next/server';
 
-cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
 export const runtime = 'edge';
+
+// Function to generate SHA-1 signature using Web Crypto API (Edge compatible)
+async function generateSignature(params: Record<string, string>, apiSecret: string) {
+    const sortedKeys = Object.keys(params).sort();
+    const toSign = sortedKeys.map(key => `${key}=${params[key]}`).join('&') + apiSecret;
+    const msgBuffer = new TextEncoder().encode(toSign);
+    const hashBuffer = await crypto.subtle.digest('SHA-1', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 export async function POST(request: Request) {
     try {
         const formData = await request.formData();
         const file = formData.get('file') as File;
+        const type = formData.get('type') as string;
 
         if (!file) {
-            return NextResponse.json(
-                { error: 'No file uploaded' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
 
-        // Convert file to buffer
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const apiKey = process.env.CLOUDINARY_API_KEY;
+        const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-        const type = formData.get('type');
+        if (!cloudName || !apiKey || !apiSecret) {
+            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+        }
+
+        const timestamp = Math.round(new Date().getTime() / 1000).toString();
         const folder = type === 'video' ? 'student-hub/stories' : 'student-hub/products';
         const resourceType = type === 'video' ? 'video' : 'image';
 
-        // Upload to Cloudinary
-        const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-            cloudinary.uploader.upload_stream(
-                {
-                    folder,
-                    resource_type: resourceType,
-                },
-                (error, result) => {
-                    if (error || !result) reject(error || new Error('Upload failed'));
-                    else resolve(result as { secure_url: string });
-                }
-            ).end(buffer);
-        });
+        // Parameters to sign (must match what we send)
+        const paramsToSign = {
+            folder,
+            timestamp,
+        };
 
-        return NextResponse.json({ url: result.secure_url });
+        const signature = await generateSignature(paramsToSign, apiSecret);
+
+        // Prepare upload form data
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('api_key', apiKey);
+        uploadFormData.append('timestamp', timestamp);
+        uploadFormData.append('folder', folder);
+        uploadFormData.append('signature', signature);
+
+        // Upload to Cloudinary REST API
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
+            {
+                method: 'POST',
+                body: uploadFormData,
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error?.message || 'Upload failed');
+        }
+
+        return NextResponse.json({ url: data.secure_url });
     } catch (error) {
         console.error('Upload error:', error);
         return NextResponse.json(
