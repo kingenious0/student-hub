@@ -8,9 +8,9 @@ import { prisma } from '@/lib/db/prisma';
  */
 export async function GET() {
     try {
-        const config = (prisma as any).systemConfig ? await (prisma as any).systemConfig.findUnique({
+        const config = await prisma.systemConfig.findUnique({
             where: { id: 'GLOBAL_CONFIG' }
-        }) : null;
+        });
 
         // Default to safe values if not found
         return NextResponse.json({

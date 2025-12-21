@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
             totalUsers,
             totalVendors,
             pendingVendors,
-            recentOrders
+            recentOrders,
+            recentLogs
         ] = await Promise.all([
             prisma.order.count(),
             prisma.order.aggregate({

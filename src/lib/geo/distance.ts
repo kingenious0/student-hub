@@ -70,6 +70,7 @@ export function sortByFlashMatch<T extends {
     vendor: {
         lastActive: Date;
     };
+    [key: string]: unknown;
 }>(
     products: T[],
     userHotspot: string | null,

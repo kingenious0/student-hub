@@ -25,7 +25,7 @@ export default function CheckoutForm({
     const subtotal = productPrice * quantity;
     const total = subtotal + (fulfillment === 'DELIVERY' ? deliveryFee : 0);
 
-    const onSuccess = async (reference: any) => {
+    const onSuccess = async (reference: { reference: string }) => {
         // After Paystack success, verify on our backend
         try {
             const res = await fetch('/api/payments/verify', {
@@ -66,7 +66,11 @@ export default function CheckoutForm({
 
             if (data.success) {
                 // 2. Launch Paystack using the Inline script
-                const PaystackPop = (window as any).PaystackPop;
+                const PaystackPop = (window as unknown as {
+                    PaystackPop: {
+                        setup: (options: unknown) => { openIframe: () => void }
+                    }
+                }).PaystackPop;
                 if (!PaystackPop) {
                     alert('Payment system (Paystack) not loaded. Please refresh.');
                     setIsCreatingOrder(false);
@@ -88,7 +92,7 @@ export default function CheckoutForm({
                             }
                         ]
                     },
-                    callback: function (response: any) {
+                    callback: function (response: { reference: string }) {
                         onSuccess(response);
                     },
                     onClose: function () {

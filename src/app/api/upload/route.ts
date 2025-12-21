@@ -29,15 +29,15 @@ export async function POST(request: Request) {
         const resourceType = type === 'video' ? 'video' : 'image';
 
         // Upload to Cloudinary
-        const result = await new Promise<any>((resolve, reject) => {
+        const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
             cloudinary.uploader.upload_stream(
                 {
                     folder,
                     resource_type: resourceType,
                 },
                 (error, result) => {
-                    if (error) reject(error);
-                    else resolve(result);
+                    if (error || !result) reject(error || new Error('Upload failed'));
+                    else resolve(result as { secure_url: string });
                 }
             ).end(buffer);
         });

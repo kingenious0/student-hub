@@ -28,10 +28,9 @@ export default async function CheckoutPage({
                 vendor: true,
             },
         }),
-        // Safely check if systemConfig exists (avoids errors if Prisma Client is out of sync)
-        (prisma as any).systemConfig ? (prisma as any).systemConfig.findUnique({
+        prisma.systemConfig.findUnique({
             where: { id: 'GLOBAL_CONFIG' }
-        }) : Promise.resolve(null)
+        })
     ]);
 
     if (systemConfig?.maintenanceMode) {

@@ -23,7 +23,11 @@ interface Order {
 export default function VendorDashboard() {
     const { user } = useUser();
     const [orders, setOrders] = useState<Order[]>([]);
-    const [vendorInfo, setVendorInfo] = useState<any>(null);
+    const [vendorInfo, setVendorInfo] = useState<{
+        role: string;
+        status: string;
+        shopName?: string;
+    } | null>(null);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalOrders: 0,
@@ -146,7 +150,7 @@ export default function VendorDashboard() {
                                 OMNI Escrow Shield
                             </h3>
                             <p className="text-yellow-200/70 font-medium">
-                                <span className="text-foreground font-bold text-lg">₵{stats.heldInEscrow.toFixed(2)}</span> held in secure escrow. Provide the student's Secure-Key to release instantly.
+                                <span className="text-foreground font-bold text-lg">₵{stats.heldInEscrow.toFixed(2)}</span> held in secure escrow. Provide the student&apos;s Secure-Key to release instantly.
                             </p>
                         </div>
                     </div>

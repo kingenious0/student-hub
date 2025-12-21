@@ -105,7 +105,7 @@ export default function StoriesFeedPage() {
                     <div className="text-4xl mb-4">📹</div>
                     <h2 className="text-2xl font-bold mb-2">No Stories Yet</h2>
                     <p className="text-gray-400 text-center mb-6">
-                        Be the first to share what's happening on campus!
+                        Be the first to share what&apos;s happening on campus!
                     </p>
                     <Link
                         href="/stories/new"

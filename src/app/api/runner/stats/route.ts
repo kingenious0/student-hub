@@ -50,12 +50,12 @@ export async function GET(request: NextRequest) {
 
         // Calculate totals
         const totalEarnings = completedDeliveries.reduce(
-            (sum: number, order: any) => sum + (order.runnerEarnings || 0),
+            (sum: number, order) => sum + (order.runnerEarnings || 0),
             0
         );
 
         const totalXPEarned = completedDeliveries.reduce(
-            (sum: number, order: any) => sum + (order.runnerXpAwarded || 0),
+            (sum: number, order) => sum + (order.runnerXpAwarded || 0),
             0
         );
 
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
                 earnings: activeDelivery.runnerEarnings,
                 xp: activeDelivery.runnerXpAwarded,
             } : null,
-            history: completedDeliveries.map((d: any) => ({
+            history: completedDeliveries.map((d) => ({
                 id: d.id,
                 product: d.product.title,
                 earnings: d.runnerEarnings,

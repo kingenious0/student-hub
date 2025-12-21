@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         const maxInactiveMinutes = parseInt(searchParams.get('maxInactive') || '10');
 
         // Build search filters
-        const where: any = {};
+        const where: Record<string, unknown> = {};
 
         if (query) {
             where.OR = [
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
         );
 
         // Add metadata to results
-        const results = (sortedProducts as any[]).map(product => ({
+        const results = sortedProducts.map(product => ({
             id: product.id,
             title: product.title,
             description: product.description,

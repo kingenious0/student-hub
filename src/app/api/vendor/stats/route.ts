@@ -47,14 +47,14 @@ export async function GET(request: NextRequest) {
 
         // Calculate stats
         const totalOrders = user.vendorOrders.length;
-        const pendingOrders = user.vendorOrders.filter((o: any) => o.status === 'PENDING').length;
-        const completedOrders = user.vendorOrders.filter((o: any) => o.status === 'COMPLETED').length;
+        const pendingOrders = user.vendorOrders.filter((o) => o.status === 'PENDING').length;
+        const completedOrders = user.vendorOrders.filter((o) => o.status === 'COMPLETED').length;
         const totalRevenue = user.vendorOrders
-            .filter((o: any) => o.status === 'COMPLETED')
-            .reduce((sum: number, o: any) => sum + o.amount, 0);
+            .filter((o) => o.status === 'COMPLETED')
+            .reduce((sum: number, o) => sum + o.amount, 0);
         const heldInEscrow = user.vendorOrders
-            .filter((o: any) => o.escrowStatus === 'HELD')
-            .reduce((sum: number, o: any) => sum + o.amount, 0);
+            .filter((o) => o.escrowStatus === 'HELD')
+            .reduce((sum: number, o) => sum + o.amount, 0);
         const totalProducts = user.products.length;
 
         return NextResponse.json({

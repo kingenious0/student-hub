@@ -5,8 +5,15 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 
+interface VendorItem {
+    id: string;
+    shopName: string;
+    shopLandmark: string;
+    name: string;
+}
+
 export default function PartnerVettingPage() {
-    const [vendors, setVendors] = useState<any[]>([]);
+    const [vendors, setVendors] = useState<VendorItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 

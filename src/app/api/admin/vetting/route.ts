@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
         await prisma.user.update({
             where: { id: vendorId },
-            data: { vendorStatus: newStatus as any }
+            data: { vendorStatus: newStatus as 'ACTIVE' | 'SUSPENDED' }
         });
 
         // Audit Log

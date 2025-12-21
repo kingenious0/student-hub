@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
                 studentId: student.id,
                 vendorId: product.vendorId,
                 amount: totalAmount,
-                fulfillmentType: fulfillmentType as any, // Typed as enum in DB
+                fulfillmentType: fulfillmentType as 'PICKUP' | 'DELIVERY', // Typed as enum in DB
                 status: 'PENDING',
                 escrowStatus: 'PENDING',
             },

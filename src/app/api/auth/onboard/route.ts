@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         await prisma.user.update({
             where: { clerkId: userId },
             data: {
-                role: role as any,
+                role: role,
                 isRunner: !!isRunner,
                 onboarded: true,
                 // If they chose VENDOR, set their status to PENDING initially

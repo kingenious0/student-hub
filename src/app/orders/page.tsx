@@ -258,8 +258,14 @@ export default function OrdersPage() {
     );
 }
 
+interface ArchiveModalProps {
+    orders: Order[];
+    onClose: () => void;
+    getStatusInfo: (status: string, fulfillment: string) => { label: string; desc: string; icon: string; color: string; bgColor: string };
+}
+
 // 🏛️ Archive Modal Component with Pagination
-function ArchiveModal({ orders, onClose, getStatusInfo }: any) {
+function ArchiveModal({ orders, onClose, getStatusInfo }: ArchiveModalProps) {
     const ITEMS_PER_PAGE = 5;
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -299,7 +305,7 @@ function ArchiveModal({ orders, onClose, getStatusInfo }: any) {
                         </div>
                     ) : (
                         <>
-                            {currentOrders.map((order: any) => (
+                            {currentOrders.map((order) => (
                                 <OrderCard
                                     key={order.id}
                                     order={order}
@@ -347,8 +353,16 @@ function ArchiveModal({ orders, onClose, getStatusInfo }: any) {
     );
 }
 
+interface OrderCardProps {
+    order: Order;
+    viewMode: 'COZY' | 'COMPACT' | 'GRID';
+    getStatusInfo: (status: string, fulfillment: string) => { label: string; desc: string; icon: string; color: string; bgColor: string };
+    handleCancelOrder?: (id: string) => void;
+    isHistory?: boolean;
+}
+
 // 🎴 Dynamic Order Card Component
-function OrderCard({ order, viewMode, getStatusInfo, handleCancelOrder, isHistory = false }: any) {
+function OrderCard({ order, viewMode, getStatusInfo, handleCancelOrder, isHistory = false }: OrderCardProps) {
     const info = getStatusInfo(order.status, order.fulfillmentType || 'PICKUP');
     const isReady = ['PAID', 'PREPARING', 'READY', 'PICKED_UP'].includes(order.status);
 
@@ -372,7 +386,7 @@ function OrderCard({ order, viewMode, getStatusInfo, handleCancelOrder, isHistor
                         </div>
                     </div>
                     {!isHistory && !['COMPLETED', 'CANCELLED', 'REFUNDED'].includes(order.status) && (
-                        <button onClick={() => handleCancelOrder(order.id)} title="Cancel Mission" className="p-2 text-red-400/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all">🗑️</button>
+                        <button onClick={() => handleCancelOrder?.(order.id)} title="Cancel Mission" className="p-2 text-red-400/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all">🗑️</button>
                     )}
                 </div>
             </div>
@@ -404,7 +418,7 @@ function OrderCard({ order, viewMode, getStatusInfo, handleCancelOrder, isHistor
                             </div>
                         )}
                         {!isHistory && !['COMPLETED', 'CANCELLED', 'REFUNDED'].includes(order.status) && (
-                            <button onClick={() => handleCancelOrder(order.id)} className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-black uppercase border border-red-500/20">Abort Mission</button>
+                            <button onClick={() => handleCancelOrder?.(order.id)} className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-black uppercase border border-red-500/20">Abort Mission</button>
                         )}
                     </div>
                 </div>
@@ -419,8 +433,8 @@ function OrderCard({ order, viewMode, getStatusInfo, handleCancelOrder, isHistor
             <div className="relative bg-surface backdrop-blur-3xl border border-surface-border rounded-[2.5rem] p-8 transition-all group-hover:border-primary/50">
                 <div className="flex flex-col lg:flex-row gap-8">
                     <div className="w-full lg:w-40 h-40 rounded-3xl overflow-hidden bg-background border-2 border-surface-border flex-shrink-0 relative">
-                        {order.product.imageUrl ? <img src={order.product.imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>}
-                        <div className="absolute top-2 right-2 px-3 py-1 bg-background/60 backdrop-blur-md rounded-full text-[10px] font-black text-foreground uppercase tracking-tighter">{(order as any).fulfillmentType || 'PICKUP'}</div>
+                        {order.product.imageUrl ? <img src={order.product.imageUrl} className="w-full h-full object-cover" alt={order.product.title} /> : <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>}
+                        <div className="absolute top-2 right-2 px-3 py-1 bg-background/60 backdrop-blur-md rounded-full text-[10px] font-black text-foreground uppercase tracking-tighter">{order.fulfillmentType || 'PICKUP'}</div>
                     </div>
 
                     <div className="flex-1 space-y-6">
@@ -463,7 +477,7 @@ function OrderCard({ order, viewMode, getStatusInfo, handleCancelOrder, isHistor
                             )}
                             <button className="flex-1 px-6 py-4 bg-surface border border-surface-border rounded-2xl font-black text-[10px] text-foreground/40 hover:bg-surface/80 hover:text-foreground uppercase tracking-widest transition-all">Message</button>
                             {!isHistory && !['COMPLETED', 'CANCELLED', 'REFUNDED'].includes(order.status) && (
-                                <button onClick={() => handleCancelOrder(order.id)} className="px-6 py-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl font-black text-[10px] border border-red-500/20 transition-all uppercase tracking-widest">Abort Order</button>
+                                <button onClick={() => handleCancelOrder?.(order.id)} className="px-6 py-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-2xl font-black text-[10px] border border-red-500/20 transition-all uppercase tracking-widest">Abort Order</button>
                             )}
                         </div>
                     </div>

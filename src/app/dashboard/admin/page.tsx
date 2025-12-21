@@ -2,13 +2,42 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 
+interface AdminStats {
+    totalRevenue: number;
+    totalOrders: number;
+    totalUsers: number;
+    pendingVendors: number;
+}
+
+interface OrderItem {
+    id: string;
+    amount: number;
+    status: string;
+    product: {
+        title: string;
+    };
+    student?: {
+        name: string;
+    };
+    vendor?: {
+        shopName: string;
+    };
+}
+
+interface AuditLog {
+    id: string;
+    action: string;
+    adminId: string;
+    details?: string;
+    createdAt: string;
+}
+
 export default function AdminDashboard() {
-    const [stats, setStats] = useState<any>(null);
-    const [recentOrders, setRecentOrders] = useState<any[]>([]);
-    const [recentLogs, setRecentLogs] = useState<any[]>([]);
+    const [stats, setStats] = useState<AdminStats | null>(null);
+    const [recentOrders, setRecentOrders] = useState<OrderItem[]>([]);
+    const [recentLogs, setRecentLogs] = useState<AuditLog[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -86,7 +115,7 @@ export default function AdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="text-foreground/50">
-                                {recentOrders.map((order: any) => (
+                                {recentOrders.map((order) => (
                                     <tr key={order.id} className="border-b border-surface-border hover:bg-foreground/5 transition-all">
                                         <td className="p-6 font-mono text-[10px] opacity-30">{order.id.slice(0, 8)}...</td>
                                         <td className="p-6 text-foreground">{order.product.title}</td>
@@ -134,7 +163,7 @@ export default function AdminDashboard() {
                                         <td colSpan={4} className="p-12 text-center text-foreground/20 italic">No recent security events detected.</td>
                                     </tr>
                                 ) : (
-                                    recentLogs.map((log: any) => (
+                                    recentLogs.map((log) => (
                                         <tr key={log.id} className="border-b border-surface-border hover:bg-red-500/5 transition-all">
                                             <td className="p-6 font-mono text-[10px] opacity-30">
                                                 {new Date(log.createdAt).toLocaleTimeString()}

@@ -18,7 +18,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const savedTheme = localStorage.getItem('omni-theme') as Theme;
         if (savedTheme) {
-            setTheme(savedTheme);
+            setTimeout(() => setTheme(savedTheme), 0);
             document.documentElement.setAttribute('data-theme', savedTheme);
         } else {
             document.documentElement.setAttribute('data-theme', 'omni');

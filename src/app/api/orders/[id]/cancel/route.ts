@@ -42,7 +42,7 @@ export async function POST(
         }
 
         // Logic for refund
-        let statusUpdate: any = { status: 'CANCELLED' };
+        const statusUpdate: { status: 'CANCELLED'; escrowStatus?: 'REFUNDED' } = { status: 'CANCELLED' };
 
         if (order.escrowStatus === 'HELD') {
             statusUpdate.escrowStatus = 'REFUNDED';

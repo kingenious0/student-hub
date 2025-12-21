@@ -1,4 +1,5 @@
 // src/lib/payments/paystack.ts
+import crypto from 'crypto';
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY!;
 const PAYSTACK_BASE_URL = 'https://api.paystack.co';
@@ -24,7 +25,7 @@ export interface CreatePaymentRequestParams {
     due_date?: string; // ISO 8601 format
     currency?: string;
     send_notification?: boolean;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
 }
 
 export interface PaymentRequestResponse {
@@ -43,7 +44,7 @@ export interface PaymentRequestResponse {
         status: 'pending' | 'success' | 'failed';
         paid: boolean;
         paid_at: string | null;
-        metadata: Record<string, any> | null;
+        metadata: Record<string, unknown> | null;
         customer: number;
         created_at: string;
     };
@@ -60,7 +61,7 @@ export interface VerifyPaymentResponse {
         status: 'pending' | 'success' | 'failed';
         paid: boolean;
         paid_at: string | null;
-        metadata: Record<string, any> | null;
+        metadata: Record<string, unknown> | null;
         customer: {
             id: number;
             email: string;
@@ -183,7 +184,6 @@ export function verifyWebhookSignature(
     payload: string,
     signature: string
 ): boolean {
-    const crypto = require('crypto');
     const hash = crypto
         .createHmac('sha512', PAYSTACK_SECRET_KEY)
         .update(payload)
@@ -195,9 +195,28 @@ export function verifyWebhookSignature(
 /**
  * Verify a standard transaction by its reference (for Paystack Inline)
  */
+export interface VerifyTransactionResponse {
+    status: boolean;
+    message: string;
+    data: {
+        id: number;
+        amount: number;
+        currency: string;
+        reference: string;
+        status: 'success' | 'failed' | 'abandoned';
+        paid_at: string | null;
+        metadata: Record<string, unknown> | null;
+        customer: {
+            id: number;
+            email: string;
+            customer_code: string;
+        };
+    };
+}
+
 export async function verifyTransaction(
     reference: string
-): Promise<any> {
+): Promise<VerifyTransactionResponse> {
     const response = await fetch(
         `${PAYSTACK_BASE_URL}/transaction/verify/${reference}`,
         {

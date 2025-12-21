@@ -20,7 +20,7 @@ export default function Navbar() {
                 .then(data => setDbUser(data))
                 .catch(() => setDbUser(null));
         } else if (clerkLoaded && !user) {
-            setDbUser(null);
+            setTimeout(() => setDbUser(null), 0);
         }
     }, [clerkLoaded, user, pathname]);
 

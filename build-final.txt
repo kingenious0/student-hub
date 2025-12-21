@@ -1,0 +1,169 @@
+﻿
+> student-hub@0.1.0 build
+> next build
+
+   Γû▓ Next.js 15.5.9
+   - Environments: .env.local, .env
+   - Experiments (use with caution):
+     Γ£ô reactCompiler
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 31.7s
+   Linting and checking validity of types ...
+
+./src/app/api/admin/controls/route.ts
+25:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+53:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/admin/stats/route.ts
+6:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/admin/vetting/route.ts
+20:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+49:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/auth/sync/route.ts
+4:28  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/orders/route.ts
+6:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/runner/deliveries/route.ts
+8:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/runner/stats/route.ts
+10:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+57:15  Warning: 'totalXPEarned' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/runner/toggle/route.ts
+7:28  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+52:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/stories/route.ts
+7:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/system/config/route.ts
+22:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/users/me/route.ts
+6:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+26:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/vendor/stats/route.ts
+6:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/checkout/[id]/page.tsx
+62:37  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/dashboard/admin/controls/page.tsx
+29:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+52:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/admin/vetting/page.tsx
+31:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+50:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/dashboard/vendor/orders/[id]/page.tsx
+31:11  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+32:13  Warning: 'user' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+39:8  Warning: React Hook useEffect has a missing dependency: 'fetchOrder'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+152:41  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/dashboard/vendor/products/page.tsx
+94:41  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/dashboard/vendor/scan/page.tsx
+33:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/gatekeeper/page.tsx
+37:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/marketplace/page.tsx
+3:31  Warning: 'Suspense' is defined but never used.  @typescript-eslint/no-unused-vars
+29:12  Warning: 'hasMore' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+44:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+62:8  Warning: React Hook useEffect has a missing dependency: 'fetchProducts'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+199:57  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/onboarding/page.tsx
+10:12  Warning: 'role' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+11:12  Warning: 'isRunner' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+11:22  Warning: 'setIsRunner' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+13:11  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+17:8  Warning: React Hook useEffect has a missing dependency: 'checkExistingStatus'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+28:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/orders/page.tsx
+27:13  Warning: 'user' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+76:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+374:51  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+374:51  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+400:47  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+400:47  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+436:51  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/page.tsx
+18:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/app/runner/page.tsx
+41:11  Warning: 'router' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+131:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+156:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+181:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/checkout/CheckoutForm.tsx
+16:5  Warning: 'productTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/marketplace/StoriesFeed.tsx
+5:18  Warning: 'AnimatePresence' is defined but never used.  @typescript-eslint/no-unused-vars
+56:29  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/navigation/Navbar.tsx
+35:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/products/ImageUpload.tsx
+60:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/components/stories/VideoPlayer.tsx
+56:8  Warning: React Hook useEffect has a missing dependency: 'storyId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/vendor/VendorOnboarding.tsx
+35:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/admin/config.ts
+13:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+node.exe : Failed to compile.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Failed to compile.:String) 
+    [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+./src/app/api/orders/[id]/cancel/route.ts:55:13
+Type error: Type '{ status: string; escrowStatus?: string | undefined; 
+}' is not assignable to type '(Without<OrderUpdateInput, 
+OrderUncheckedUpdateInput> & OrderUncheckedUpdateInput) | (Without<...> 
+& OrderUpdateInput)'.
+  Type '{ status: string; escrowStatus?: string | undefined; }' is not 
+assignable to type 'Without<OrderUncheckedUpdateInput, 
+OrderUpdateInput> & OrderUpdateInput'.
+    Types of property 'status' are incompatible.
+      Type 'string' is not assignable to type 'OrderStatus | 
+EnumOrderStatusFieldUpdateOperationsInput | undefined'.
+
+[0m [90m 53 |[39m         [36mconst[39m updatedOrder [33m=[39m 
+[36mawait[39m prisma[33m.[39morder[33m.[39mupdate({
+ [90m 54 |[39m             where[33m:[39m { id }[33m,[39m
+[31m[1m>[22m[39m[90m 55 |[39m             data[33m:[39m 
+statusUpdate[33m,[39m
+ [90m    |[39m             [31m[1m^[22m[39m
+ [90m 56 |[39m         })[33m;[39m
+ [90m 57 |[39m
+ [90m 58 |[39m         [90m// If a runner was assigned, free them 
+up[39m[0m
+Next.js build worker exited with code: 1 and signal: null

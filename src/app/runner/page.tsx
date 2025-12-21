@@ -29,6 +29,13 @@ interface ActiveDelivery {
     xp: number;
 }
 
+interface DeliveryHistoryItem {
+    id: string;
+    product: string;
+    date: string;
+    earnings: number;
+}
+
 export default function RunnerModePage() {
     const { user, isLoaded } = useUser();
     const router = useRouter();
@@ -48,7 +55,7 @@ export default function RunnerModePage() {
     const [claimingId, setClaimingId] = useState<string | null>(null);
     const [unlockKey, setUnlockKey] = useState('');
     const [unlocking, setUnlocking] = useState(false);
-    const [deliveryHistory, setDeliveryHistory] = useState<any[]>([]);
+    const [deliveryHistory, setDeliveryHistory] = useState<DeliveryHistoryItem[]>([]);
     const [historyPage, setHistoryPage] = useState(1);
 
     // Fetch initial status and stats
@@ -328,7 +335,7 @@ export default function RunnerModePage() {
                                                 {unlocking ? 'TRX...' : 'COMPLETE MISSION'}
                                             </button>
                                         </div>
-                                        <p className="text-center text-[9px] text-foreground/20 mt-6 uppercase font-black tracking-[0.2em]">Secure the student's 6-digit OMNI Key to release funds</p>
+                                        <p className="text-center text-[9px] text-foreground/20 mt-6 uppercase font-black tracking-[0.2em]">Secure the student&apos;s 6-digit OMNI Key to release funds</p>
                                     </div>
                                 </div>
                             </div>

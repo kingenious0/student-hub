@@ -6,7 +6,7 @@ import { auth } from '@clerk/nextjs/server';
  * Audit Logger for Admin Actions.
  * Stores a permanent record of what changed and who did it.
  */
-export async function logAdminAction(action: string, details?: any) {
+export async function logAdminAction(action: string, details?: unknown) {
     try {
         const { userId } = await auth();
         if (!userId) return;
