@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 
+// Extract the transaction client type from Prisma's $transaction method
+type TransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
 /**
  * Complete a delivery and award XP to the runner
  */
@@ -38,7 +41,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Use transaction for consistency
-        const result = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx: TransactionClient) => {
             // 1. Verify order exists and belongs to this runner
             const order = await tx.order.findUnique({
                 where: { id: orderId },
