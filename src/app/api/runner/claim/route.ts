@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 
+// Extract the transaction client type from Prisma's $transaction method
+type TransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
 export async function POST(request: NextRequest) {
     try {
         const { userId } = await auth();
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Use transaction to ensure consistency
-        const result = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx: TransactionClient) => {
             // 1. Check if order is available
             const order = await tx.order.findUnique({
                 where: { id: orderId },
