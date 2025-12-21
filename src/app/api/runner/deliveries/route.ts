@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
+
         // Fetch available orders
         // Status must be READY (prepared by vendor)
         // No runner assigned yet
@@ -57,9 +58,11 @@ export async function GET(request: NextRequest) {
             }
         });
 
+        // Define type for orders with relations
+        type OrderWithRelations = typeof orders[number];
 
         // Transform to friendly format for UI
-        const deliveries = orders.map((order) => {
+        const deliveries = orders.map((order: OrderWithRelations) => {
             // Calculate mock distance/earnings if not set
             // In a real app, use Google Maps API or GeoLib with coordinates
             const pickup = order.product.hotspot || order.vendor.currentHotspot || 'Unknown Vendor Loc';
