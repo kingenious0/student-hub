@@ -6,13 +6,10 @@ import { withAccelerate } from '@prisma/extension-accelerate';
 const prismaClientSingleton = () => {
     const url = process.env.PRISMA_ACCELERATE_URL || process.env.DATABASE_URL || 'prisma://accelerate.prisma-data.net/?api_key=dummy_build_key';
 
-    if (typeof process !== 'undefined' && process.env) {
-        process.env.DATABASE_URL = url;
-    }
-
     return new PrismaClient({
+        accelerateUrl: url,
         log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    }).$extends(withAccelerate());
+    } as any).$extends(withAccelerate());
 };
 
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
