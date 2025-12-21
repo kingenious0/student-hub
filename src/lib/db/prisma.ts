@@ -4,13 +4,15 @@ import { withAccelerate } from '@prisma/extension-accelerate';
 
 
 const prismaClientSingleton = () => {
-    // Ensure we have a URL for the build verification step, using a dummy if missing
-    const connectionUrl = process.env.PRISMA_ACCELERATE_URL || process.env.DATABASE_URL || 'prisma://accelerate.prisma-data.net/?api_key=dummy_for_build';
+    const url = process.env.PRISMA_ACCELERATE_URL || process.env.DATABASE_URL || 'prisma://accelerate.prisma-data.net/?api_key=dummy_build_key';
+
+    if (typeof process !== 'undefined' && process.env) {
+        process.env.DATABASE_URL = url;
+    }
 
     return new PrismaClient({
-        datasourceUrl: connectionUrl,
         log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-    } as any).$extends(withAccelerate());
+    }).$extends(withAccelerate());
 };
 
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
