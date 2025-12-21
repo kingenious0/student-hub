@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
-import { Prisma } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
     try {
@@ -37,7 +36,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Use transaction to ensure consistency
-        const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+        const result = await prisma.$transaction(async (tx) => {
             // 1. Check if order is available
             const order = await tx.order.findUnique({
                 where: { id: orderId },
