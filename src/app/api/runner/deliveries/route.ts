@@ -57,8 +57,9 @@ export async function GET(request: NextRequest) {
             }
         });
 
+
         // Transform to friendly format for UI
-        const deliveries = orders.map(order => {
+        const deliveries = orders.map((order) => {
             // Calculate mock distance/earnings if not set
             // In a real app, use Google Maps API or GeoLib with coordinates
             const pickup = order.product.hotspot || order.vendor.currentHotspot || 'Unknown Vendor Loc';
