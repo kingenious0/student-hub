@@ -48,6 +48,9 @@ export default function Navbar() {
                             <NavLink href="/orders" isActive={isActive('/orders')}>
                                 📦 My Orders
                             </NavLink>
+                            <NavLink href="/stories" isActive={isActive('/stories')}>
+                                📱 Campus Pulse
+                            </NavLink>
 
                             {dbUser?.isRunner && (
                                 <NavLink href="/runner" isActive={isActive('/runner')}>
@@ -105,6 +108,9 @@ export default function Navbar() {
                         </MobileNavLink>
                         <MobileNavLink href="/orders" isActive={isActive('/orders')}>
                             📦 Orders
+                        </MobileNavLink>
+                        <MobileNavLink href="/stories" isActive={isActive('/stories')}>
+                            📱 Pulse
                         </MobileNavLink>
                         {dbUser?.isRunner && (
                             <MobileNavLink href="/runner" isActive={isActive('/runner')}>

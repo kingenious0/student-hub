@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
                 role: user.role,
                 shopName: user.shopName,
                 shopLandmark: user.shopLandmark,
+                isAcceptingOrders: user.isAcceptingOrders,
             },
             stats: {
                 totalOrders,

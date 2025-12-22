@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import VendorOnboarding from '@/components/vendor/VendorOnboarding';
+import VendorHeartbeat from '@/components/vendor/VendorHeartbeat';
 
 interface Order {
     id: string;
@@ -27,6 +28,7 @@ export default function VendorDashboard() {
         role: string;
         status: string;
         shopName?: string;
+        isAcceptingOrders?: boolean;
     } | null>(null);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
@@ -64,6 +66,24 @@ export default function VendorDashboard() {
         }
     };
 
+    const toggleRushMode = async () => {
+        if (!vendorInfo) return;
+        const newState = !vendorInfo.isAcceptingOrders;
+
+        // Optimistic update
+        setVendorInfo(prev => prev ? ({ ...prev, isAcceptingOrders: newState }) : null);
+
+        try {
+            await fetch('/api/vendor/status', {
+                method: 'POST',
+                body: JSON.stringify({ isAcceptingOrders: newState })
+            });
+        } catch (e) {
+            // Revert on fail
+            setVendorInfo(prev => prev ? ({ ...prev, isAcceptingOrders: !newState }) : null);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -98,15 +118,37 @@ export default function VendorDashboard() {
 
     return (
         <div className="min-h-screen bg-background transition-colors duration-300">
+            <VendorHeartbeat />
             <div className="max-w-7xl mx-auto px-4 py-8">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-black text-foreground mb-2 uppercase tracking-tighter">
-                        OMNI PARTNER DASHBOARD
-                    </h1>
-                    <p className="text-foreground/40 font-bold uppercase tracking-widest text-[10px]">
-                        Operational Status: <span className="text-primary">ACTIVE</span> • Welcome, {user?.firstName || 'Partner'}
-                    </p>
+                <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <h1 className="text-4xl font-black text-foreground mb-2 uppercase tracking-tighter">
+                            OMNI PARTNER DASHBOARD
+                        </h1>
+                        <p className="text-foreground/40 font-bold uppercase tracking-widest text-[10px]">
+                            Operational Status: <span className="text-primary">ACTIVE</span> • Welcome, {user?.firstName || 'Partner'}
+                        </p>
+                    </div>
+
+                    {/* Rush Mode Toggle */}
+                    <button
+                        onClick={toggleRushMode}
+                        className={`flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all ${vendorInfo?.isAcceptingOrders
+                            ? 'bg-green-500/10 border-green-500/20 hover:bg-green-500/20'
+                            : 'bg-red-500/10 border-red-500/20 hover:bg-red-500/20'
+                            }`}
+                    >
+                        <div className={`w-3 h-3 rounded-full ${vendorInfo?.isAcceptingOrders ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                        <div className="text-left">
+                            <div className={`text-[10px] font-black uppercase tracking-widest ${vendorInfo?.isAcceptingOrders ? 'text-green-500' : 'text-red-500'}`}>
+                                {vendorInfo?.isAcceptingOrders ? 'ONLINE' : 'RUSH MODE OFF'}
+                            </div>
+                            <div className="text-[10px] text-foreground/40 font-bold">
+                                {vendorInfo?.isAcceptingOrders ? 'Accepting Orders' : 'Store Paused'}
+                            </div>
+                        </div>
+                    </button>
                 </div>
 
                 {/* Stats Grid */}
@@ -165,6 +207,16 @@ export default function VendorDashboard() {
                         <div className="text-4xl mb-3">➕</div>
                         <h3 className="text-2xl font-black mb-1 uppercase tracking-tighter text-white">Add Product</h3>
                         <p className="text-sm text-white/70 font-medium opacity-80">List a new item for sale</p>
+                    </Link>
+
+                    <Link
+                        href="/stories/new"
+                        className="bg-black/80 backdrop-blur-lg border border-purple-500/50 text-white rounded-[2rem] p-8 text-left transition-all block shadow-lg hover:scale-[1.02] relative overflow-hidden group"
+                    >
+                        <div className="absolute top-0 right-0 p-4 opacity-20 text-6xl group-hover:scale-110 transition-transform">⚡</div>
+                        <div className="text-4xl mb-3">📹</div>
+                        <h3 className="text-2xl font-black mb-1 uppercase tracking-tighter">Post Story</h3>
+                        <p className="text-sm text-purple-200 font-medium opacity-80">Engage students on Campus Pulse</p>
                     </Link>
 
                     <Link

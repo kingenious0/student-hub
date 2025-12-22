@@ -83,13 +83,13 @@ export default function StoriesFeedPage() {
 
     return (
         <div
-            className="h-screen w-full bg-background text-foreground overflow-y-scroll snap-y snap-mandatory transition-colors duration-300"
+            className="h-[calc(100vh-5rem)] w-full bg-background text-foreground overflow-y-scroll snap-y snap-mandatory transition-colors duration-300"
             ref={containerRef}
             style={{ scrollBehavior: 'smooth' }}
         >
             {/* Header / Nav Overlay */}
-            <div className="fixed top-0 left-0 right-0 z-50 p-4 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
-                <h1 className="text-xl font-bold text-white drop-shadow-md pointer-events-auto">
+            <div className="fixed top-20 left-0 right-0 z-40 p-4 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
+                <h1 className="text-xl font-bold text-white drop-shadow-md pointer-events-auto opacity-80">
                     Campus Pulse ⚡
                 </h1>
                 <Link

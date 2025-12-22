@@ -190,6 +190,33 @@ export default function VideoPlayer({
                     </span>
                 </button>
 
+                <button
+                    onClick={async () => {
+                        try {
+                            const response = await fetch(src);
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `omni-pulse-${storyId.slice(0, 8)}.mp4`;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                        } catch (error) {
+                            window.open(src, '_blank');
+                        }
+                    }}
+                    className="flex flex-col items-center gap-1 group"
+                >
+                    <div className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center backdrop-blur-sm group-active:scale-90 transition-transform">
+                        ⬇️
+                    </div>
+                    <span className="text-white text-xs font-bold shadow-black drop-shadow-md">
+                        Save
+                    </span>
+                </button>
+
                 {user?.id === vendorClerkId && (
                     <button
                         onClick={async () => {
