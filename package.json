@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma generate && next build && npx @cloudflare/next-on-pages",
+    "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "preview": "npx prisma generate && npx @cloudflare/next-on-pages && npx wrangler pages dev .vercel/output",
