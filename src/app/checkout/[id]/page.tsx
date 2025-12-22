@@ -20,8 +20,9 @@ export default async function CheckoutPage({
     }
 
     const clerkUser = await currentUser();
-    // Safely extract email or use a placeholder (Paystack requires an email format)
-    const studentEmail = clerkUser?.emailAddresses?.[0]?.emailAddress || `${clerkUser?.username || clerkUser?.id}@omni.user`;
+    // Safely extract email or use a placeholder (Paystack requires a valid email format with standard TLD)
+    const rawEmail = clerkUser?.emailAddresses?.[0]?.emailAddress || `${clerkUser?.username || clerkUser?.id || 'guest'}@omni-marketplace.com`;
+    const studentEmail = rawEmail.trim().toLowerCase();
 
     const [product, systemConfig] = await Promise.all([
         prisma.product.findUnique({

@@ -8,6 +8,8 @@ const prismaClientSingleton = () => {
 
     if (!url || !url.startsWith('prisma://')) {
         console.error('CRITICAL: Missing or Invalid Prisma Accelerate URL. Ensure DATABASE_URL starts with "prisma://". Current value:', url ? 'Set (Hidden)' : 'Unset');
+    } else {
+        if (process.env.NODE_ENV === 'development') console.log('✅ Prisma Accelerate Client Initialized');
     }
 
     return new PrismaClient({
