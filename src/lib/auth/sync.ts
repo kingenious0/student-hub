@@ -27,7 +27,8 @@ export async function ensureUserExists() {
             return null;
         }
 
-        const email = clerkUser.emailAddresses?.[0]?.emailAddress || `${clerkUser.username || clerkUser.id}@omni.user`;
+        const rawEmail = clerkUser.emailAddresses?.[0]?.emailAddress || `${clerkUser.username || clerkUser.id}@omni-marketplace.com`;
+        const email = rawEmail.trim().toLowerCase();
 
         user = await prisma.user.create({
             data: {
