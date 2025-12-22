@@ -6,6 +6,8 @@ import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import VendorOnboarding from '@/components/vendor/VendorOnboarding';
 import VendorHeartbeat from '@/components/vendor/VendorHeartbeat';
+import WithdrawModal from '@/components/vendor/WithdrawModal';
+import AnalyticsCharts from '@/components/vendor/AnalyticsCharts';
 
 interface Order {
     id: string;
@@ -29,7 +31,10 @@ export default function VendorDashboard() {
         status: string;
         shopName?: string;
         isAcceptingOrders?: boolean;
+        balance?: number;
     } | null>(null);
+    const [withdrawOpen, setWithdrawOpen] = useState(false);
+    const [analytics, setAnalytics] = useState<{ salesChart: any[]; topProducts: any[] } | null>(null);
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
         totalOrders: 0,
@@ -58,6 +63,7 @@ export default function VendorDashboard() {
                 setStats(data.stats);
                 setOrders(data.orders);
                 setVendorInfo(data.vendor);
+                if (data.analytics) setAnalytics(data.analytics);
             }
         } catch (error) {
             console.error('Failed to fetch stats:', error);
@@ -180,6 +186,37 @@ export default function VendorDashboard() {
                         <div className="text-3xl font-black text-primary">{stats.totalProducts}</div>
                     </div>
                 </div>
+
+                {/* Wallet Section */}
+                <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 border border-green-500/20 rounded-[2rem] p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:20px_20px]"></div>
+                    <div className="flex items-center gap-6 relative z-10">
+                        <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center text-3xl text-green-400 border border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.1)]">
+                            💰
+                        </div>
+                        <div>
+                            <div className="text-green-500/60 text-[10px] font-black uppercase tracking-widest mb-1">Available Wallet Balance</div>
+                            <div className="text-4xl font-black text-white tracking-tight">
+                                ₵{vendorInfo?.balance?.toFixed(2) || '0.00'}
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setWithdrawOpen(true)}
+                        className="relative z-10 px-8 py-4 bg-green-500 hover:bg-green-400 text-black font-black uppercase tracking-widest rounded-xl transition-all shadow-lg hover:shadow-green-500/20 active:scale-95"
+                    >
+                        Withdraw Funds
+                    </button>
+                    <WithdrawModal
+                        isOpen={withdrawOpen}
+                        onClose={() => setWithdrawOpen(false)}
+                        maxAmount={vendorInfo?.balance || 0}
+                        onSuccess={fetchStats}
+                    />
+                </div>
+
+                {/* Analytics */}
+                <AnalyticsCharts salesData={analytics?.salesChart || []} productData={analytics?.topProducts || []} />
 
                 {/* Escrow Alert */}
                 {stats.heldInEscrow > 0 && (

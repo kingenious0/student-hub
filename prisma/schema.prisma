@@ -41,7 +41,28 @@ model User {
   orders       Order[]   @relation("StudentOrders")
   deliveries   Order[]   @relation("RunnerDeliveries")
   vendorOrders Order[]   @relation("VendorOrders")
-  stories      Story[]    @relation("VendorStories")
+  stories      Story[]   @relation("VendorStories")
+  payoutRequests PayoutRequest[]
+  
+  // Financials
+  balance      Float     @default(0.0)
+}
+
+model PayoutRequest {
+  id          String   @id @default(uuid())
+  amount      Float
+  status      String   @default("PENDING") // PENDING, PROCESSED, REJECTED
+  momoNumber  String
+  network     String   // MTN, VODA, AT
+  
+  vendorId    String
+  vendor      User     @relation(fields: [vendorId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  processedAt DateTime?
+  
+  @@index([vendorId])
+  @@index([status])
 }
 
 enum Role {

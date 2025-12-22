@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
                 shopName: user.shopName,
                 shopLandmark: user.shopLandmark,
                 isAcceptingOrders: user.isAcceptingOrders,
+                balance: user.balance,
             },
             stats: {
                 totalOrders,
@@ -79,6 +80,38 @@ export async function GET(request: NextRequest) {
                 totalRevenue,
                 heldInEscrow,
                 totalProducts,
+                totalProducts,
+            },
+            analytics: {
+                salesChart: (() => {
+                    const map = new Map<string, number>();
+                    // Init last 7 days
+                    for (let i = 6; i >= 0; i--) {
+                        const d = new Date();
+                        d.setDate(d.getDate() - i);
+                        map.set(d.toLocaleDateString('en-US', { weekday: 'short' }), 0);
+                    }
+                    user.vendorOrders.forEach((o: any) => {
+                        if (o.status !== 'CANCELLED') {
+                            const d = new Date(o.createdAt);
+                            const key = d.toLocaleDateString('en-US', { weekday: 'short' });
+                            if (map.has(key)) map.set(key, (map.get(key) || 0) + o.amount);
+                        }
+                    });
+                    return Array.from(map.entries()).map(([name, total]) => ({ name, total }));
+                })(),
+                topProducts: (() => {
+                    const map = new Map<string, number>();
+                    user.vendorOrders.forEach((o: any) => {
+                        if (o.status !== 'CANCELLED' && o.product?.title) {
+                            map.set(o.product.title, (map.get(o.product.title) || 0) + 1);
+                        }
+                    });
+                    return Array.from(map.entries())
+                        .map(([name, sales]) => ({ name, sales }))
+                        .sort((a, b) => b.sales - a.sales)
+                        .slice(0, 5);
+                })()
             },
             orders: user.vendorOrders.slice(0, 10), // Return last 10 orders
         });
