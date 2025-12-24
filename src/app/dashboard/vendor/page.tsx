@@ -124,6 +124,24 @@ export default function VendorDashboard() {
         );
     }
 
+    // Suspended Account UI
+    if (vendorInfo?.vendorStatus === 'SUSPENDED') {
+        return (
+            <div className="min-h-screen bg-background p-4 md:p-8 flex flex-col items-center justify-center text-center">
+                <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center text-4xl mb-8">
+                    🚫
+                </div>
+                <h1 className="text-4xl font-black text-red-500 mb-4 tracking-tighter uppercase">Account Suspended</h1>
+                <p className="text-foreground/40 max-w-md mx-auto mb-8 font-medium">
+                    Your vendor account has been suspended. Please contact OMNI support for more information.
+                </p>
+                <Link href="/marketplace" className="px-8 py-3 bg-foreground/5 hover:bg-foreground/10 text-foreground/60 rounded-xl font-bold transition-all text-xs uppercase tracking-widest">
+                    Return to Marketplace
+                </Link>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-background transition-colors duration-300">
             <VendorHeartbeat />
@@ -134,8 +152,8 @@ export default function VendorDashboard() {
                         <h1 className="text-4xl font-black text-foreground mb-2 uppercase tracking-tighter">
                             OMNI PARTNER DASHBOARD
                         </h1>
-                        <p className="text-foreground/40 font-bold uppercase tracking-widest text-[10px]">
-                            Operational Status: <span className="text-primary">ACTIVE</span> • Welcome, {user?.firstName || 'Partner'}
+                        <p className="text-foreground/50 font-bold uppercase tracking-widest text-[10px]">
+                            Status: <span className="text-primary">ACTIVE</span> • Welcome, {user?.firstName || 'Partner'}
                         </p>
                     </div>
 
@@ -190,14 +208,14 @@ export default function VendorDashboard() {
                 </div>
 
                 {/* Wallet Section */}
-                <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 border border-green-500/20 rounded-[2rem] p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+                <div className="bg-gradient-to-r from-green-900/50 to-emerald-900/20 border border-green-500/20 rounded-[2rem] p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
                     <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:20px_20px]"></div>
                     <div className="flex items-center gap-6 relative z-10">
                         <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center text-3xl text-green-400 border border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.1)]">
                             💰
                         </div>
                         <div>
-                            <div className="text-green-500/60 text-[10px] font-black uppercase tracking-widest mb-1">Available Wallet Balance</div>
+                            <div className="text-green-500/509 text-[20px] font-black uppercase tracking-widest mb-1">Available Wallet Balance</div>
                             <div className="text-4xl font-black text-white tracking-tight">
                                 ₵{vendorInfo?.balance?.toFixed(2) || '0.00'}
                             </div>
@@ -276,7 +294,7 @@ export default function VendorDashboard() {
                     >
                         <div className="text-4xl mb-3 group-hover:rotate-12 transition-transform">🔑</div>
                         <h3 className="text-2xl font-black mb-1 uppercase tracking-tighter">Unlock Funds</h3>
-                        <p className="text-sm text-green-300 font-medium opacity-80">Enter Secure-Key to get paid</p>
+                        <p className="text-sm text-green-600 font-medium opacity-80">Enter Secure-Key to get paid</p>
                     </Link>
 
                     <button className="bg-surface backdrop-blur-lg border border-surface-border hover:border-primary/50 text-foreground rounded-[2rem] p-8 text-left transition-all shadow-lg hover:scale-[1.02]">
@@ -294,7 +312,7 @@ export default function VendorDashboard() {
                             <p className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">Manage active and historical customer requests</p>
                         </div>
 
-                        <div className="flex bg-background/40 p-1.5 rounded-2xl border border-surface-border">
+                        <div className="flex bg-background/80 p-1.5 rounded-2xl border border-surface-border">
                             <button
                                 onClick={() => { setShowHistory(false); setPage(1); }}
                                 className={`px-6 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all ${!showHistory ? 'bg-primary text-primary-foreground shadow-lg' : 'text-foreground/20 hover:text-foreground/40'}`}

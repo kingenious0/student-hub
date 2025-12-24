@@ -34,7 +34,7 @@ export default function AnalyticsCharts({ salesData, productData }: AnalyticsCha
             {/* Revenue Chart - Enhanced with Neon Glow */}
             <div className="glass border-2 border-green-500/20 rounded-[2rem] p-6 relative overflow-hidden group hover:border-green-500/40 transition-all">
                 <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="absolute top-0 right-0 p-4 opacity-10 font-black text-6xl text-primary">$$$</div>
+                <div className="absolute top-0 right-0 p-4 opacity-40 font-black text-6xl text-primary">GH₵</div>
                 <h3 className="text-lg font-black uppercase tracking-widest mb-6 flex items-center gap-2 relative z-10">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse omni-glow"></span>
                     <span className="gradient-text">Live Revenue Trend</span>
@@ -81,10 +81,10 @@ export default function AnalyticsCharts({ salesData, productData }: AnalyticsCha
 
             {/* Top Products */}
             <div className="bg-surface/50 border border-surface-border rounded-[2rem] p-6 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 font-black text-6xl text-purple-500">TOP</div>
+                <div className="absolute top-0 right-0 p-4 opacity-40 font-black text-6xl text-purple-500">TOP</div>
                 <h3 className="text-lg font-black uppercase tracking-widest mb-6 flex items-center gap-2">
                     <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
-                    Best Sellers
+                    Best Selling product
                 </h3>
                 <div className="h-[250px] w-full">
                     <ResponsiveContainer width="100%" height="100%">

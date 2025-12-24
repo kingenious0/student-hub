@@ -18,7 +18,7 @@ export async function GET(
                             select: {
                                 id: true,
                                 name: true,
-                                isActive: true, // Assuming this field exists or we calculate it
+                                isAcceptingOrders: true,
                                 currentHotspot: true,
                             }
                         }

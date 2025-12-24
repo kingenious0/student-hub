@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 interface Category {
     id: string;
@@ -9,18 +10,17 @@ interface Category {
     name: string;
     icon: string;
     gradient: string;
-    count?: number;
+    count: number;
     trending?: boolean;
 }
 
-const categories: Category[] = [
+const categoryConfig = [
     {
         id: 'food',
         slug: 'food-and-snacks',
         name: 'Food & Snacks',
         icon: '🍕',
         gradient: 'from-orange-500 to-red-500',
-        count: 142,
         trending: true
     },
     {
@@ -28,44 +28,93 @@ const categories: Category[] = [
         slug: 'tech-and-gadgets',
         name: 'Tech & Gadgets',
         icon: '💻',
-        gradient: 'from-blue-500 to-purple-500',
-        count: 89
+        gradient: 'from-blue-500 to-purple-500'
     },
     {
         id: 'books',
         slug: 'books-and-notes',
         name: 'Books & Notes',
         icon: '📚',
-        gradient: 'from-green-500 to-teal-500',
-        count: 234
+        gradient: 'from-green-500 to-teal-500'
     },
     {
         id: 'fashion',
         slug: 'fashion',
         name: 'Fashion',
         icon: '👕',
-        gradient: 'from-pink-500 to-purple-500',
-        count: 67
+        gradient: 'from-pink-500 to-purple-500'
     },
     {
         id: 'services',
         slug: 'services',
         name: 'Services',
         icon: '⚡',
-        gradient: 'from-yellow-500 to-orange-500',
-        count: 45
+        gradient: 'from-yellow-500 to-orange-500'
     },
     {
         id: 'misc',
         slug: 'everything-else',
         name: 'Everything Else',
         icon: '🎯',
-        gradient: 'from-indigo-500 to-blue-500',
-        count: 128
+        gradient: 'from-indigo-500 to-blue-500'
     }
 ];
 
 export default function BentoCategories() {
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchCategoryCounts();
+    }, []);
+
+    const fetchCategoryCounts = async () => {
+        try {
+            const response = await fetch('/api/categories');
+            const data = await response.json();
+
+            if (data.success) {
+                // Map the API data to our category config
+                const categoriesWithCounts = categoryConfig.map(config => {
+                    const apiCategory = data.categories.find(
+                        (cat: any) => cat.slug === config.slug
+                    );
+                    return {
+                        ...config,
+                        count: apiCategory?._count?.products || 0
+                    };
+                });
+                setCategories(categoriesWithCounts);
+            }
+        } catch (error) {
+            console.error('Failed to fetch category counts:', error);
+            // Fallback to config without counts
+            setCategories(categoryConfig.map(c => ({ ...c, count: 0 })));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="mb-12">
+                <div className="mb-6">
+                    <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter mb-2">
+                        Explore Categories
+                    </h2>
+                    <p className="text-foreground/40 text-xs font-bold uppercase tracking-widest">
+                        Discover what's available on campus
+                    </p>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+                    {[...Array(6)].map((_, i) => (
+                        <div key={i} className="bento-card p-6 h-32 animate-pulse bg-surface/50"></div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="mb-12">
             {/* Section Header */}
@@ -112,12 +161,10 @@ export default function BentoCategories() {
                                     {category.name}
                                 </h3>
 
-                                {/* Item Count */}
-                                {category.count !== undefined && (
-                                    <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest relative z-10">
-                                        {category.count} Items
-                                    </p>
-                                )}
+                                {/* Real Item Count */}
+                                <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest relative z-10">
+                                    {category.count} {category.count === 1 ? 'Item' : 'Items'}
+                                </p>
                             </div>
                         </Link>
                     </motion.div>
