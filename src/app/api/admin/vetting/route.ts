@@ -1,22 +1,21 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { isAuthorizedAdmin } from '@/lib/auth/admin';
+import { cookies } from 'next/headers';
+import { auth } from '@clerk/nextjs/server';
 import { logAdminAction } from '@/lib/admin/audit';
 
-// Get all pending vendors
+async function checkAuth() {
+    const { sessionClaims } = await auth();
+    if (sessionClaims?.metadata?.role === 'GOD_MODE') return true;
 
-// export const runtime = 'edge';
+    const cookieStore = await cookies();
+    const bossToken = cookieStore.get('OMNI_BOSS_TOKEN');
+    return bossToken?.value === 'AUTHORIZED_ADMIN';
+}
 
 export async function GET(request: NextRequest) {
-    // Check for admin key header first (for Command Center)
-    const adminKey = request.headers.get('x-admin-key');
-    if (adminKey !== 'omniadmin.com') {
-        // Fall back to standard admin auth (for /dashboard/admin routes)
-        const hasAdminAuth = await isAuthorizedAdmin();
-        if (!hasAdminAuth) {
-            return NextResponse.json({ error: 'Uplink Forbidden: Insufficient clearance' }, { status: 403 });
-        }
+    if (!await checkAuth()) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     try {
@@ -34,14 +33,8 @@ export async function GET(request: NextRequest) {
 // Update vendor status
 
 export async function POST(request: NextRequest) {
-    // Check for admin key header first (for Command Center)
-    const adminKey = request.headers.get('x-admin-key');
-    if (adminKey !== 'omniadmin.com') {
-        // Fall back to standard admin auth (for /dashboard/admin routes)
-        const hasAdminAuth = await isAuthorizedAdmin();
-        if (!hasAdminAuth) {
-            return NextResponse.json({ error: 'Uplink Forbidden: Insufficient clearance' }, { status: 403 });
-        }
+    if (!await checkAuth()) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     try {

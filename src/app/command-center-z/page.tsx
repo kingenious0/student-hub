@@ -42,7 +42,9 @@ export default function CommandCenterPage() {
     const fetchSettings = async () => {
         console.log('[COMMAND CENTER] Fetching settings...');
         try {
-            const res = await fetch('/api/admin/system');
+            const res = await fetch('/api/admin/system', {
+                credentials: 'include'
+            });
             console.log('[COMMAND CENTER] Settings response status:', res.status);
 
             if (res.ok) {
@@ -62,7 +64,9 @@ export default function CommandCenterPage() {
 
     const fetchEscrows = async () => {
         try {
-            const res = await fetch('/api/admin/escrow');
+            const res = await fetch('/api/admin/escrow', {
+                credentials: 'include'
+            });
             if (res.ok) {
                 const data = await res.json();
                 setEscrows(data);
@@ -75,7 +79,9 @@ export default function CommandCenterPage() {
     const fetchUsers = async () => {
         console.log('[COMMAND CENTER] Fetching users...');
         try {
-            const res = await fetch(`/api/admin/users?q=${searchTerm}`);
+            const res = await fetch(`/api/admin/users?q=${searchTerm}`, {
+                credentials: 'include'
+            });
             console.log('[COMMAND CENTER] Users response status:', res.status);
 
             if (res.ok) {
@@ -103,7 +109,9 @@ export default function CommandCenterPage() {
     const fetchVendors = async () => {
         console.log('[COMMAND CENTER] Fetching vendors...');
         try {
-            const res = await fetch('/api/admin/vetting');
+            const res = await fetch('/api/admin/vetting', {
+                credentials: 'include'
+            });
             console.log('[COMMAND CENTER] Vendors response status:', res.status);
 
             if (res.ok) {
@@ -170,7 +178,7 @@ export default function CommandCenterPage() {
         if (!confirm(`CONFIRM: ${action} for Order?`)) return;
         await fetch('/api/admin/escrow', {
             method: 'POST',
-            headers: { 'x-admin-key': 'omniadmin.com' },
+            headers: { 'credentials': 'include' },
             body: JSON.stringify({ orderId, action })
         });
         fetchEscrows();
@@ -180,7 +188,7 @@ export default function CommandCenterPage() {
         if (!confirm(`CONFIRM: ${action} for User?`)) return;
         await fetch('/api/admin/users', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-admin-key': 'omniadmin.com' },
+            headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
             body: JSON.stringify({ targetUserId, action, value })
         });
         fetchUsers();
@@ -192,7 +200,8 @@ export default function CommandCenterPage() {
         try {
             const res = await fetch('/api/admin/vetting', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-admin-key': 'omniadmin.com' },
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ vendorId, action })
             });
 
@@ -218,6 +227,7 @@ export default function CommandCenterPage() {
             const res = await fetch('/api/admin/system', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({
                     maintenanceMode: mode,
                     activeFeatures: settings?.activeFeatures || []
@@ -252,7 +262,7 @@ export default function CommandCenterPage() {
         try {
             await fetch('/api/admin/system', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-admin-key': 'omniadmin.com' },
+                headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
                 body: JSON.stringify({
                     maintenanceMode: settings.maintenanceMode,
                     activeFeatures: newFeatures
@@ -490,7 +500,7 @@ export default function CommandCenterPage() {
                                                 setSettings(prev => prev ? { ...prev, globalNotice: finalMessage } : null);
                                                 fetch('/api/admin/system', {
                                                     method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json', 'x-admin-key': 'omniadmin.com' },
+                                                    headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
                                                     body: JSON.stringify({
                                                         maintenanceMode: settings?.maintenanceMode,
                                                         activeFeatures: settings?.activeFeatures,
@@ -512,7 +522,7 @@ export default function CommandCenterPage() {
                                                 setSettings(prev => prev ? { ...prev, globalNotice: '' } : null);
                                                 fetch('/api/admin/system', {
                                                     method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json', 'x-admin-key': 'omniadmin.com' },
+                                                    headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
                                                     body: JSON.stringify({
                                                         maintenanceMode: settings?.maintenanceMode,
                                                         activeFeatures: settings?.activeFeatures,
