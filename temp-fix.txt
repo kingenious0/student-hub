@@ -1,2 +1,0 @@
-// Complete fix by rewriting just the final closing section
-// This will be appended after I view the full structure
