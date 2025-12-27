@@ -17,6 +17,24 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Check for Admin Blocks (Freeze/Ban)
+        // Note: ensureUserExists has been updated to return these fields
+        const studentData = student as any; // Type assertion since return type might not be fully inferred yet
+
+        if (studentData.banned) {
+            return NextResponse.json(
+                { error: `Account banned: ${studentData.banReason || 'Contact support'}` },
+                { status: 403 }
+            );
+        }
+
+        if (studentData.walletFrozen) {
+            return NextResponse.json(
+                { error: 'Your wallet has been frozen by an administrator. Purchases are disabled.' },
+                { status: 403 }
+            );
+        }
+
         const body = await request.json();
         const { productId, quantity = 1, fulfillmentType = 'PICKUP' } = body;
 

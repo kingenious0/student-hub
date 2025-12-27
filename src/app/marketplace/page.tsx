@@ -6,9 +6,9 @@ import StoriesFeed from '@/components/marketplace/StoriesFeed';
 import NewReleases from '@/components/marketplace/NewReleases';
 import BentoCategories from '@/components/marketplace/BentoCategories';
 import MaintenanceGuard from '@/components/admin/MaintenanceGuard';
+import SimpleEdit from '@/components/admin/SimpleEdit';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import EditableContent from '@/components/admin/EditableContent';
 
 interface Product {
     id: string;
@@ -71,7 +71,6 @@ export default function MarketplacePage() {
                                     STATUS: CRITICAL UPDATES IN PROGRESS
                                 </div>
                             </div>
-                            {/* Background decoration */}
                             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500 via-transparent to-transparent"></div>
                         </div>
                     ) : (
@@ -98,21 +97,25 @@ export default function MarketplacePage() {
                             </SignedOut>
 
                             <SignedIn>
-                                {/* Stories Feed Section - Now at the top */}
                                 <div className="mb-20">
                                     <StoriesFeed />
                                 </div>
 
-                                {/* Main Hero Section - New Releases */}
                                 <div className="mb-24">
                                     <div className="flex items-end justify-between mb-8">
                                         <div>
-                                            <h2 className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2">
-                                                New Releases
-                                            </h2>
-                                            <p className="text-foreground/40 font-bold tracking-widest uppercase text-sm">
-                                                Fresh Drops From Campus Vendors
-                                            </p>
+                                            <SimpleEdit
+                                                id="market_title"
+                                                text="New Releases"
+                                                tag="h2"
+                                                className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2"
+                                            />
+                                            <SimpleEdit
+                                                id="market_subtitle"
+                                                text="Fresh Drops From Campus Vendors"
+                                                tag="p"
+                                                className="text-foreground/40 font-bold tracking-widest uppercase text-sm"
+                                            />
                                         </div>
                                     </div>
                                     <Suspense fallback={<div className="h-96 bg-surface/50 rounded-3xl animate-pulse" />}>
@@ -120,73 +123,72 @@ export default function MarketplacePage() {
                                     </Suspense>
                                 </div>
 
-                                {/* Categories Grid */}
                                 <div className="mb-12">
                                     <div className="flex items-end justify-between mb-8">
                                         <div>
-                                            <h2 className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2">
-                                                Explore
-                                            </h2>
-                                            <p className="text-foreground/40 font-bold tracking-widest uppercase text-sm">
-                                                Browse by Category
-                                            </p>
+                                            <SimpleEdit
+                                                id="explore_title"
+                                                text="Explore"
+                                                tag="h2"
+                                                className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2"
+                                            />
+                                            <SimpleEdit
+                                                id="explore_subtitle"
+                                                text="Browse by Category"
+                                                tag="p"
+                                                className="text-foreground/40 font-bold tracking-widest uppercase text-sm"
+                                            />
                                         </div>
                                     </div>
                                     <BentoCategories />
                                 </div>
                             </SignedIn>
 
-                            {/* Allow Ghost Admin to see content even when signed out */}
                             <SignedOut>
                                 {isGhostAdmin && (
                                     <>
                                         <div className="mb-8 p-4 bg-yellow-500/10 border border-yellow-500/50 rounded-xl text-yellow-500 font-bold text-center">
                                             👻 GHOST ADMIN MODE ACTIVE - VIEWING AS AUTHENTICATED USER
                                         </div>
-                                        {/* Stories Feed Section */}
                                         <div className="mb-20">
                                             <StoriesFeed />
                                         </div>
-
-                                        {/* Main Hero Section - New Releases */}
                                         <div className="mb-24">
                                             <div className="flex items-end justify-between mb-8">
                                                 <div>
-                                                    <EditableContent
-                                                        id="market_hero_title"
-                                                        initialContent="New Releases"
+                                                    <SimpleEdit
+                                                        id="market_title"
+                                                        text="New Releases"
                                                         tag="h2"
                                                         className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2"
                                                     />
-                                                    <EditableContent
-                                                        id="market_hero_subtitle"
-                                                        initialContent="Fresh Drops From Campus Vendors"
+                                                    <SimpleEdit
+                                                        id="market_subtitle"
+                                                        text="Fresh Drops From Campus Vendors"
                                                         tag="p"
                                                         className="text-foreground/40 font-bold tracking-widest uppercase text-sm"
                                                     />
                                                 </div>
-                                                <Link
-                                                    href="/search?q=&categoryId=all"
-                                                    className="text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:text-primary transition-colors flex items-center gap-2 mb-2"
-                                                >
-                                                    View All Drops <span className="text-sm">→</span>
-                                                </Link>
                                             </div>
                                             <Suspense fallback={<div className="h-96 bg-surface/50 rounded-3xl animate-pulse" />}>
                                                 <NewReleases />
                                             </Suspense>
                                         </div>
-
-                                        {/* Categories Grid */}
                                         <div className="mb-12">
                                             <div className="flex items-end justify-between mb-8">
                                                 <div>
-                                                    <h2 className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2">
-                                                        Explore
-                                                    </h2>
-                                                    <p className="text-foreground/40 font-bold tracking-widest uppercase text-sm">
-                                                        Browse by Category
-                                                    </p>
+                                                    <SimpleEdit
+                                                        id="explore_title"
+                                                        text="Explore"
+                                                        tag="h2"
+                                                        className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2"
+                                                    />
+                                                    <SimpleEdit
+                                                        id="explore_subtitle"
+                                                        text="Browse by Category"
+                                                        tag="p"
+                                                        className="text-foreground/40 font-bold tracking-widest uppercase text-sm"
+                                                    />
                                                 </div>
                                             </div>
                                             <BentoCategories />

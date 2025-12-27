@@ -1,118 +1,65 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useAdmin } from '@/context/AdminContext';
+import { useState, createElement } from 'react';
 
 interface EditableContentProps {
     id: string;
-    defaultContent: React.ReactNode;
+    initialContent: string;
+    tag?: keyof JSX.IntrinsicElements;
     className?: string;
-    role?: 'admin' | 'superadmin';
-    type?: 'text' | 'rich';
 }
 
 export default function EditableContent({
     id,
-    defaultContent,
-    className = "",
-    role = 'admin',
-    type = 'text'
+    initialContent,
+    tag = 'div',
+    className = ""
 }: EditableContentProps) {
-    const { contentOverrides, ghostEditMode, superAccess, refreshConfig } = useAdmin();
-    const [isSaving, setIsSaving] = useState(false);
-    const contentRef = useRef<HTMLDivElement>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [content, setContent] = useState(initialContent);
 
-    // 1. Resolve Active Content
-    const override = contentOverrides[id];
-    const displayContent = override !== undefined ? override : defaultContent;
+    // Check if GOD MODE is enabled
+    const isGodMode = typeof window !== 'undefined' &&
+        localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
 
-    // 2. Editing Permission
-    const canEdit = superAccess && ghostEditMode;
+    if (!isGodMode) {
+        // Not in god mode, just render normally
+        return createElement(tag, { className }, content);
+    }
 
-    const handleSave = async () => {
-        if (!contentRef.current) return;
+    // GOD MODE ACTIVE - Make it editable!
 
-        const newContent = contentRef.current.innerHTML;
-
-        // Don't save if no change (optimization could happen here, but keeping it simple)
-        if (newContent === override) return;
-
-        setIsSaving(true);
-        try {
-            const res = await fetch('/api/admin/content', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, content: newContent })
-            });
-
-            if (res.ok) {
-                // Success visual (maybe flash green?)
-                await refreshConfig();
-            } else {
-                alert("Failed to save edit");
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleBlur = () => {
-        handleSave();
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) { // Simple save on Enter? Maybe risky for rich text.
-            // For now, allow Enter to prevent chaos, strictly save on Blur is safer.
-            // But user wants "Tap... change them".
-            // We'll stick to Blur for saving.
-        }
-    };
-
-    // 3. Render
-    // If we have an override (string), we MUST use dangerouslySetInnerHTML to show it.
-    // If it's defaultContent (ReactNode), we render children.
-    // BUT if we edit, we edit the HTML string.
-
-    // Strategy: Always render a wrapper.
-    // If editing, it's contentEditable.
-    // Content is derived.
-
-    const isStringContent = typeof displayContent === 'string';
-
-    if (isStringContent) {
+    if (isEditing) {
+        // Show input field
         return (
-            <div
-                ref={contentRef}
-                contentEditable={canEdit}
-                onBlur={canEdit ? handleBlur : undefined}
-                suppressContentEditableWarning={true}
-                className={`
-                    ${className} 
-                    transition-all duration-200 outline-none
-                    ${canEdit ? 'cursor-text hover:bg-[#39FF14]/10 hover:outline-dashed hover:outline-2 hover:outline-[#39FF14]/50 rounded-lg p-1 -m-1' : ''}
-                    ${isSaving ? 'opacity-50 animate-pulse' : ''}
-                `}
-                dangerouslySetInnerHTML={{ __html: displayContent as string }}
+            <input
+                type="text"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        setIsEditing(false);
+                        alert('✅ Saved! (localStorage only for now)');
+                    } else if (e.key === 'Escape') {
+                        setContent(initialContent);
+                        setIsEditing(false);
+                    }
+                }}
+                onBlur={() => setIsEditing(false)}
+                className={`${className} border-4 border-green-500 bg-green-500/10 animate-pulse`}
+                autoFocus
             />
         );
     }
 
-    return (
-        <div
-            ref={contentRef}
-            contentEditable={canEdit}
-            onBlur={canEdit ? handleBlur : undefined}
-            suppressContentEditableWarning={true}
-            className={`
-                ${className} 
-                transition-all duration-200 outline-none
-                ${canEdit ? 'cursor-text hover:bg-[#39FF14]/10 hover:outline-dashed hover:outline-2 hover:outline-[#39FF14]/50 rounded-lg p-1 -m-1' : ''}
-                ${isSaving ? 'opacity-50 animate-pulse' : ''}
-            `}
-        >
-            {displayContent}
-        </div>
+    // Normal display with edit hint
+    return createElement(
+        tag,
+        {
+            className: `${className} cursor-pointer hover:bg-green-500/10 hover:ring-4 hover:ring-green-500/30 transition-all`,
+            onClick: () => setIsEditing(true),
+            title: '🔥 GOD MODE: Click to edit!'
+        },
+        content
     );
 }

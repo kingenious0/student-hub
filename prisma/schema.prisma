@@ -50,6 +50,11 @@ model User {
   
   // Financials
   balance      Float     @default(0.0)
+  walletFrozen Boolean   @default(false) // Emergency freeze by admin
+  
+  // Admin Actions
+  banned       Boolean   @default(false)
+  banReason    String?   // Why user was banned
 }
 
 model PayoutRequest {

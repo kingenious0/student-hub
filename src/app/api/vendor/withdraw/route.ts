@@ -15,10 +15,31 @@ export async function POST(req: NextRequest) {
         // 1. Get user and check balance
         const vendor = await prisma.user.findUnique({
             where: { clerkId: userId },
-            select: { id: true, balance: true }
+            select: {
+                id: true,
+                balance: true,
+                walletFrozen: true,
+                banned: true,
+                banReason: true
+            }
         });
 
         if (!vendor) return new NextResponse("Vendor not found", { status: 404 });
+
+        // Admin blocks
+        if (vendor.banned) {
+            return new NextResponse(
+                JSON.stringify({ error: `Account banned: ${vendor.banReason || 'Contact support'}` }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            );
+        }
+
+        if (vendor.walletFrozen) {
+            return new NextResponse(
+                JSON.stringify({ error: 'Your wallet has been frozen by an administrator.' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            );
+        }
 
         // Ensure amount is valid
         if (amount <= 0) return new NextResponse("Invalid amount", { status: 400 });

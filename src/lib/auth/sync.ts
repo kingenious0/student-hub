@@ -31,6 +31,9 @@ export async function ensureUserExists() {
             runnerLevel: true,
             currentHotspot: true,
             lastActive: true,
+            walletFrozen: true,
+            banned: true,
+            banReason: true,
             createdAt: true,
             updatedAt: true,
         }
@@ -69,6 +72,9 @@ export async function ensureUserExists() {
                 runnerLevel: true,
                 currentHotspot: true,
                 lastActive: true,
+                walletFrozen: true,
+                banned: true,
+                banReason: true,
                 createdAt: true,
                 updatedAt: true,
             }

@@ -7,7 +7,10 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import OnboardingCheck from "@/components/providers/OnboardingCheck";
 import { CartProvider } from "@/context/CartContext";
 import { AdminProvider } from "@/context/AdminContext";
+import { ModalProvider } from "@/context/ModalContext";
 import GhostEditToggle from "@/components/admin/GhostEditToggle";
+import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
+import BanOverlay from "@/components/admin/BanOverlay";
 import Script from "next/script";
 import "./globals.css";
 
@@ -39,13 +42,17 @@ export default function RootLayout({
         >
           <ThemeProvider>
             <AdminProvider>
-              <CartProvider>
-                <OnboardingCheck />
-                <Navbar />
-                {children}
-                <Footer />
-                <GhostEditToggle />
-              </CartProvider>
+              <ModalProvider>
+                <CartProvider>
+                  <OnboardingCheck />
+                  <Navbar />
+                  <ImpersonationBanner />
+                  <BanOverlay />
+                  {children}
+                  <Footer />
+                  <GhostEditToggle />
+                </CartProvider>
+              </ModalProvider>
             </AdminProvider>
           </ThemeProvider>
           <Script src="https://js.paystack.co/v1/inline.js" strategy="lazyOnload" />

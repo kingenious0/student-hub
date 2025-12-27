@@ -12,6 +12,7 @@ import BentoOrderCard from '@/components/vendor/BentoOrderCard';
 import GlowingRevenueChart from '@/components/vendor/GlowingRevenueChart';
 import { useAdmin } from '@/context/AdminContext';
 import ProtocolGuard from '@/components/admin/ProtocolGuard';
+import SimpleEdit from '@/components/admin/SimpleEdit';
 
 interface Order {
     id: string;
@@ -161,9 +162,12 @@ export default function VendorDashboard() {
                     {/* Header */}
                     <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                         <div>
-                            <h1 className="text-4xl font-black text-foreground mb-2 uppercase tracking-tighter">
-                                OMNI PARTNER DASHBOARD
-                            </h1>
+                            <SimpleEdit
+                                id="vendor_dashboard_title"
+                                text="OMNI PARTNER DASHBOARD"
+                                tag="h1"
+                                className="text-4xl font-black text-foreground mb-2 uppercase tracking-tighter"
+                            />
                             <p className="text-foreground/50 font-bold uppercase tracking-widest text-[10px]">
                                 Status: <span className="text-primary">ACTIVE</span> • Welcome, {user?.firstName || 'Partner'}
                             </p>
@@ -277,7 +281,7 @@ export default function VendorDashboard() {
                             className="bg-gradient-to-r from-primary to-primary/60 text-primary-foreground rounded-[2rem] p-8 text-left transition-all block shadow-lg hover:scale-[1.02]"
                         >
                             <div className="text-4xl mb-3">➕</div>
-                            <h3 className="text-2xl font-black mb-1 uppercase tracking-tighter text-white">Add Product</h3>
+                            <SimpleEdit id="vendor_card_add_product" text="Add Product" tag="h3" className="text-2xl font-black mb-1 uppercase tracking-tighter text-white" />
                             <p className="text-sm text-white/70 font-medium opacity-80">List a new item for sale</p>
                         </Link>
 
@@ -287,7 +291,7 @@ export default function VendorDashboard() {
                         >
                             <div className="absolute top-0 right-0 p-4 opacity-20 text-6xl group-hover:scale-110 transition-transform">⚡</div>
                             <div className="text-4xl mb-3">📹</div>
-                            <h3 className="text-2xl font-black mb-1 uppercase tracking-tighter">Post Story</h3>
+                            <SimpleEdit id="vendor_card_post_story" text="Post Story" tag="h3" className="text-2xl font-black mb-1 uppercase tracking-tighter" />
                             <p className="text-sm text-purple-200 font-medium opacity-80">Engage students on Campus Pulse</p>
                         </Link>
 
@@ -296,7 +300,7 @@ export default function VendorDashboard() {
                             className="bg-surface backdrop-blur-lg border border-surface-border hover:border-primary/50 text-foreground rounded-[2rem] p-8 text-left transition-all block shadow-lg hover:scale-[1.02]"
                         >
                             <div className="text-4xl mb-3">📦</div>
-                            <h3 className="text-2xl font-black mb-1 uppercase tracking-tighter">My Products</h3>
+                            <SimpleEdit id="vendor_card_my_products" text="My Products" tag="h3" className="text-2xl font-black mb-1 uppercase tracking-tighter" />
                             <p className="text-sm text-foreground/40 font-medium opacity-80 text-foreground/40">Manage your inventories</p>
                         </Link>
 
@@ -305,7 +309,7 @@ export default function VendorDashboard() {
                             className="bg-background/40 backdrop-blur-lg border border-surface-border hover:border-green-500/50 text-foreground rounded-[2rem] p-8 text-left transition-all block shadow-lg hover:scale-[1.02] group"
                         >
                             <div className="text-4xl mb-3 group-hover:rotate-12 transition-transform">🔑</div>
-                            <h3 className="text-2xl font-black mb-1 uppercase tracking-tighter">Unlock Funds</h3>
+                            <SimpleEdit id="vendor_card_unlock_funds" text="Unlock Funds" tag="h3" className="text-2xl font-black mb-1 uppercase tracking-tighter" />
                             <p className="text-sm text-green-600 font-medium opacity-80">Enter Secure-Key to get paid</p>
                         </Link>
 
@@ -320,7 +324,7 @@ export default function VendorDashboard() {
                     <div className="bg-surface backdrop-blur-lg border border-surface-border rounded-[2.5rem] p-8">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                             <div>
-                                <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter">Order Operations</h2>
+                                <SimpleEdit id="vendor_order_operations_title" text="Order Operations" tag="h2" className="text-3xl font-black text-foreground uppercase tracking-tighter" />
                                 <p className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">Manage active and historical customer requests</p>
                             </div>
 

@@ -11,6 +11,14 @@ export async function POST(request: NextRequest) {
         const user = await prisma.user.findUnique({ where: { clerkId: userId } });
         if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
+        if (user.banned) {
+            return NextResponse.json({ error: `Account banned: ${user.banReason || 'Contact support'}` }, { status: 403 });
+        }
+
+        if (user.walletFrozen) {
+            return NextResponse.json({ error: 'Your wallet has been frozen by an administrator.' }, { status: 403 });
+        }
+
         if (user.balance < 1.00) {
             return NextResponse.json({ error: 'Minimum withdrawal is GHS 1.00' }, { status: 400 });
         }

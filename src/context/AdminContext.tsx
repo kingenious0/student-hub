@@ -24,10 +24,45 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const [contentOverrides, setContentOverrides] = useState<Record<string, any>>({});
 
     useEffect(() => {
-        // Check for ghost admin mode
-        const ghost = localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
-        setIsGhostAdmin(ghost);
-        setSuperAccess(ghost);
+        // Check for ghost admin mode from localStorage OR Clerk
+        const checkAdminStatus = async () => {
+            // Method 1: LocalStorage (Command Center unlock)
+            const localGhost = localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
+            console.log('[ADMIN-CONTEXT] LocalStorage check:', localGhost);
+
+            // Method 2: Clerk Role (System login)
+            let clerkGod = false;
+            try {
+                const res = await fetch('/api/users/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log('[ADMIN-CONTEXT] /api/users/me response:', data);
+
+                    // API returns { role: 'GOD_MODE' } directly, not { user: { role } }
+                    if (data.role === 'GOD_MODE') {
+                        clerkGod = true;
+                        console.log('[ADMIN-CONTEXT] 🔥 GOD_MODE detected from Clerk!');
+                        localStorage.setItem('OMNI_GOD_MODE_UNLOCKED', 'true'); // Sync to localStorage
+                    } else {
+                        console.log('[ADMIN-CONTEXT] User role:', data.role || 'GUEST');
+                    }
+                }
+            } catch (e) {
+                console.error('[ADMIN-CONTEXT] Failed to check Clerk role:', e);
+            }
+
+            const hasGodMode = localGhost || clerkGod;
+            setIsGhostAdmin(hasGodMode);
+            setSuperAccess(hasGodMode);
+
+            if (hasGodMode) {
+                console.log('[ADMIN-CONTEXT] ✅ Super Access ENABLED - Ghost Edit available');
+            } else {
+                console.log('[ADMIN-CONTEXT] ❌ Super Access DISABLED - No Ghost Edit');
+            }
+        };
+
+        checkAdminStatus();
 
         // Initial Config Fetch & Polling
         refreshConfig();

@@ -15,11 +15,14 @@ interface SystemSettings {
 
 import { useTheme } from '@/components/providers/ThemeProvider';
 
+import { useModal } from '@/context/ModalContext';
+
 export default function CommandCenterPage() {
     // State
     const { user, isLoaded } = useUser();
     const router = useRouter();
     const { theme, toggleTheme } = useTheme();
+    const modal = useModal();
     const [settings, setSettings] = useState<SystemSettings | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ESCROW' | 'USERS' | 'VENDORS'>('OVERVIEW');
@@ -175,7 +178,7 @@ export default function CommandCenterPage() {
     }
 
     const handleEscrowAction = async (orderId: string, action: 'FORCE_RELEASE' | 'FORCE_REFUND') => {
-        if (!confirm(`CONFIRM: ${action} for Order?`)) return;
+        if (!await modal.confirm(`CONFIRM: ${action} for Order?`, 'Confirm Escrow Action', true)) return;
         await fetch('/api/admin/escrow', {
             method: 'POST',
             headers: { 'credentials': 'include' },
@@ -185,7 +188,7 @@ export default function CommandCenterPage() {
     }
 
     const handleUserAction = async (targetUserId: string, action: string, value?: any) => {
-        if (!confirm(`CONFIRM: ${action} for User?`)) return;
+        if (!await modal.confirm(`CONFIRM: ${action} for User?`, 'Confirm User Action', true)) return;
         await fetch('/api/admin/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
@@ -193,6 +196,24 @@ export default function CommandCenterPage() {
         });
         fetchUsers();
         setSelectedUser(null); // Close modal
+    }
+
+    const handleImpersonate = async (userId: string) => {
+        try {
+            // Start impersonation
+            const res = await fetch('/api/admin/impersonate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, action: 'START' })
+            });
+
+            if (res.ok) {
+                // Open new tab - the app will detect impersonation cookie
+                window.open('/', '_blank');
+            }
+        } catch (e) {
+            modal.alert('Failed to start impersonation', 'Error');
+        }
     }
 
     const handleVendorAction = async (vendorId: string, action: 'APPROVE' | 'REJECT') => {
@@ -216,7 +237,11 @@ export default function CommandCenterPage() {
     }
 
     const toggleSystem = async (mode: boolean) => {
-        if (!confirm(mode ? '⚠️ ACTIVATE MAINTENANCE MODE? (Stops all traffic)' : '✅ RESTORE SYSTEM? (Go Live)')) return;
+        if (!await modal.confirm(
+            mode ? '⚠️ ACTIVATE MAINTENANCE MODE? (Stops all traffic)' : '✅ RESTORE SYSTEM? (Go Live)',
+            'System Override',
+            true
+        )) return;
 
         console.log('[KILL SWITCH] Toggling to:', mode ? 'MAINTENANCE' : 'LIVE');
 
@@ -238,13 +263,13 @@ export default function CommandCenterPage() {
                 console.log('[KILL SWITCH] Toggle successful');
                 // Fetch fresh settings from server to ensure accuracy
                 await fetchSettings();
-                alert(mode ? '🔴 MAINTENANCE MODE ACTIVATED' : '🟢 SYSTEM RESTORED');
+                modal.alert(mode ? '🔴 MAINTENANCE MODE ACTIVATED' : '🟢 SYSTEM RESTORED', 'System Status');
             } else {
                 throw new Error(`API returned ${res.status}`);
             }
         } catch (e) {
             console.error('[KILL SWITCH] Toggle failed:', e);
-            alert('❌ Failed to toggle system. Please try again.');
+            modal.alert('❌ Failed to toggle system. Please try again.', 'Error');
             // Revert to actual server state
             fetchSettings();
         }
@@ -302,6 +327,16 @@ export default function CommandCenterPage() {
 
         autoUnlock();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Parse broadcast color from globalNotice
+    useEffect(() => {
+        if (settings?.globalNotice) {
+            const match = settings.globalNotice.match(/^\[(#[a-fA-F0-9]{6})\]/);
+            if (match) {
+                setBroadcastColor(match[1]);
+            }
+        }
+    }, [settings?.globalNotice]);
 
     // Data Fetching Effects
     useEffect(() => {
@@ -404,6 +439,29 @@ export default function CommandCenterPage() {
                 </div>
             </div>
 
+            {/* MOBILE MENU DROPDOWN */}
+            {mobileMenuOpen && (
+                <div className="md:hidden bg-surface border-b border-surface-border p-4">
+                    <div className="flex flex-col gap-2">
+                        {['OVERVIEW', 'ESCROW', 'USERS', 'VENDORS'].map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => {
+                                    setActiveTab(tab as any);
+                                    setMobileMenuOpen(false);
+                                }}
+                                className={`px-4 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all text-left ${activeTab === tab
+                                    ? 'bg-foreground text-background'
+                                    : 'text-foreground/40 hover:text-foreground hover:bg-surface-border'
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className="p-6 space-y-8 max-w-2xl mx-auto">
 
                 {/* OVERVIEW TAB */}
@@ -479,35 +537,46 @@ export default function CommandCenterPage() {
                                         type="text"
                                         placeholder="TYPE URGENT MESSAGE TO ALL STUDENTS..."
                                         className="bg-background border border-surface-border text-foreground rounded-xl p-3 w-full font-mono text-sm focus:border-red-500 focus:outline-none placeholder:text-foreground/30"
-                                        defaultValue={settings?.globalNotice || ''}
+                                        defaultValue={settings?.globalNotice?.replace(/^\[(#.*?|[a-z]+)\]/, '') || ''}
+                                        key={settings?.globalNotice}
                                         id="broadcast-input"
-                                        onBlur={(e) => {
-                                            const val = e.target.value;
-                                            if (val !== settings?.globalNotice) {
-                                                // Auto-save on blur logic preserved
-                                            }
-                                        }}
                                     />
                                     <button
                                         className="bg-red-600 hover:bg-red-700 text-white font-black px-6 rounded-xl uppercase text-xs tracking-widest transition-colors"
-                                        onClick={() => {
+                                        onClick={async () => {
                                             const input = document.getElementById('broadcast-input') as HTMLInputElement;
                                             if (input) {
-                                                // Strip existing color tag if present to avoid duplication
-                                                const rawVal = input.value.replace(/^\[(#.*?|[a-z]+)\]/, '');
-                                                const finalMessage = `[${broadcastColor}]${rawVal}`;
+                                                try {
+                                                    // Strip existing color tag if present to avoid duplication
+                                                    const rawVal = input.value.replace(/^\[(#.*?|[a-z]+)\]/, '');
+                                                    const finalMessage = `[${broadcastColor}]${rawVal}`;
 
-                                                setSettings(prev => prev ? { ...prev, globalNotice: finalMessage } : null);
-                                                fetch('/api/admin/system', {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
-                                                    body: JSON.stringify({
-                                                        maintenanceMode: settings?.maintenanceMode,
-                                                        activeFeatures: settings?.activeFeatures,
-                                                        globalNotice: finalMessage
-                                                    })
-                                                });
-                                                alert('PROTOCOL BROADCASTED WITH COLOR');
+                                                    console.log('[BROADCAST] Syncing message:', finalMessage);
+
+                                                    const response = await fetch('/api/admin/system', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        credentials: 'include',
+                                                        body: JSON.stringify({
+                                                            maintenanceMode: settings?.maintenanceMode,
+                                                            activeFeatures: settings?.activeFeatures,
+                                                            globalNotice: finalMessage
+                                                        })
+                                                    });
+
+                                                    if (response.ok) {
+                                                        const data = await response.json();
+                                                        setSettings(data);
+                                                        alert('✅ BROADCAST SYNCED!\n\nYour message is now live across the platform.');
+                                                    } else {
+                                                        const errorText = await response.text();
+                                                        console.error('[BROADCAST] Sync failed:', response.status, errorText);
+                                                        alert('❌ SYNC FAILED\n\nPlease check console for details.');
+                                                    }
+                                                } catch (error) {
+                                                    console.error('[BROADCAST] Error:', error);
+                                                    alert('❌ CONNECTION ERROR\n\nCould not reach server.');
+                                                }
                                             }
                                         }}
                                     >
@@ -515,20 +584,37 @@ export default function CommandCenterPage() {
                                     </button>
                                     <button
                                         className="bg-surface border border-surface-border text-foreground/60 hover:text-red-500 font-black px-4 rounded-xl uppercase text-xs tracking-widest transition-colors"
-                                        onClick={() => {
+                                        onClick={async () => {
                                             const input = document.getElementById('broadcast-input') as HTMLInputElement;
                                             if (input) {
-                                                input.value = '';
-                                                setSettings(prev => prev ? { ...prev, globalNotice: '' } : null);
-                                                fetch('/api/admin/system', {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
-                                                    body: JSON.stringify({
-                                                        maintenanceMode: settings?.maintenanceMode,
-                                                        activeFeatures: settings?.activeFeatures,
-                                                        globalNotice: ''
-                                                    })
-                                                });
+                                                try {
+                                                    input.value = '';
+
+                                                    console.log('[BROADCAST] Clearing message...');
+
+                                                    const response = await fetch('/api/admin/system', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        credentials: 'include',
+                                                        body: JSON.stringify({
+                                                            maintenanceMode: settings?.maintenanceMode,
+                                                            activeFeatures: settings?.activeFeatures,
+                                                            globalNotice: null
+                                                        })
+                                                    });
+
+                                                    if (response.ok) {
+                                                        const data = await response.json();
+                                                        setSettings(data);
+                                                        alert('✅ BROADCAST CLEARED');
+                                                    } else {
+                                                        console.error('[BROADCAST] Clear failed:', response.status);
+                                                        alert('❌ CLEAR FAILED');
+                                                    }
+                                                } catch (error) {
+                                                    console.error('[BROADCAST] Error:', error);
+                                                    alert('❌ CONNECTION ERROR');
+                                                }
                                             }
                                         }}
                                     >
@@ -692,18 +778,42 @@ export default function CommandCenterPage() {
                                             </div>
 
                                             <button
-                                                onClick={() => handleUserAction(selectedUser.id, 'FREEZE_WALLET')}
-                                                className="w-full py-4 bg-zinc-900 text-zinc-400 border border-zinc-800 rounded-xl font-bold text-[10px] uppercase hover:bg-red-950 hover:text-red-500 hover:border-red-900 transition-colors flex items-center justify-center gap-2"
+                                                onClick={() => handleUserAction(selectedUser.id, selectedUser.walletFrozen ? 'UNFREEZE_WALLET' : 'FREEZE_WALLET')}
+                                                className={`w-full py-4 border rounded-xl font-bold text-[10px] uppercase transition-colors flex items-center justify-center gap-2 ${selectedUser.walletFrozen
+                                                    ? 'bg-green-900 text-green-400 border-green-800 hover:bg-green-950 hover:text-green-500'
+                                                    : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-red-950 hover:text-red-500 hover:border-red-900'
+                                                    }`}
                                             >
-                                                <span>❄️</span> Emergency Freeze Assets
+                                                <span>{selectedUser.walletFrozen ? '🔓' : '❄️'}</span>
+                                                {selectedUser.walletFrozen ? 'Unfreeze Wallet' : 'Emergency Freeze Assets'}
+                                            </button>
+
+                                            <button
+                                                onClick={async () => {
+                                                    if (selectedUser.banned) {
+                                                        handleUserAction(selectedUser.id, 'UNBAN_USER');
+                                                    } else {
+                                                        const reason = await modal.prompt('Reason for ban (optional):', 'Ban User');
+                                                        if (reason !== null) {
+                                                            handleUserAction(selectedUser.id, 'BAN_USER', reason || 'Banned by administrator');
+                                                        }
+                                                    }
+                                                }}
+                                                className={`w-full py-4 border rounded-xl font-bold text-[10px] uppercase transition-colors flex items-center justify-center gap-2 ${selectedUser.banned
+                                                    ? 'bg-green-900 text-green-400 border-green-800 hover:bg-green-950 hover:text-green-500'
+                                                    : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-red-950 hover:text-red-500 hover:border-red-900'
+                                                    }`}
+                                            >
+                                                <span>{selectedUser.banned ? '✅' : '🚫'}</span>
+                                                {selectedUser.banned ? 'Unban User' : 'Ban User'}
                                             </button>
 
                                             <div className="pt-4 border-t border-white/5">
                                                 <button
-                                                    onClick={() => window.open(`/?impersonate=${selectedUser.id}`, '_blank')}
+                                                    onClick={() => handleImpersonate(selectedUser.id)}
                                                     className="w-full py-4 bg-blue-600 text-white rounded-xl font-black text-xs uppercase hover:bg-blue-500 transition-all shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:shadow-[0_0_40px_rgba(37,99,235,0.5)] flex items-center justify-center gap-2"
                                                 >
-                                                    <span>👁️</span> View User Screen
+                                                    <span>👁️</span> View as User (Read-Only)
                                                 </button>
                                             </div>
                                         </div>

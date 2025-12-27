@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useModal } from '@/context/ModalContext';
 
 interface Order {
     id: string;
@@ -22,10 +23,11 @@ interface BentoOrderCardProps {
 
 export default function BentoOrderCard({ order }: BentoOrderCardProps) {
     const router = useRouter();
+    const modal = useModal();
     const [isUpdating, setIsUpdating] = useState(false);
 
     const handleMarkReady = async () => {
-        if (!confirm('Mark this order as READY for runner pickup?')) return;
+        if (!await modal.confirm('Mark this order as READY for runner pickup?', 'Confirm Status Update')) return;
 
         setIsUpdating(true);
         try {
@@ -40,18 +42,18 @@ export default function BentoOrderCard({ order }: BentoOrderCardProps) {
                 // Refresh to update UI and notify system
                 window.location.reload();
             } else {
-                alert(data.error || 'Failed to update status');
+                modal.alert(data.error || 'Failed to update status', 'Error');
                 setIsUpdating(false);
             }
         } catch (error) {
             console.error(error);
-            alert('Connection error');
+            modal.alert('Connection error', 'Error');
             setIsUpdating(false);
         }
     };
 
     const handleVerifyPickup = async () => {
-        const code = prompt("Enter the 6-digit Runner Key:");
+        const code = await modal.prompt("Enter the 6-digit Runner Key:", "Verify Runner Code");
         if (!code) return;
 
         setIsUpdating(true);
@@ -67,15 +69,15 @@ export default function BentoOrderCard({ order }: BentoOrderCardProps) {
             const data = await res.json();
 
             if (res.ok && data.success) {
-                alert('Runnner Verified! Order is now in transit.');
+                await modal.alert('Runnner Verified! Order is now in transit.', 'Success');
                 window.location.reload();
             } else {
-                alert(data.error || 'Verification Failed');
+                modal.alert(data.error || 'Verification Failed', 'Error');
                 setIsUpdating(false);
             }
         } catch (error) {
             console.error(error);
-            alert('Connection error');
+            modal.alert('Connection error', 'Error');
             setIsUpdating(false);
         }
     };

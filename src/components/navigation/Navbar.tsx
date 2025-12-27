@@ -43,7 +43,7 @@ export default function Navbar() {
 
         // Poll Global Settings (Ticker) - Instant Sync
         const fetchTicker = () => {
-            fetch('/api/admin/system', { headers: { 'x-admin-key': 'omniadmin.com' } })
+            fetch('/api/system/config')
                 .then(res => res.json())
                 .then(data => setGlobalNotice(data?.globalNotice || null))
                 .catch(() => setGlobalNotice(null));

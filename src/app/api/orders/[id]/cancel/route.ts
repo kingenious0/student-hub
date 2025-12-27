@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
@@ -60,7 +60,7 @@ export async function POST(
         if (order.runnerId) {
             await prisma.user.update({
                 where: { id: order.runnerId },
-                data: { runnerStatus: 'IDLE' },
+                data: { runnerStatus: 'ONLINE' },
             });
         }
 

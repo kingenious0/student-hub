@@ -27,6 +27,9 @@ export async function GET(req: Request) {
                 email: true,
                 role: true,
                 balance: true,
+                walletFrozen: true,
+                banned: true,
+                banReason: true,
                 vendorStatus: true,
                 isRunner: true,
                 lastActive: true,
@@ -49,10 +52,29 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { targetUserId, action, value } = body;
 
-        let updateData = {};
+        let updateData: any = {};
 
         if (action === 'FREEZE_WALLET') {
-            updateData = { balance: 0 }; // Draconian Freeze
+            // Proper freeze: set flag and zero balance
+            updateData = {
+                walletFrozen: true,
+                balance: 0
+            };
+        } else if (action === 'UNFREEZE_WALLET') {
+            // Unfreeze wallet
+            updateData = { walletFrozen: false };
+        } else if (action === 'BAN_USER') {
+            // Ban user with reason
+            updateData = {
+                banned: true,
+                banReason: value || 'Banned by administrator'
+            };
+        } else if (action === 'UNBAN_USER') {
+            // Unban user
+            updateData = {
+                banned: false,
+                banReason: null
+            };
         } else if (action === 'SET_ROLE') {
             updateData = { role: value }; // value: 'ADMIN', 'VENDOR', 'STUDENT'
         } else if (action === 'SET_RUNNER') {

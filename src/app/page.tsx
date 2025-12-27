@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import EditableContent from "@/components/admin/EditableContent";
-
-// export const runtime = 'edge';
+import SimpleEdit from "@/components/admin/SimpleEdit";
 
 export default function Home() {
   return (
@@ -21,15 +19,19 @@ export default function Home() {
               <img src="/OMNI-LOGO.ico" alt="OMNI" className="relative w-32 h-32 object-contain invert-on-light" />
             </div>
           </div>
-          <EditableContent
+
+          <SimpleEdit
             id="landing_hero_title"
-            defaultContent={'THE<br /><span class="text-primary omni-glow">FUTURE</span>'}
-            className="text-8xl md:text-9xl font-black mb-6 uppercase tracking-[-0.05em] leading-[0.8] animate-in fade-in slide-in-from-bottom duration-700"
+            text="THE FUTURE"
+            tag="h1"
+            className="text-8xl md:text-9xl font-black mb-6 uppercase tracking-[-0.05em] leading-[0.8] animate-in fade-in slide-in-from-bottom duration-700 text-primary omni-glow"
           />
+
           <div className="flex flex-col items-center gap-4">
-            <EditableContent
+            <SimpleEdit
               id="landing_hero_desc"
-              defaultContent="University Commerce Redefined"
+              text="University Commerce Redefined"
+              tag="p"
               className="text-[12px] font-black text-foreground/60 uppercase tracking-[0.8em] mb-4"
             />
             <div className="h-[2px] w-24 bg-primary/30"></div>
@@ -38,31 +40,23 @@ export default function Home() {
 
         {/* Features Matrix */}
         <div className="grid md:grid-cols-3 gap-8 mb-20 max-w-5xl mx-auto">
-          {[
-            {
-              icon: "⚡",
-              title: "Flash-Match",
-              desc: "Hyper-local detection. Find assets in your immediate proximity."
-            },
-            {
-              icon: "🛡️",
-              title: "Shield Escrow",
-              desc: "Immutable transaction security. Funds released only upon key validation."
-            },
-            {
-              icon: "🏃",
-              title: "Shadow Runner",
-              desc: "Deploy as a high-speed logistics entity. Earn GH₵ on every transit."
-            }
-          ].map((f, i) => (
-            <div key={i} className="bg-surface/50 backdrop-blur-3xl border border-surface-border rounded-[2.5rem] p-10 hover:bg-surface hover:border-primary/30 transition-all group group-hover:-translate-y-2">
-              <div className="text-5xl mb-8 group-hover:scale-110 transition-transform duration-500">{f.icon}</div>
-              <h3 className="text-xl font-black text-foreground mb-4 uppercase tracking-tighter">{f.title}</h3>
-              <p className="text-foreground/60 text-xs font-bold uppercase tracking-widest leading-loose">
-                {f.desc}
-              </p>
-            </div>
-          ))}
+          <div className="bg-surface/50 backdrop-blur-3xl border border-surface-border rounded-[2.5rem] p-10 hover:bg-surface hover:border-primary/30 transition-all group">
+            <div className="text-5xl mb-8 group-hover:scale-110 transition-transform duration-500">⚡</div>
+            <SimpleEdit id="feature_flashmatch_title" text="Flash-Match" tag="h3" className="text-xl font-black text-foreground mb-4 uppercase tracking-tighter" />
+            <SimpleEdit id="feature_flashmatch_desc" text="Hyper-local detection. Find assets in your immediate proximity." tag="p" className="text-foreground/60 text-xs font-bold uppercase tracking-widest leading-loose" />
+          </div>
+
+          <div className="bg-surface/50 backdrop-blur-3xl border border-surface-border rounded-[2.5rem] p-10 hover:bg-surface hover:border-primary/30 transition-all group">
+            <div className="text-5xl mb-8 group-hover:scale-110 transition-transform duration-500">🛡️</div>
+            <SimpleEdit id="feature_escrow_title" text="Shield Escrow" tag="h3" className="text-xl font-black text-foreground mb-4 uppercase tracking-tighter" />
+            <SimpleEdit id="feature_escrow_desc" text="Immutable transaction security. Funds released only upon key validation." tag="p" className="text-foreground/60 text-xs font-bold uppercase tracking-widest leading-loose" />
+          </div>
+
+          <div className="bg-surface/50 backdrop-blur-3xl border border-surface-border rounded-[2.5rem] p-10 hover:bg-surface hover:border-primary/30 transition-all group">
+            <div className="text-5xl mb-8 group-hover:scale-110 transition-transform duration-500">🏃</div>
+            <SimpleEdit id="feature_runner_title" text="Shadow Runner" tag="h3" className="text-xl font-black text-foreground mb-4 uppercase tracking-tighter" />
+            <SimpleEdit id="feature_runner_desc" text="Deploy as a high-speed logistics entity. Earn GH₵ on every transit." tag="p" className="text-foreground/60 text-xs font-bold uppercase tracking-widest leading-loose" />
+          </div>
         </div>
 
         {/* Action Center */}
@@ -73,20 +67,20 @@ export default function Home() {
                 href="/marketplace"
                 className="px-12 py-6 bg-primary text-primary-foreground rounded-[2rem] font-black text-[10px] uppercase tracking-[0.4em] transition-all omni-glow hover:scale-105 active:scale-95"
               >
-                Initialize Acquisition
+                <SimpleEdit id="cta_marketplace" text="Initialize Acquisition" tag="span" className="" />
               </Link>
               <Link
                 href="/dashboard/vendor"
                 className="px-12 py-6 bg-surface border border-surface-border text-foreground rounded-[2rem] font-black text-[10px] uppercase tracking-[0.4em] transition-all hover:bg-surface/80 active:scale-95"
               >
-                Supply Terminal
+                <SimpleEdit id="cta_vendor" text="Supply Terminal" tag="span" className="" />
               </Link>
             </div>
           </SignedIn>
 
           <SignedOut>
             <div className="p-8 bg-surface/50 border border-surface-border rounded-[2rem]">
-              <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Awaiting Uplink Initialization</p>
+              <SimpleEdit id="signed_out_message" text="Awaiting Uplink Initialization" tag="p" className="text-[10px] font-black text-primary uppercase tracking-[0.4em]" />
             </div>
           </SignedOut>
 
@@ -94,15 +88,15 @@ export default function Home() {
           <div className="pt-12 grid grid-cols-2 md:grid-cols-3 gap-12 border-t border-surface-border w-full max-w-4xl">
             <div>
               <div className="text-4xl font-black text-foreground tracking-tighter">~5M</div>
-              <div className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.4em] mt-1">Operational Speed</div>
+              <SimpleEdit id="stat_speed_label" text="Operational Speed" tag="div" className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.4em] mt-1" />
             </div>
             <div>
               <div className="text-4xl font-black text-foreground tracking-tighter">100%</div>
-              <div className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.4em] mt-1">Escrow Efficiency</div>
+              <SimpleEdit id="stat_escrow_label" text="Escrow Efficiency" tag="div" className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.4em] mt-1" />
             </div>
             <div className="hidden md:block">
               <div className="text-4xl font-black text-foreground tracking-tighter">24/7</div>
-              <div className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.4em] mt-1">Sector Coverage</div>
+              <SimpleEdit id="stat_coverage_label" text="Sector Coverage" tag="div" className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.4em] mt-1" />
             </div>
           </div>
         </div>
@@ -110,4 +104,3 @@ export default function Home() {
     </div>
   );
 }
-
