@@ -62,7 +62,6 @@ export default function CartPage() {
 
         // Pre-check Paystack
         const PaystackPop = (window as unknown as { PaystackPop: { setup: (options: unknown) => { openIframe: () => void } } }).PaystackPop;
-        const PaystackPop = (window as unknown as { PaystackPop: { setup: (options: unknown) => { openIframe: () => void } } }).PaystackPop;
         if (!PaystackPop) {
             modal.alert('Payment system loading... Please wait or refresh.', 'Paystack Loading');
             return;
