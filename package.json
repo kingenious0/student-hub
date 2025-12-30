@@ -8,23 +8,27 @@
     "start": "next start",
     "lint": "eslint",
     "preview": "npx prisma generate && npx @cloudflare/next-on-pages && npx wrangler pages dev .vercel/output",
-    "tunnel": "npx cloudflared tunnel --url http://localhost:3000"
+    "tunnel": "npx cloudflared tunnel --url http://localhost:3000",
+    "tunnel:alt": "npx localtunnel --port 3000"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.4",
     "@prisma/client": "5.10.2",
     "@types/crypto-js": "^4.2.2",
+    "@types/mapbox-gl": "^3.4.1",
     "@types/qrcode": "^1.5.6",
     "cloudinary": "^2.8.0",
     "crypto-js": "^4.2.0",
     "dotenv": "^17.2.3",
     "framer-motion": "^12.23.26",
     "html5-qrcode": "^2.3.8",
+    "mapbox-gl": "^3.17.0",
     "next": "^15.5.9",
     "next-cloudinary": "^6.17.5",
     "pg": "^8.16.3",
     "prisma": "5.10.2",
     "qrcode": "^1.5.4",
+    "radar-sdk-js": "^4.5.8",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.6.0"

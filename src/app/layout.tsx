@@ -11,6 +11,7 @@ import { ModalProvider } from "@/context/ModalContext";
 import GhostEditToggle from "@/components/admin/GhostEditToggle";
 import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import BanOverlay from "@/components/admin/BanOverlay";
+import LocationProvider from "@/components/location/LocationProvider";
 import Script from "next/script";
 import "./globals.css";
 
@@ -42,17 +43,19 @@ export default function RootLayout({
         >
           <ThemeProvider>
             <AdminProvider>
-              <ModalProvider>
-                <CartProvider>
-                  <OnboardingCheck />
-                  <Navbar />
-                  <ImpersonationBanner />
-                  <BanOverlay />
-                  {children}
-                  <Footer />
-                  <GhostEditToggle />
-                </CartProvider>
-              </ModalProvider>
+              <LocationProvider>
+                <ModalProvider>
+                  <CartProvider>
+                    <OnboardingCheck />
+                    <Navbar />
+                    <ImpersonationBanner />
+                    <BanOverlay />
+                    {children}
+                    <Footer />
+                    <GhostEditToggle />
+                  </CartProvider>
+                </ModalProvider>
+              </LocationProvider>
             </AdminProvider>
           </ThemeProvider>
           <Script src="https://js.paystack.co/v1/inline.js" strategy="lazyOnload" />

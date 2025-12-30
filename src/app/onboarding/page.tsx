@@ -5,6 +5,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
+import dynamic from 'next/dynamic';
+
+const LocationPicker = dynamic(() => import('@/components/location/LocationPicker'), {
+    ssr: false,
+    loading: () => <div className="h-[400px] w-full bg-surface border-2 border-surface-border rounded-xl animate-pulse flex items-center justify-center">Loading Map...</div>,
+});
 
 export default function OnboardingPage() {
     const { user, isLoaded } = useUser();
@@ -15,7 +21,8 @@ export default function OnboardingPage() {
 
     // Vendor specific state
     const [shopName, setShopName] = useState('');
-    const [shopLandmark, setShopLandmark] = useState('');
+    const [shopLandmark, setShopLandmark] = useState(''); // Kept as address string
+    const [shopCoordinates, setShopCoordinates] = useState<{ lat: number, lng: number } | null>(null);
 
     const router = useRouter();
 
@@ -52,13 +59,21 @@ export default function OnboardingPage() {
         }
     };
 
-    const handleComplete = async (selectedRole: 'STUDENT' | 'VENDOR', selectedIsRunner: boolean, vendorDetails?: { shopName: string, shopLandmark: string }) => {
+    const handleComplete = async (
+        selectedRole: 'STUDENT' | 'VENDOR',
+        selectedIsRunner: boolean,
+        vendorDetails?: { shopName: string, shopLandmark: string, shopCoordinates?: { lat: number, lng: number } }
+    ) => {
         setLoading(true);
         try {
             const payload = {
                 role: selectedRole,
                 isRunner: selectedIsRunner,
-                ...(vendorDetails && { shopName: vendorDetails.shopName, shopLandmark: vendorDetails.shopLandmark })
+                ...(vendorDetails && {
+                    shopName: vendorDetails.shopName,
+                    shopLandmark: vendorDetails.shopLandmark,
+                    shopCoordinates: vendorDetails.shopCoordinates
+                })
             };
 
             const res = await fetch('/api/auth/onboard', {
@@ -170,7 +185,7 @@ export default function OnboardingPage() {
                                     Establish your digital storefront presence.
                                 </p>
 
-                                <div className="space-y-4 text-left">
+                                <div className="space-y-4">
                                     <div>
                                         <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 mb-2 block">Shop Name</label>
                                         <input
@@ -181,25 +196,38 @@ export default function OnboardingPage() {
                                             placeholder="e.g. Mummy's Kitchen"
                                         />
                                     </div>
+
                                     <div>
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 mb-2 block">Campus Landmark</label>
-                                        <input
-                                            type="text"
-                                            value={shopLandmark}
-                                            onChange={(e) => setShopLandmark(e.target.value)}
-                                            className="w-full bg-surface border-2 border-surface-border rounded-xl p-4 font-bold focus:border-primary outline-none transition-colors"
-                                            placeholder="e.g. Bush Canteen, Start of Market"
-                                        />
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-foreground/60 mb-2 block">
+                                            Pin Exact Location (Required)
+                                        </label>
+                                        <div className="rounded-xl overflow-hidden shadow-lg border-2 border-surface-border">
+                                            <LocationPicker
+                                                onLocationSelect={(coords, address) => {
+                                                    setShopCoordinates(coords);
+                                                    setShopLandmark(address); // Auto-fill landmark with address
+                                                }}
+                                            />
+                                        </div>
+                                        {shopLandmark && (
+                                            <p className="mt-2 text-xs text-primary font-bold">
+                                                Selected: {shopLandmark}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <button
                                         onClick={() => {
-                                            if (!shopName || !shopLandmark) return;
-                                            handleComplete('VENDOR', false, { shopName, shopLandmark });
+                                            if (!shopName || !shopCoordinates) return;
+                                            handleComplete('VENDOR', false, {
+                                                shopName,
+                                                shopLandmark: shopLandmark || 'Pinned Location',
+                                                shopCoordinates
+                                            });
                                         }}
-                                        disabled={!shopName || !shopLandmark}
-                                        className={`w-full py-6 mt-8 rounded-3xl font-black text-xs uppercase tracking-[0.3em] omni-glow hover:scale-105 active:scale-95 transition-all
-                                            ${shopName && shopLandmark ? 'bg-primary text-primary-foreground' : 'bg-surface-border text-foreground/20 cursor-not-allowed'}`}
+                                        disabled={!shopName || !shopCoordinates}
+                                        className={`w-full py-6 mt-4 rounded-3xl font-black text-xs uppercase tracking-[0.3em] omni-glow hover:scale-105 active:scale-95 transition-all
+                                                ${shopName && shopCoordinates ? 'bg-primary text-primary-foreground' : 'bg-surface-border text-foreground/20 cursor-not-allowed'}`}
                                     >
                                         Initialize Vendor
                                     </button>

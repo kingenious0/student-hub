@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
+import { createGeofence } from '@/lib/location/radar-server';
 
 export async function POST(request: NextRequest) {
     try {
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { role, isRunner, shopName, shopLandmark } = body;
+        const { role, isRunner, shopName, shopLandmark, shopCoordinates } = body;
 
         console.log('Onboarding User:', {
             id: user.id,
@@ -23,7 +24,8 @@ export async function POST(request: NextRequest) {
             primaryEmailId: user.primaryEmailAddressId,
             role,
             shopName,
-            shopLandmark
+            shopLandmark,
+            shopCoordinates
         });
 
         const email = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress
@@ -47,6 +49,23 @@ export async function POST(request: NextRequest) {
             shopName: null,
             shopLandmark: null
         };
+
+        // Radar Geofence Creation for Vendors
+        if (role === 'VENDOR' && shopCoordinates) {
+            try {
+                await createGeofence({
+                    tag: 'vendor',
+                    externalId: user.id, // Use Clerk ID to link systems
+                    description: shopName || 'Vendor Shop',
+                    coordinates: [shopCoordinates.lng, shopCoordinates.lat], // Radar uses [lng, lat]
+                    radius: 100 // 100m radius
+                });
+                console.log('Radar Geofence created for vendor:', user.id);
+            } catch (radarError) {
+                console.error('Failed to create Radar geofence:', radarError);
+                // Proceed anyway, don't block onboarding
+            }
+        }
 
         // Upsert user in database (Update if exists, Create if not)
         await prisma.user.upsert({

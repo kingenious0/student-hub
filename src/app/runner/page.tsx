@@ -12,6 +12,7 @@ import BackButton from '@/components/BackButton';
 import SimpleEdit from '@/components/admin/SimpleEdit';
 
 import { useModal } from '@/context/ModalContext';
+import { startTracking, stopTracking } from '@/lib/location/radar-client';
 
 export default function RunnerDashboard() {
     const { user, isLoaded } = useUser();
@@ -99,6 +100,15 @@ export default function RunnerDashboard() {
     const toggleStatus = async () => {
         const newStatus = !isOnline ? 'ONLINE' : 'OFFLINE';
         setIsOnline(!isOnline); // Optimistic UI
+
+        // Radar Tracking Logic
+        if (newStatus === 'ONLINE') {
+            // Request Background (Always) permission for Runners
+            startTracking('RESPONSIVE', true);
+        } else {
+            stopTracking();
+        }
+
         try {
             await fetch('/api/runner/status', {
                 method: 'POST',

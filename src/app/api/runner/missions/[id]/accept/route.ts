@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
+import { createTrip } from '@/lib/location/radar-server';
 
 export async function POST(
     request: NextRequest,
@@ -51,6 +52,29 @@ export async function POST(
                 { error: 'Mission already taken by another runner! Too slow!' },
                 { status: 409 } // 409 Conflict
             );
+        }
+
+        // --- RADAR TRIP ACTIVATION ---
+        // Fetch order details to know the destination (Vendor)
+        const activeOrder = await prisma.order.findUnique({
+            where: { id },
+            select: { vendorId: true, id: true }
+        });
+
+        if (activeOrder) {
+            try {
+                // Start tracking the trip to the vendor
+                await createTrip({
+                    externalId: activeOrder.id,
+                    destinationGeofenceTag: 'vendor', // We tagged vendors as 'vendor'
+                    destinationGeofenceExternalId: activeOrder.vendorId,
+                    userId: userId,
+                    mode: 'motorbike'
+                });
+                console.log('Radar Trip started for order:', activeOrder.id);
+            } catch (tripError) {
+                console.error('Failed to start Radar trip:', tripError);
+            }
         }
 
         return NextResponse.json({ success: true, message: 'Mission Secured! Go go go!' });
