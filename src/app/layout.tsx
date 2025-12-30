@@ -11,8 +11,8 @@ import { ModalProvider } from "@/context/ModalContext";
 import GhostEditToggle from "@/components/admin/GhostEditToggle";
 import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import BanOverlay from "@/components/admin/BanOverlay";
-import LocationProvider from "@/components/location/LocationProvider";
 import Script from "next/script";
+import LocationProvider from "@/components/location/DynamicLocationProvider";
 import "./globals.css";
 
 const geistSans = Geist({

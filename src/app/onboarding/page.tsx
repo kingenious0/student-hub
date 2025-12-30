@@ -23,6 +23,7 @@ export default function OnboardingPage() {
     const [shopName, setShopName] = useState('');
     const [shopLandmark, setShopLandmark] = useState(''); // Kept as address string
     const [shopCoordinates, setShopCoordinates] = useState<{ lat: number, lng: number } | null>(null);
+    const [osmReference, setOsmReference] = useState<string | null>(null);
 
     const router = useRouter();
 
@@ -203,15 +204,20 @@ export default function OnboardingPage() {
                                         </label>
                                         <div className="rounded-xl overflow-hidden shadow-lg border-2 border-surface-border">
                                             <LocationPicker
-                                                onLocationSelect={(coords, address) => {
+                                                onLocationSelect={(coords, address, osmData) => {
                                                     setShopCoordinates(coords);
-                                                    setShopLandmark(address); // Auto-fill landmark with address
+                                                    setShopLandmark(address);
+                                                    if (osmData?.osmId) {
+                                                        setOsmReference(`OSM:${osmData.osmId}`);
+                                                    } else {
+                                                        setOsmReference(null);
+                                                    }
                                                 }}
                                             />
                                         </div>
                                         {shopLandmark && (
                                             <p className="mt-2 text-xs text-primary font-bold">
-                                                Selected: {shopLandmark}
+                                                Selected: {osmReference ? `${shopLandmark} [${osmReference}]` : shopLandmark}
                                             </p>
                                         )}
                                     </div>
@@ -219,9 +225,15 @@ export default function OnboardingPage() {
                                     <button
                                         onClick={() => {
                                             if (!shopName || !shopCoordinates) return;
+
+                                            // Store OSM ID in landmark for reference since DB schema update is pending
+                                            const finalLandmark = osmReference
+                                                ? `${shopLandmark || 'Pinned Location'} | ${osmReference}`
+                                                : (shopLandmark || 'Pinned Location');
+
                                             handleComplete('VENDOR', false, {
                                                 shopName,
-                                                shopLandmark: shopLandmark || 'Pinned Location',
+                                                shopLandmark: finalLandmark,
                                                 shopCoordinates
                                             });
                                         }}

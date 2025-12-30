@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { cookies } from 'next/headers';
 
 async function checkAuth() {
@@ -52,6 +52,29 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { targetUserId, action, value } = body;
 
+        if (action === 'DELETE_USER') {
+            const userToDelete = await prisma.user.findUnique({ where: { id: targetUserId } });
+            if (!userToDelete) {
+                return NextResponse.json({ error: 'User not found' }, { status: 404 });
+            }
+
+            // Delete from Clerk
+            try {
+                const client = await clerkClient();
+                await client.users.deleteUser(userToDelete.clerkId);
+                console.log(`Deleted user ${userToDelete.clerkId} from Clerk`);
+            } catch (err) {
+                console.error('Failed to delete user from Clerk (might already be deleted):', err);
+            }
+
+            // Delete from DB
+            await prisma.user.delete({
+                where: { id: targetUserId }
+            });
+
+            return NextResponse.json({ success: true });
+        }
+
         let updateData: any = {};
 
         if (action === 'FREEZE_WALLET') {
@@ -90,6 +113,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        console.error("Admin action failed:", error);
         return NextResponse.json({ success: false, error: 'Action failed' }, { status: 500 });
     }
 }

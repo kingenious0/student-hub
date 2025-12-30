@@ -808,12 +808,23 @@ export default function CommandCenterPage() {
                                                 {selectedUser.banned ? 'Unban User' : 'Ban User'}
                                             </button>
 
-                                            <div className="pt-4 border-t border-white/5">
+                                            <div className="pt-4 border-t border-white/5 space-y-3">
                                                 <button
                                                     onClick={() => handleImpersonate(selectedUser.id)}
                                                     className="w-full py-4 bg-blue-600 text-white rounded-xl font-black text-xs uppercase hover:bg-blue-500 transition-all shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:shadow-[0_0_40px_rgba(37,99,235,0.5)] flex items-center justify-center gap-2"
                                                 >
                                                     <span>👁️</span> View as User (Read-Only)
+                                                </button>
+
+                                                <button
+                                                    onClick={async () => {
+                                                        if (await modal.confirm('PERMANENTLY DELETE USER? This cannot be undone. All data (orders, products) will be wiped.', 'DANGER: DELETE USER', true)) {
+                                                            handleUserAction(selectedUser.id, 'DELETE_USER');
+                                                        }
+                                                    }}
+                                                    className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-red-900/20 transition-all active:scale-95"
+                                                >
+                                                    ⚠️ DELETE USER & DATA
                                                 </button>
                                             </div>
                                         </div>

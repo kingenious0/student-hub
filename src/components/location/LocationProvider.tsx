@@ -1,10 +1,8 @@
 'use client';
 
 import { useEffect, ReactNode } from 'react';
-import { initializeRadar, startTracking } from '@/lib/location/radar-client';
+import { initializeRadar, startTracking, setUserId, setMetadata } from '@/lib/location/radar-client';
 import { useUser } from '@clerk/nextjs';
-import RadarBase from 'radar-sdk-js';
-const Radar = RadarBase as any;
 
 export default function LocationProvider({ children }: { children: ReactNode }) {
     const { user, isLoaded } = useUser();
@@ -17,11 +15,11 @@ export default function LocationProvider({ children }: { children: ReactNode }) 
     useEffect(() => {
         // 2. Identify User when logged in
         if (isLoaded && user && typeof window !== 'undefined') {
-            Radar.setUserId(user.id);
+            setUserId(user.id);
 
             // Optional: Set metadata if available
             if (user.publicMetadata?.role) {
-                Radar.setMetadata({
+                setMetadata({
                     role: user.publicMetadata.role as string
                 });
             }

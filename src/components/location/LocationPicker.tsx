@@ -1,142 +1,283 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from '@/lib/location/mapbox';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useModal } from '@/context/ModalContext';
+import { MapContainer, TileLayer, Marker, useMap, LayersControl, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for Leaflet default marker icon missing assets in webpack
+const DefaultIcon = L.icon({
+    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+L.Marker.prototype.options.icon = DefaultIcon;
 
 interface LocationPickerProps {
-    onLocationSelect: (coords: { lat: number; lng: number }, address: string) => void;
+    onLocationSelect: (coords: { lat: number; lng: number }, address: string, osmData?: { osmId?: string, placeId?: string }) => void;
     initialLat?: number;
     initialLng?: number;
 }
 
-const DEFAULT_CENTER = [-1.6795, 6.6967]; // AAMUSTED Campus roughly
+const AAMUSTED_CENTER: [number, number] = [6.669, -1.679];
 
-export default function LocationPicker({ onLocationSelect, initialLat, initialLng }: LocationPickerProps) {
-    const mapContainer = useRef<HTMLDivElement>(null);
-    const map = useRef<mapboxgl.Map | null>(null);
-    const [query, setQuery] = useState('');
-    const [suggestions, setSuggestions] = useState<any[]>([]);
-    const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
-        initialLat && initialLng ? { lat: initialLat, lng: initialLng } : null
+// Component to handle map center updates when props change or search happens
+function MapUpdater({ center }: { center: [number, number] }) {
+    const map = useMap();
+    useEffect(() => {
+        map.setView(center, 17);
+    }, [center, map]);
+    return null;
+}
+
+// Component to handle marker drag events and map clicks
+function DraggableMarker({ position, onPositionChange }: { position: [number, number], onPositionChange: (lat: number, lng: number) => void }) {
+    const markerRef = useRef<L.Marker>(null);
+
+    const eventHandlers = useMemo(
+        () => ({
+            dragend() {
+                const marker = markerRef.current;
+                if (marker != null) {
+                    const { lat, lng } = marker.getLatLng();
+                    onPositionChange(lat, lng);
+                }
+            },
+        }),
+        [onPositionChange],
     );
 
-    useEffect(() => {
-        if (map.current || !mapContainer.current) return;
+    useMapEvents({
+        click(e) {
+            onPositionChange(e.latlng.lat, e.latlng.lng);
+        },
+    });
 
-        map.current = new mapboxgl.Map({
-            container: mapContainer.current,
-            style: 'mapbox://styles/mapbox/streets-v12',
-            center: (initialLat && initialLng) ? [initialLng, initialLat] : (DEFAULT_CENTER as [number, number]),
-            zoom: 15,
-        });
+    return (
+        <Marker
+            draggable={true}
+            eventHandlers={eventHandlers}
+            position={position}
+            ref={markerRef}
+        />
+    );
+}
 
-        const marker = new mapboxgl.Marker({ color: '#FF5733', draggable: false })
-            .setLngLat((initialLat && initialLng) ? [initialLng, initialLat] : (DEFAULT_CENTER as [number, number]))
-            .addTo(map.current);
+export default function LocationPicker({ onLocationSelect, initialLat, initialLng }: LocationPickerProps) {
+    const { alert } = useModal();
 
-        // Update marker on move
-        map.current.on('move', () => {
-            if (!map.current) return;
-            const center = map.current.getCenter();
-            marker.setLngLat(center);
-        });
+    // Default to AAMUSTED if no props provided
+    const [selectedLocation, setSelectedLocation] = useState<[number, number]>(
+        (initialLat && initialLng) ? [initialLat, initialLng] : AAMUSTED_CENTER
+    );
 
-        map.current.on('moveend', () => {
-            if (!map.current) return;
-            const center = map.current.getCenter();
+    const [query, setQuery] = useState('');
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [pickedAddress, setPickedAddress] = useState<string | null>(null);
+    const [pickedOsmData, setPickedOsmData] = useState<{ osmId?: string, placeId?: string } | undefined>(undefined);
 
-            // Update internal state
-            setSelectedLocation({ lat: center.lat, lng: center.lng });
-
-            // Reverse geocode to get address (optional, usually good UX)
-            // For now, we'll just return coords, or fetch address if needed
-            // To keep it fast, we might trigger this only on manual confirm.
-        });
-
-    }, [initialLat, initialLng]);
-
-    const handleSearch = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSearch = async (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         if (!query) return;
 
-        const token = mapboxgl.accessToken;
+        // Try to get API Key, but strictly fall back to a public one or warn if critical
+        // Note: For this protocol, we assume NEXT_PUBLIC_LOCATIONIQ_API_KEY is set or we use a demo key (limited).
+        // Using a free tier logic or a placeholder if env is missing.
+        const apiKey = process.env.NEXT_PUBLIC_LOCATIONIQ_API_KEY;
+
+        if (!apiKey) {
+            console.warn("LocationIQ API Key missing. Search might fail.");
+            // Optional: Alert user or fallback
+        }
+
+        setIsSearching(true);
+        setSuggestions([]);
+
         try {
-            const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&proximity=${DEFAULT_CENTER[0]},${DEFAULT_CENTER[1]}&country=GH`);
+            console.log("Searching with LocationIQ for:", query);
+            // LocationIQ Autocomplete API
+            // countrycodes=gh (Ghana)
+            // Protocol V3: Importance Ranking via dedupe=1 and implicit importance sort
+            // Added osm_tag filters could be useful but dedupe helps show unique relevant POIs
+            const url = `https://api.locationiq.com/v1/autocomplete?key=${apiKey}&q=${encodeURIComponent(query)}&countrycodes=gh&limit=5&dedupe=1&format=json`;
+
+            const res = await fetch(url);
+
+            if (!res.ok) {
+                // If 404 or 429, handle gracefully
+                if (res.status === 404) throw new Error("No results found");
+                if (res.status === 429) throw new Error("Rate limit exceeded");
+                throw new Error(`LocationIQ Error: ${res.status}`);
+            }
+
             const data = await res.json();
-            setSuggestions(data.features || []);
+            console.log("LocationIQ results:", data);
+
+            setSuggestions(data); // LocationIQ returns generic array
         } catch (err) {
-            console.error("Geocoding failed", err);
+            console.error("Search failed", err);
+            setSuggestions([]);
+        } finally {
+            setIsSearching(false);
         }
     };
 
-    const selectSuggestion = (feature: any) => {
-        if (!map.current) return;
-        const [lng, lat] = feature.center;
-        map.current.flyTo({ center: [lng, lat], zoom: 17 });
-        setSuggestions([]);
-        setQuery(feature.place_name);
+    const selectSuggestion = (item: any) => {
+        const lat = parseFloat(item.lat);
+        const lon = parseFloat(item.lon);
 
-        // Trigger update
-        setSelectedLocation({ lat, lng });
+        // Update map and marker
+        setSelectedLocation([lat, lon]);
+
+        setQuery(item.display_name);
+        setPickedAddress(item.display_name); // Store specific name
+
+        // Store OSM Data
+        const osmData = {
+            osmId: item.osm_id,
+            placeId: item.place_id
+        };
+        setPickedOsmData(osmData);
+
+        setSuggestions([]);
+    };
+
+    const onMarkerMove = async (lat: number, lng: number) => {
+        setSelectedLocation([lat, lng]);
+
+        // V3 Protocol: Auto-Identify the place name on drag
+        // When dragging, we lose the specific OSM ID from the search, 
+        // unless reverse geocoding returns it (it usually returns osm_id too!)
+        const apiKey = process.env.NEXT_PUBLIC_LOCATIONIQ_API_KEY;
+        if (!apiKey) {
+            setPickedAddress(null); // Fallback if no key
+            setPickedOsmData(undefined);
+            return;
+        }
+
+        try {
+            // Show "Identifying..." or keep null while fetching
+            // We can set a temporary placeholder or specific loading state if desired
+            // For now, let's keep it clean or use the previous one until update
+
+            const url = `https://us1.locationiq.com/v1/reverse?key=${apiKey}&lat=${lat}&lon=${lng}&format=json`;
+            const res = await fetch(url);
+
+            if (res.ok) {
+                const data = await res.json();
+                // Prefer 'display_name' or construct a shorter one
+                // Usually display_name is long, maybe take first 2 parts?
+                // For accuracy, let's keep the full name or a smart substring
+                const name = data.display_name || `Location (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+                setPickedAddress(name);
+
+                // Capture OSM ID from reverse geocode result if available
+                if (data.osm_id) {
+                    setPickedOsmData({
+                        osmId: data.osm_id,
+                        placeId: data.place_id
+                    });
+                } else {
+                    setPickedOsmData(undefined);
+                }
+            } else {
+                setPickedAddress(null);
+                setPickedOsmData(undefined);
+            }
+        } catch (error) {
+            console.error("Reverse geocoding failed", error);
+            setPickedAddress(null);
+            setPickedOsmData(undefined);
+        }
     };
 
     const handleConfirm = async () => {
-        if (!selectedLocation) return;
+        // Prepare final data
+        let address = pickedAddress;
 
-        // Perform one last reverse geocode to get a clean address for the center point
-        let address = query; // Default to search query
-
-        try {
-            const token = mapboxgl.accessToken;
-            const { lng, lat } = selectedLocation;
-            const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}`);
-            const data = await res.json();
-            if (data.features && data.features.length > 0) {
-                address = data.features[0].place_name;
-            }
-        } catch (err) {
-            console.error("Reverse geocode failed", err);
+        // If no specific address from search/reverse-geo, generate simple coordinates
+        if (!address) {
+            address = `Pinned Location (${selectedLocation[0].toFixed(5)}, ${selectedLocation[1].toFixed(5)})`;
         }
 
-        onLocationSelect(selectedLocation, address);
+        onLocationSelect(
+            { lat: selectedLocation[0], lng: selectedLocation[1] },
+            address,
+            pickedOsmData
+        );
     };
 
     return (
         <div className="flex flex-col gap-4 w-full h-[500px] relative">
             {/* Search Bar */}
-            <div className="absolute top-4 left-4 right-4 z-10 flex flex-col gap-2">
+            <div className="absolute top-4 left-4 right-4 z-[1000] flex flex-col gap-2">
                 <form onSubmit={handleSearch} className="flex shadow-lg">
                     <input
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search for your hall or building..."
+                        placeholder="Search for your hall (e.g. Atwima)..."
                         className="flex-1 p-3 rounded-l-lg border-none focus:ring-2 ring-blue-500 bg-white text-black"
                     />
-                    <button type="submit" className="bg-blue-600 text-white px-4 rounded-r-lg font-bold">Search</button>
+                    <button
+                        type="submit"
+                        disabled={isSearching}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-r-lg font-bold disabled:opacity-50 transition-colors flex items-center gap-2"
+                    >
+                        {isSearching ? <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" /> : 'Search'}
+                    </button>
                 </form>
 
                 {suggestions.length > 0 && (
-                    <ul className="bg-white rounded-lg shadow-lg max-h-40 overflow-y-auto text-black">
-                        {suggestions.map((feat) => (
+                    <ul className="bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto text-black border border-gray-200">
+                        {suggestions.map((item, idx) => (
                             <li
-                                key={feat.id}
-                                onClick={() => selectSuggestion(feat)}
-                                className="p-2 hover:bg-gray-100 cursor-pointer border-b text-sm"
+                                key={idx}
+                                onClick={() => selectSuggestion(item)}
+                                className="p-3 hover:bg-gray-100 cursor-pointer border-b text-sm flex flex-col"
                             >
-                                {feat.place_name}
+                                <span className="font-bold text-gray-800">{item.display_name.split(',')[0]}</span>
+                                <span className="text-xs text-gray-500 truncate">{item.display_name}</span>
                             </li>
                         ))}
                     </ul>
                 )}
             </div>
 
-            {/* Map */}
-            <div ref={mapContainer} className="flex-1 rounded-lg overflow-hidden border border-gray-300" />
+            {/* Leaflet Map */}
+            <div className="flex-1 rounded-lg overflow-hidden border border-gray-300 z-0">
+                <MapContainer
+                    center={selectedLocation}
+                    zoom={17}
+                    style={{ height: '100%', width: '100%' }}
+                >
+                    <MapUpdater center={selectedLocation} />
 
-            {/* Center Pin Overlay (if not using marker logic, but we used marker logic) */}
-            {/* Visual cue that the marker is the center */}
+                    <LayersControl position="bottomright">
+                        <LayersControl.BaseLayer checked name="Standard Streets (OSM)">
+                            <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            />
+                        </LayersControl.BaseLayer>
+
+                        <LayersControl.BaseLayer name="Satellite (Esri)">
+                            <TileLayer
+                                attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                            />
+                        </LayersControl.BaseLayer>
+                    </LayersControl>
+
+                    <DraggableMarker position={selectedLocation} onPositionChange={onMarkerMove} />
+                </MapContainer>
+            </div>
 
             <button
                 type="button"

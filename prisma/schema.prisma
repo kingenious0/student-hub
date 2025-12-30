@@ -65,7 +65,7 @@ model PayoutRequest {
   network     String   // MTN, VODA, AT
   
   vendorId    String
-  vendor      User     @relation(fields: [vendorId], references: [id])
+  vendor      User     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   
   createdAt   DateTime @default(now())
   processedAt DateTime?
@@ -105,7 +105,7 @@ model Product {
   hotspot     String?  // e.g., "Bush Canteen", "Balme Library"
   
   vendorId    String
-  vendor      User     @relation(fields: [vendorId], references: [id])
+  vendor      User     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -141,14 +141,14 @@ model Order {
   product         Product     @relation(fields: [productId], references: [id])
   
   studentId       String
-  student         User        @relation("StudentOrders", fields: [studentId], references: [id])
+  student         User        @relation("StudentOrders", fields: [studentId], references: [id], onDelete: Cascade)
   
   vendorId        String
-  vendor          User        @relation("VendorOrders", fields: [vendorId], references: [id])
+  vendor          User        @relation("VendorOrders", fields: [vendorId], references: [id], onDelete: Cascade)
   
   // Runner/delivery info
   runnerId        String?
-  runner          User?       @relation("RunnerDeliveries", fields: [runnerId], references: [id])
+  runner          User?       @relation("RunnerDeliveries", fields: [runnerId], references: [id], onDelete: SetNull)
   runnerEarnings  Float?      // Runner's cut
   runnerXpAwarded Int?        // XP awarded to runner
   
@@ -162,7 +162,7 @@ model Order {
 
   // Verification Codes
   pickupCode      String?     // 6-digit code for Vendor Hand-off
-  releaseKey      String?     // The 6-digit Secure Release Key (e.g., 882-104)
+  releaseKey      String?     // 6-digit Secure Release Key (e.g., 882-104)
 
   // Relation to Mission
   mission         Mission?
@@ -177,10 +177,10 @@ model Mission {
   id          String   @id @default(cuid())
   
   orderId     String   @unique
-  order       Order    @relation(fields: [orderId], references: [id])
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   
   runnerId    String?
-  runner      User?    @relation(fields: [runnerId], references: [id])
+  runner      User?    @relation(fields: [runnerId], references: [id], onDelete: SetNull)
   
   status      String   @default("PENDING") // PENDING, ASSIGNED, PICKED_UP, DELIVERED
   
@@ -217,7 +217,7 @@ model Story {
   videoUrl    String
   thumbnail   String?
   vendorId    String
-  vendor      User     @relation("VendorStories", fields: [vendorId], references: [id])
+  vendor      User     @relation("VendorStories", fields: [vendorId], references: [id], onDelete: Cascade)
   
   views       Int      @default(0)
   likes       Int      @default(0)
