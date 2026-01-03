@@ -7,10 +7,16 @@ import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
     try {
-        const { userId, sessionClaims } = await auth();
+        const { userId: authUserId, sessionClaims } = await auth();
+        const searchParams = request.nextUrl.searchParams;
+        const queryClerkId = searchParams.get('clerkId');
+        const cookieStore = await cookies();
+        const isHybridVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
+
+        // Choose the active ID: either from Clerk Auth or from our Hybrid Sync param (if verified)
+        const userId = authUserId || (isHybridVerified ? queryClerkId : null);
 
         // Check if admin is impersonating another user
-        const cookieStore = await cookies();
         const impersonateUserId = cookieStore.get('IMPERSONATE_USER_ID')?.value;
 
         // If impersonating, check if current user is GOD_MODE or has admin token
