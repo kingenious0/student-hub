@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import Cookies from 'js-cookie';
 import StoriesFeed from '@/components/marketplace/StoriesFeed';
 import NewReleases from '@/components/marketplace/NewReleases';
 import BentoCategories from '@/components/marketplace/BentoCategories';
@@ -29,11 +30,18 @@ interface Product {
 export default function MarketplacePage() {
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [isGhostAdmin, setIsGhostAdmin] = useState(false);
+    const [isHybridAuth, setIsHybridAuth] = useState(false);
 
     useEffect(() => {
         checkSystemStatus();
         const ghost = localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
         if (ghost) setIsGhostAdmin(true);
+
+        // Check for Native Session Sync
+        const hybridToken = Cookies.get('OMNI_IDENTITY_VERIFIED');
+        if (hybridToken === 'TRUE') {
+            setIsHybridAuth(true);
+        }
     }, []);
 
     const checkSystemStatus = async () => {
@@ -75,74 +83,126 @@ export default function MarketplacePage() {
                         </div>
                     ) : (
                         <>
-                            <SignedOut>
-                                {!isGhostAdmin && (
-                                    <div className="bg-surface border border-surface-border rounded-[2.5rem] p-12 text-center relative overflow-hidden">
-                                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
-                                        <h2 className="text-3xl font-black text-foreground mb-6 uppercase tracking-tight relative z-10">
-                                            Authentication Required for Marketplace Access
-                                        </h2>
-                                        <p className="text-foreground/60 mb-8 max-w-md mx-auto relative z-10">
-                                            Please sign in with your student credentials to view the full marketplace, access live drops, and start trading.
-                                        </p>
-                                        <div className="relative z-10">
-                                            <SignInButton mode="modal">
-                                                <button className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black uppercase tracking-wider hover:scale-105 transition-transform shadow-[0_0_20px_rgba(57,255,20,0.3)]">
-                                                    Access Student Hub
-                                                </button>
-                                            </SignInButton>
-                                        </div>
+                            {(isHybridAuth || isGhostAdmin) ? (
+                                <>
+                                    <div className="mb-20">
+                                        <StoriesFeed />
                                     </div>
-                                )}
-                            </SignedOut>
 
-                            <SignedIn>
-                                <div className="mb-20">
-                                    <StoriesFeed />
-                                </div>
-
-                                <div className="mb-24">
-                                    <div className="flex items-end justify-between mb-8">
-                                        <div>
-                                            <SimpleEdit
-                                                id="market_title"
-                                                text="New Releases"
-                                                tag="h2"
-                                                className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2"
-                                            />
-                                            <SimpleEdit
-                                                id="market_subtitle"
-                                                text="Fresh Drops From Campus Vendors"
-                                                tag="p"
-                                                className="text-foreground/40 font-bold tracking-widest uppercase text-sm"
-                                            />
+                                    <div className="mb-24">
+                                        <div className="flex items-end justify-between mb-8">
+                                            <div>
+                                                <SimpleEdit
+                                                    id="market_title"
+                                                    text="New Releases"
+                                                    tag="h2"
+                                                    className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2"
+                                                />
+                                                <SimpleEdit
+                                                    id="market_subtitle"
+                                                    text="Fresh Drops From Campus Vendors"
+                                                    tag="p"
+                                                    className="text-foreground/40 font-bold tracking-widest uppercase text-sm"
+                                                />
+                                            </div>
                                         </div>
+                                        <Suspense fallback={<div className="h-96 bg-surface/50 rounded-3xl animate-pulse" />}>
+                                            <NewReleases />
+                                        </Suspense>
                                     </div>
-                                    <Suspense fallback={<div className="h-96 bg-surface/50 rounded-3xl animate-pulse" />}>
-                                        <NewReleases />
-                                    </Suspense>
-                                </div>
 
-                                <div className="mb-12">
-                                    <div className="flex items-end justify-between mb-8">
-                                        <div>
-                                            <SimpleEdit
-                                                id="explore_title"
-                                                text="Explore"
-                                                tag="h2"
-                                                className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2"
-                                            />
-                                            <SimpleEdit
-                                                id="explore_subtitle"
-                                                text="Browse by Category"
-                                                tag="p"
-                                                className="text-foreground/40 font-bold tracking-widest uppercase text-sm"
-                                            />
+                                    <div className="mb-12">
+                                        <div className="flex items-end justify-between mb-8">
+                                            <div>
+                                                <SimpleEdit
+                                                    id="explore_title"
+                                                    text="Explore"
+                                                    tag="h2"
+                                                    className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2"
+                                                />
+                                                <SimpleEdit
+                                                    id="explore_subtitle"
+                                                    text="Browse by Category"
+                                                    tag="p"
+                                                    className="text-foreground/40 font-bold tracking-widest uppercase text-sm"
+                                                />
+                                            </div>
                                         </div>
+                                        <BentoCategories />
                                     </div>
-                                    <BentoCategories />
-                                </div>
-                            </SignedIn>
+                                </>
+                            ) : (
+                                <>
+                                    <SignedOut>
+                                        {!isGhostAdmin && (
+                                            <div className="bg-surface border border-surface-border rounded-[2.5rem] p-12 text-center relative overflow-hidden">
+                                                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
+                                                <h2 className="text-3xl font-black text-foreground mb-6 uppercase tracking-tight relative z-10">
+                                                    Authentication Required for Marketplace Access
+                                                </h2>
+                                                <p className="text-foreground/60 mb-8 max-w-md mx-auto relative z-10">
+                                                    Please sign in with your student credentials to view the full marketplace, access live drops, and start trading.
+                                                </p>
+                                                <div className="relative z-10">
+                                                    <SignInButton mode="modal">
+                                                        <button className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black uppercase tracking-wider hover:scale-105 transition-transform shadow-[0_0_20px_rgba(57,255,20,0.3)]">
+                                                            Access Student Hub
+                                                        </button>
+                                                    </SignInButton>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </SignedOut>
+
+                                    <SignedIn>
+                                        <div className="mb-20">
+                                            <StoriesFeed />
+                                        </div>
+
+                                        <div className="mb-24">
+                                            <div className="flex items-end justify-between mb-8">
+                                                <div>
+                                                    <SimpleEdit
+                                                        id="market_title"
+                                                        text="New Releases"
+                                                        tag="h2"
+                                                        className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2"
+                                                    />
+                                                    <SimpleEdit
+                                                        id="market_subtitle"
+                                                        text="Fresh Drops From Campus Vendors"
+                                                        tag="p"
+                                                        className="text-foreground/40 font-bold tracking-widest uppercase text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <Suspense fallback={<div className="h-96 bg-surface/50 rounded-3xl animate-pulse" />}>
+                                                <NewReleases />
+                                            </Suspense>
+                                        </div>
+
+                                        <div className="mb-12">
+                                            <div className="flex items-end justify-between mb-8">
+                                                <div>
+                                                    <SimpleEdit
+                                                        id="explore_title"
+                                                        text="Explore"
+                                                        tag="h2"
+                                                        className="text-4xl md:text-5xl font-black text-foreground uppercase tracking-tighter mb-2"
+                                                    />
+                                                    <SimpleEdit
+                                                        id="explore_subtitle"
+                                                        text="Browse by Category"
+                                                        tag="p"
+                                                        className="text-foreground/40 font-bold tracking-widest uppercase text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <BentoCategories />
+                                        </div>
+                                    </SignedIn>
+                                </>
+                            )}
 
                             <SignedOut>
                                 {isGhostAdmin && (

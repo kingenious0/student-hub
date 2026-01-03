@@ -221,60 +221,6 @@ export default function ProductDetailsPage() {
                     </div>
                 </div>
 
-                {/* FREQUENTLY BOUGHT TOGETHER (Amazon Style Logic) */}
-                <div className="mb-12 border-t border-surface-border pt-8">
-                    <h3 className="text-xl font-black text-foreground uppercase tracking-tight mb-6">Frequently Bought Together</h3>
-                    <div className="bg-surface border border-surface-border rounded-[2rem] p-6 lg:p-8">
-                        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
-                            {/* Bundle Visual */}
-                            <div className="flex items-center gap-2 overflow-x-auto pb-4 md:pb-0 no-scrollbar w-full md:w-auto justify-center">
-                                <div className="w-24 h-24 md:w-32 md:h-32 bg-background rounded-2xl flex-shrink-0 border border-surface-border overflow-hidden">
-                                    {product.imageUrl ? <img src={product.imageUrl} className="w-full h-full object-cover" /> : <div className="text-2xl p-4">📦</div>}
-                                </div>
-                                <div className="text-2xl text-foreground/40 font-black">+</div>
-                                <div className="w-24 h-24 md:w-32 md:h-32 bg-background rounded-2xl flex-shrink-0 border border-surface-border flex items-center justify-center relative">
-                                    <div className="absolute top-0 right-0 bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-bl-lg">PROMO</div>
-                                    <span className="text-4xl">🥤</span>
-                                </div>
-                                <div className="text-2xl text-foreground/40 font-black">+</div>
-                                <div className="w-24 h-24 md:w-32 md:h-32 bg-background rounded-2xl flex-shrink-0 border border-surface-border flex items-center justify-center">
-                                    <span className="text-4xl">🍟</span>
-                                </div>
-                            </div>
-
-                            {/* Bundle Action */}
-                            <div className="flex-1 w-full md:w-auto text-center md:text-left">
-                                <div className="text-[10px] font-black uppercase text-primary tracking-[0.2em] mb-2">Campus Bundle Deal</div>
-                                <div className="text-sm font-bold text-foreground/60 mb-4 space-y-1">
-                                    <p>This Item: <span className="text-foreground">{product.title}</span></p>
-                                    <p>+ <span className="text-foreground">Ener-G Drink (500ml)</span></p>
-                                    <p>+ <span className="text-foreground">Spicy Yam Chips</span></p>
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row items-center gap-4">
-                                    <div className="text-left">
-                                        <div className="text-xs line-through text-foreground/40 font-bold">Total: ₵{(product.price + 35).toFixed(2)}</div>
-                                        <div className="text-3xl font-black text-foreground tracking-tighter">
-                                            ₵{(product.price + 30).toFixed(2)} <span className="text-sm text-green-500 font-bold ml-1">(-15%)</span>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            if (isGhostAdmin) {
-                                                alert('🛡️ ADMIN MODE ACTIVE\n\nBuying is disabled in Ghost Admin mode.');
-                                                return;
-                                            }
-                                            // Add bundle to cart logic here
-                                        }}
-                                        className="flex-1 w-full sm:w-auto px-8 py-4 bg-[#39FF14] text-black rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-green-500/20"
-                                    >
-                                        {isGhostAdmin ? '👁️ ADMIN VIEWING' : 'Add All 3 to Cart'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Desktop Buy Button */}
                 <SignedIn>
