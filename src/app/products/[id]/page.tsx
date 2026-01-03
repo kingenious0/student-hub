@@ -31,12 +31,19 @@ export default function ProductDetailsPage() {
     const [loading, setLoading] = useState(true);
     const [showFAB, setShowFAB] = useState(false);
     const [isGhostAdmin, setIsGhostAdmin] = useState(false);
+    const [isHybridAuth, setIsHybridAuth] = useState(false);
 
     useEffect(() => {
         fetchProduct();
         // Check if admin is viewing
         const ghost = localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
         if (ghost) setIsGhostAdmin(true);
+
+        // Check for Native Session Sync manually (no external deps)
+        const isVerified = document.cookie.split('; ').some(c => c.startsWith('OMNI_IDENTITY_VERIFIED=TRUE'));
+        if (isVerified) {
+            setIsHybridAuth(true);
+        }
     }, [params.id]);
 
     useEffect(() => {
@@ -222,17 +229,10 @@ export default function ProductDetailsPage() {
                 </div>
 
 
-                {/* Desktop Buy Button */}
-                <SignedIn>
-                    <div className="hidden md:block">
-                        {isGhostAdmin ? (
-                            <button
-                                disabled
-                                className="w-full py-6 bg-red-500/10 border-2 border-red-500/30 text-red-500 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] cursor-not-allowed"
-                            >
-                                👁️ ADMIN MODE • BUYING DISABLED
-                            </button>
-                        ) : user?.id === product.vendor.clerkId ? (
+                {/* Action Buttons (Hybrid-Aware) */}
+                {(isHybridAuth || isGhostAdmin) ? (
+                    <div className="md:block">
+                        {(product.vendor.clerkId === user?.id && !isGhostAdmin) ? (
                             <button
                                 disabled
                                 className="w-full py-6 bg-surface border border-surface-border text-foreground/40 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] cursor-not-allowed"
@@ -248,34 +248,62 @@ export default function ProductDetailsPage() {
                             </button>
                         )}
                     </div>
-                </SignedIn>
+                ) : (
+                    <>
+                        {/* Desktop Buy Button */}
+                        <SignedIn>
+                            <div className="hidden md:block">
+                                {isGhostAdmin ? (
+                                    <button
+                                        disabled
+                                        className="w-full py-6 bg-red-500/10 border-2 border-red-500/30 text-red-500 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] cursor-not-allowed"
+                                    >
+                                        👁️ ADMIN MODE • BUYING DISABLED
+                                    </button>
+                                ) : user?.id === product.vendor.clerkId ? (
+                                    <button
+                                        disabled
+                                        className="w-full py-6 bg-surface border border-surface-border text-foreground/40 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] cursor-not-allowed"
+                                    >
+                                        You Own This Item
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleBuyNow}
+                                        className="w-full py-6 bg-primary hover:brightness-110 text-primary-foreground rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 omni-glow-strong"
+                                    >
+                                        Buy Now - ₵{product.price.toFixed(2)}
+                                    </button>
+                                )}
+                            </div>
+                        </SignedIn>
 
-                <SignedOut>
-                    <div className="bento-card text-center">
-                        <h3 className="text-xl font-black text-foreground mb-4 uppercase">
-                            Sign In to Purchase
-                        </h3>
-                        <SignInButton mode="modal">
-                            <button className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black uppercase tracking-widest hover:scale-105 transition-all">
-                                Sign In
-                            </button>
-                        </SignInButton>
-                    </div>
-                </SignedOut>
+                        <SignedOut>
+                            <div className="bento-card text-center">
+                                <h3 className="text-xl font-black text-foreground mb-4 uppercase">
+                                    Sign In to Purchase
+                                </h3>
+                                <SignInButton mode="modal">
+                                    <button className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black uppercase tracking-widest hover:scale-105 transition-all">
+                                        Sign In
+                                    </button>
+                                </SignInButton>
+                            </div>
+                        </SignedOut>
+                    </>
+                )}
             </div>
 
             {/* Floating Action Button (Mobile) */}
-            <SignedIn>
-                {!isGhostAdmin && user?.id !== product.vendor.clerkId && (
-                    <button
-                        onClick={handleBuyNow}
-                        className={`fab md:hidden ${showFAB ? 'scale-100' : 'scale-0'} transition-transform duration-300`}
-                        style={{ width: '4rem', height: '4rem', fontSize: '1.5rem' }}
-                    >
-                        🛒
-                    </button>
-                )}
-            </SignedIn>
+            {(isHybridAuth || isGhostAdmin || (user && user.id !== product.vendor.clerkId)) && (
+                <button
+                    onClick={handleBuyNow}
+                    className={`fab md:hidden ${showFAB ? 'scale-100' : 'scale-0'} transition-transform duration-300`}
+                    style={{ width: '4rem', height: '4rem', fontSize: '1.5rem' }}
+                >
+                    🛒
+                </button>
+            )}
         </div >
     );
 }
