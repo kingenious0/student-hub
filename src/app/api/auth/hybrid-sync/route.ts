@@ -13,8 +13,16 @@ export async function GET(req: NextRequest) {
 
     try {
         // 1. Verify the Native Token
+        // In this architecture, the token is passed from Clerk-Expo to Clerk-NextJS
+        // We Use the secret key to verify the session
         const client = await clerkClient();
-        const sessionToken = await client.verifyToken(token);
+
+        // Use the verifyToken helper from @clerk/backend (or imported via nextjs)
+        const { verifyToken } = await import("@clerk/backend");
+        const sessionToken = await verifyToken(token, {
+            secretKey: process.env.CLERK_SECRET_KEY,
+        });
+
         const clerkId = sessionToken.sub as string;
 
         if (!clerkId) throw new Error('Invalid Token');
@@ -38,7 +46,7 @@ export async function GET(req: NextRequest) {
 
         // Critical: Set the identity cookie so the web app trusts this native user
         response.cookies.set('OMNI_IDENTITY_VERIFIED', 'TRUE', {
-            httpOnly: true,
+            httpOnly: false,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 60 * 60 * 24 * 7, // 7 days
