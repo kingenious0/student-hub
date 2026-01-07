@@ -6,6 +6,7 @@ import StoriesFeed from '@/components/marketplace/StoriesFeed';
 import MaintenanceGuard from '@/components/admin/MaintenanceGuard';
 import HorizontalHubs from '@/components/marketplace/HorizontalHubs';
 import SmartFeed from '@/components/marketplace/SmartFeed';
+import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -82,6 +83,7 @@ export default function MarketplacePage() {
                                         OMNI MARKET <span className="text-primary">•</span> DISCOVERY
                                     </h1>
                                 </div>
+                                <ThemeSwitcher />
                             </div>
 
                             {/* Campus Pulse (Stories) */}
