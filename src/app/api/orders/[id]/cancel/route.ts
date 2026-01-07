@@ -9,19 +9,42 @@ export async function POST(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { userId } = await auth();
+
+        let { userId } = await auth();
+        let user: any = null;
+
         const { id } = await params;
 
-        if (!userId) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        // 1. Standard Web Auth
+        if (userId) {
+            user = await prisma.user.findUnique({
+                where: { clerkId: userId },
+            });
+        }
+        // 2. Hybrid Mobile Auth Fallback
+        else {
+            try {
+                const { cookies } = await import('next/headers');
+                const cookieStore = await cookies();
+                const isVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
+                const hybridClerkId = cookieStore.get('OMNI_HYBRID_SYNCED')?.value;
+
+                if (isVerified && hybridClerkId) {
+                    user = await prisma.user.findUnique({
+                        where: { clerkId: hybridClerkId }
+                    });
+
+                    if (user) {
+                        userId = hybridClerkId;
+                    }
+                }
+            } catch (e) {
+                console.error('Hybrid auth fallback failed:', e);
+            }
         }
 
-        const user = await prisma.user.findUnique({
-            where: { clerkId: userId },
-        });
-
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        if (!userId || !user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const order = await prisma.order.findUnique({

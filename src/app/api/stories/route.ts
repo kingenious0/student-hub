@@ -41,21 +41,41 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
     try {
-        const { userId } = await auth();
+        let { userId } = await auth();
+        let user: any = null;
 
-        if (!userId) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
+        // 1. Standard Web Auth
+        if (userId) {
+            user = await ensureUserExists();
+        }
+        // 2. Hybrid Mobile Auth Fallback
+        else {
+            try {
+                const { cookies } = await import('next/headers');
+                const cookieStore = await cookies();
+                const isVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
+                const hybridClerkId = cookieStore.get('OMNI_HYBRID_SYNCED')?.value;
+
+                if (isVerified && hybridClerkId) {
+                    console.log('📱 Hybrid Auth detected for Story Upload:', hybridClerkId);
+                    user = await prisma.user.findUnique({
+                        where: { clerkId: hybridClerkId }
+                    });
+
+                    // Allow proceeding if found
+                    if (user) {
+                        userId = hybridClerkId;
+                    }
+                }
+            } catch (e) {
+                console.error('Hybrid auth fallback failed:', e);
+            }
         }
 
-        const user = await ensureUserExists();
-
-        if (!user) {
+        if (!userId || !user) {
             return NextResponse.json(
-                { error: 'User not found' },
-                { status: 404 }
+                { error: 'Unauthorized: Session missing' },
+                { status: 401 }
             );
         }
 
