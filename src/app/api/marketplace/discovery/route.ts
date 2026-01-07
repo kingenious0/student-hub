@@ -37,7 +37,7 @@ const getDiscoveryFeed = unstable_cache(
             ? categories[Math.floor(Math.random() * categories.length)]
             : null;
 
-        const recommended = await prisma.product.findMany({
+        let recommended = await prisma.product.findMany({
             take: 10,
             where: randomCategory ? { categoryId: randomCategory.id } : {}, // Filter by random category
             orderBy: {
@@ -51,6 +51,18 @@ const getDiscoveryFeed = unstable_cache(
                 category: true
             }
         });
+
+        // FALLBACK: If the random category turned out to be empty, fetch from ALL categories
+        if (recommended.length === 0) {
+            recommended = await prisma.product.findMany({
+                take: 10,
+                orderBy: { createdAt: 'desc' }, // Just get latest
+                include: {
+                    vendor: { select: { id: true, name: true, currentHotspot: true, shopName: true } },
+                    category: true
+                }
+            });
+        }
 
         return {
             newArrivals,
