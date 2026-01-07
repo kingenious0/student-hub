@@ -7,7 +7,23 @@ import { prisma } from '@/lib/db/prisma';
 
 export async function GET() {
     try {
-        const { userId } = await auth();
+        const { userId: clerkId } = await auth();
+        let userId = clerkId;
+
+        // Hybrid Auth Fallback for WebViews
+        if (!userId) {
+            try {
+                const { cookies } = await import('next/headers');
+                const cookieStore = await cookies();
+                const isVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
+                const hybridClerkId = cookieStore.get('OMNI_HYBRID_SYNCED')?.value;
+                if (isVerified && hybridClerkId) {
+                    userId = hybridClerkId;
+                }
+            } catch (e) {
+                console.error('Hybrid auth fallback failed:', e);
+            }
+        }
 
         if (!userId) {
             return NextResponse.json(
