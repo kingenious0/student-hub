@@ -55,6 +55,10 @@ export async function GET() {
                 fulfillmentType: true,
                 releaseKey: true,
                 createdAt: true,
+                paidAt: true,
+                pickedUpAt: true,
+                deliveredAt: true,
+                updatedAt: true,
                 product: {
                     select: {
                         title: true,
