@@ -8,41 +8,37 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
-        const { userId: clerkId } = await auth();
-        let userId = clerkId;
+        // Sync user and get their DB record
+        const { ensureUserExists } = await import('@/lib/auth/sync');
+        let user = await ensureUserExists();
 
         // Hybrid Auth Fallback for WebViews
-        if (!userId) {
+        if (!user) {
             try {
                 const { cookies } = await import('next/headers');
                 const cookieStore = await cookies();
                 const isVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
                 const hybridClerkId = cookieStore.get('OMNI_HYBRID_SYNCED')?.value;
+
                 if (isVerified && hybridClerkId) {
-                    userId = hybridClerkId;
+                    user = await prisma.user.findUnique({
+                        where: { clerkId: hybridClerkId },
+                    });
                 }
             } catch (e) {
                 console.error('Hybrid auth fallback failed:', e);
             }
         }
 
-        if (!userId) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { clerkId: userId },
-        });
-
         if (!user) {
+            console.log('❌ /api/orders: User not found/synced.');
             return NextResponse.json(
                 { error: 'User not found' },
                 { status: 404 }
             );
         }
+
+        console.log(`✅ /api/orders: Found user ${user.id} (${user.email}). Fetching orders...`);
 
         const orders = await prisma.order.findMany({
             where: {
@@ -59,7 +55,6 @@ export async function GET() {
                 paidAt: true,
                 pickedUpAt: true,
                 deliveredAt: true,
-                updatedAt: true,
                 product: {
                     select: {
                         title: true,
@@ -78,6 +73,7 @@ export async function GET() {
             },
         });
 
+        console.log(`📦 /api/orders: Found ${orders.length} orders for user ${user.id}`);
         return NextResponse.json({ success: true, orders });
     } catch (error) {
         console.error('Fetch orders error:', error);

@@ -281,6 +281,7 @@ const EvidenceVault = ({ order, onClose }: { order: Order, onClose: () => void }
 // --- MAIN PAGE ---
 export default function OrdersPage() {
     const { user } = useUser();
+    const [error, setError] = useState<string | null>(null);
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'ACTIVE' | 'ARCHIVE'>('ACTIVE');
@@ -290,8 +291,13 @@ export default function OrdersPage() {
 
     const fetchOrders = useCallback(async (silent = false) => {
         if (!silent) setLoading(true);
+        setError(null);
         try {
             const response = await fetch('/api/orders', { cache: 'no-store' });
+            if (!response.ok) {
+                if (response.status === 404) throw new Error('User not found. Try re-login.');
+                throw new Error('Server error');
+            }
             const data = await response.json();
             if (data.success) {
                 setOrders(data.orders);
@@ -303,9 +309,12 @@ export default function OrdersPage() {
                         hasAutoExpanded.current = true;
                     }
                 }
+            } else {
+                setError(data.error || 'Failed to load orders');
             }
         } catch (error) {
             console.error('Failed to fetch orders:', error);
+            setError(error instanceof Error ? error.message : 'Connection failed');
         } finally {
             if (!silent) setLoading(false);
         }
@@ -379,7 +388,16 @@ export default function OrdersPage() {
             </div>
 
             <div className="max-w-md mx-auto">
-                {loading ? (
+                {error ? (
+                    <div className="flex flex-col items-center justify-center p-8 bg-surface border border-red-500/20 rounded-3xl mt-8 text-center">
+                        <div className="text-4xl mb-4">⚠️</div>
+                        <h3 className="text-red-500 font-black uppercase tracking-widest mb-2">Signal Lost</h3>
+                        <p className="text-zinc-500 text-xs mb-4">{error}</p>
+                        <button onClick={() => fetchOrders()} className="px-6 py-2 bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:opacity-90">
+                            Retry Uplink
+                        </button>
+                    </div>
+                ) : loading ? (
                     <div className="flex justify-center p-12">
                         <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
                     </div>
