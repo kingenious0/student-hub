@@ -67,7 +67,7 @@ const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCan
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="relative w-full bg-white dark:bg-[#0A0A0A] border border-zinc-200 dark:border-primary/30 rounded-[2rem] overflow-hidden shadow-xl dark:shadow-[0_0_40px_rgba(57,255,20,0.1)] mb-8"
+            className="relative w-full bg-surface border border-surface-border rounded-[2rem] overflow-hidden shadow-xl dark:shadow-[0_0_40px_rgba(57,255,20,0.1)] mb-8"
         >
             {/* Live Map / Visual Header */}
             <div className="h-48 w-full bg-zinc-100 dark:bg-zinc-900 relative overflow-hidden group">
@@ -104,13 +104,13 @@ const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCan
                         </div>
                         <div>
                             <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Current Status</div>
-                            <div className="text-lg font-black text-zinc-900 dark:text-white uppercase tracking-tight">{getStatusLabel(order.status, order.fulfillmentType || 'PICKUP')}</div>
+                            <div className="text-lg font-black text-foreground uppercase tracking-tight">{getStatusLabel(order.status, order.fulfillmentType || 'PICKUP')}</div>
                         </div>
                     </div>
                     {/* Amount */}
                     <div className="text-right">
                         <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Total Value</div>
-                        <div className="text-xl font-black text-zinc-900 dark:text-white">₵{order.amount.toFixed(2)}</div>
+                        <div className="text-xl font-black text-foreground">₵{order.amount.toFixed(2)}</div>
                     </div>
                 </div>
 
@@ -120,7 +120,7 @@ const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCan
                         <div className="bg-white dark:bg-[#050505] rounded-xl p-4 flex items-center justify-between border border-zinc-200 dark:border-zinc-800/50">
                             <div>
                                 <div className="text-[9px] text-primary font-black uppercase tracking-[0.2em] mb-1">Secure Release Key</div>
-                                <div className="text-3xl font-mono font-black text-zinc-900 dark:text-white tracking-[0.15em] tabular-nums">
+                                <div className="text-3xl font-mono font-black text-foreground tracking-[0.15em] tabular-nums">
                                     {order.releaseKey.slice(0, 3)}-{order.releaseKey.slice(3)}
                                 </div>
                             </div>
@@ -162,7 +162,7 @@ const CondensedOrderStrip = ({ order, onClick }: { order: Order, onClick: () => 
         <motion.div
             layoutId={`order-strip-${order.id}`}
             onClick={onClick}
-            className="group w-full bg-white dark:bg-zinc-900/50 backdrop-blur-md border border-zinc-200 dark:border-white/5 hover:border-primary/20 p-4 rounded-xl flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] mb-3 shadow-sm"
+            className="group w-full bg-surface backdrop-blur-md border border-surface-border hover:border-primary/20 p-4 rounded-xl flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] mb-3 shadow-sm"
         >
             <div className="flex items-center gap-4">
                 {/* Tiny Image Thumbnail */}
@@ -173,7 +173,7 @@ const CondensedOrderStrip = ({ order, onClick }: { order: Order, onClick: () => 
 
                 {/* Info */}
                 <div>
-                    <h3 className="font-bold text-zinc-900 dark:text-white text-sm uppercase tracking-tight line-clamp-1 group-hover:text-primary transition-colors">{order.product.title}</h3>
+                    <h3 className="font-bold text-foreground text-sm uppercase tracking-tight line-clamp-1 group-hover:text-primary transition-colors">{order.product.title}</h3>
                     <div className="flex items-center gap-2">
                         <span className={`w-1.5 h-1.5 rounded-full ${order.status === 'READY' ? 'bg-primary animate-pulse' : 'bg-zinc-400 dark:bg-zinc-600'}`}></span>
                         <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">{getStatusLabel(order.status, order.fulfillmentType || 'PICKUP')}</span>
@@ -196,7 +196,7 @@ const LedgerRow = ({ order, onClick }: { order: Order, onClick: () => void }) =>
     return (
         <div
             onClick={onClick}
-            className="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors cursor-pointer group"
+            className="flex items-center justify-between p-4 border-b border-surface-border hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors cursor-pointer group"
         >
             <div className="flex items-center gap-4">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs ${isSuccess ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-500'}`}>
@@ -204,11 +204,11 @@ const LedgerRow = ({ order, onClick }: { order: Order, onClick: () => void }) =>
                 </div>
                 <div>
                     <div className="font-mono text-xs text-zinc-500">#{order.id.slice(0, 8).toUpperCase()}</div>
-                    <div className="text-sm font-bold text-zinc-900 dark:text-white line-clamp-1">{order.product.title}</div>
+                    <div className="text-sm font-bold text-foreground line-clamp-1">{order.product.title}</div>
                 </div>
             </div>
             <div className="text-right">
-                <div className="font-mono text-sm text-zinc-900 dark:text-white">₵{order.amount.toFixed(2)}</div>
+                <div className="font-mono text-sm text-foreground">₵{order.amount.toFixed(2)}</div>
                 <div className="text-[10px] text-zinc-500 uppercase tracking-wider">
                     {new Date(order.createdAt).toLocaleDateString()}
                 </div>
@@ -232,12 +232,12 @@ const EvidenceVault = ({ order, onClose }: { order: Order, onClose: () => void }
             <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative w-full max-w-lg bg-white dark:bg-[#0A0A0A] border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-2xl"
+                className="relative w-full max-w-lg bg-surface border border-surface-border rounded-3xl overflow-hidden shadow-2xl"
             >
                 {/* Header */}
                 <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 flex justify-between items-start border-b border-zinc-200 dark:border-zinc-800">
                     <div>
-                        <h2 className="text-xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">Acquisition Archive</h2>
+                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Acquisition Archive</h2>
                         <p className="text-xs text-zinc-500 font-mono mt-1">ID: #{order.id.toUpperCase()}</p>
                     </div>
                     <button onClick={onClose} className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 flex items-center justify-center hover:bg-zinc-300 dark:hover:bg-zinc-700">✕</button>
@@ -256,7 +256,7 @@ const EvidenceVault = ({ order, onClose }: { order: Order, onClose: () => void }
                         {timeline.map((event, i) => (
                             <div key={i} className={`relative pl-6 ${event.done ? 'opacity-100' : 'opacity-30'}`}>
                                 <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 ${event.done ? 'bg-black dark:bg-white border-primary' : 'bg-zinc-200 dark:bg-zinc-900 border-zinc-400 dark:border-zinc-700'}`}></div>
-                                <div className="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wide">{event.label}</div>
+                                <div className="text-sm font-bold text-foreground uppercase tracking-wide">{event.label}</div>
                                 {event.time && <div className="text-xs text-zinc-500 font-mono mt-0.5">{new Date(event.time).toLocaleString()}</div>}
                             </div>
                         ))}
@@ -357,12 +357,12 @@ export default function OrdersPage() {
     });
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#050505] text-zinc-900 dark:text-white pt-32 pb-24 px-4 sm:px-6">
+        <div className="min-h-screen bg-background text-foreground pt-32 pb-24 px-4 sm:px-6">
 
             {/* Header */}
             <div className="max-w-md mx-auto mb-8 text-center">
-                <h1 className="text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white mb-2">Order Command Center</h1>
-                <div className="flex bg-white dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-white/5 shadow-sm">
+                <h1 className="text-2xl font-black uppercase tracking-tight text-foreground mb-2">Order Command Center</h1>
+                <div className="flex bg-surface p-1 rounded-xl border border-surface-border shadow-sm">
                     <button
                         onClick={() => setActiveTab('ACTIVE')}
                         className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeTab === 'ACTIVE' ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}
@@ -430,7 +430,7 @@ export default function OrdersPage() {
 
                         {/* ARCHIVE TAB */}
                         {activeTab === 'ARCHIVE' && (
-                            <div className="bg-white dark:bg-[#0A0A0A] border border-zinc-200 dark:border-white/5 rounded-3xl overflow-hidden min-h-[50vh] shadow-sm">
+                            <div className="bg-surface border border-surface-border rounded-3xl overflow-hidden min-h-[50vh] shadow-sm">
                                 {historyOrders.length === 0 ? (
                                     <div className="text-center py-20 text-zinc-500">
                                         <p className="text-xs font-black uppercase">Ledger is Empty</p>
