@@ -218,12 +218,53 @@ const LedgerRow = ({ order, onClick }: { order: Order, onClick: () => void }) =>
 
 // 4. Evidence Vault (Timeline Modal)
 const EvidenceVault = ({ order, onClose }: { order: Order, onClose: () => void }) => {
+    const [copied, setCopied] = useState(false);
+
     const timeline = [
         { label: 'Initialized', time: order.createdAt, done: true },
         { label: 'Funds Secured', time: order.paidAt, done: !!order.paidAt },
         { label: 'Picked Up', time: order.pickedUpAt, done: !!order.pickedUpAt },
         { label: 'Digital Handshake', time: order.deliveredAt || (order.status === 'COMPLETED' ? order.updatedAt : null), done: order.status === 'COMPLETED' },
     ];
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(order.id);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleDownload = () => {
+        const receiptContent = `
+OMNI MARKETPLACE - DIGITAL RECEIPT
+----------------------------------
+Order ID:      ${order.id}
+Date:          ${new Date(order.createdAt).toLocaleString()}
+Status:        ${order.status}
+----------------------------------
+Item:          ${order.product.title}
+Vendor:        ${order.vendor.name || 'Unknown'}
+Amount:        ₵${order.amount.toFixed(2)}
+----------------------------------
+TIMELINE:
+- Created:     ${new Date(order.createdAt).toLocaleString()}
+${order.paidAt ? `- Paid:        ${new Date(order.paidAt).toLocaleString()}` : ''}
+${order.pickedUpAt ? `- Picked Up:   ${new Date(order.pickedUpAt).toLocaleString()}` : ''}
+${order.deliveredAt ? `- Delivered:   ${new Date(order.deliveredAt).toLocaleString()}` : ''}
+----------------------------------
+Thank you for using Omni.
+Live. Learn. Earn.
+        `.trim();
+
+        const blob = new Blob([receiptContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `OMNI-Receipt-${order.id.slice(0, 8)}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -263,10 +304,16 @@ const EvidenceVault = ({ order, onClose }: { order: Order, onClose: () => void }
 
                     {/* Footer Actions */}
                     <div className="mt-10 pt-6 border-t border-zinc-200 dark:border-zinc-800 flex gap-4">
-                        <button className="flex-1 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-black uppercase text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors">
-                            Copy Evidence ID
+                        <button
+                            onClick={handleCopy}
+                            className="flex-1 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-black uppercase text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                        >
+                            {copied ? '✅ Copied!' : 'Copy Evidence ID'}
                         </button>
-                        <button className="flex-1 py-3 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-black uppercase hover:opacity-90 transition-colors">
+                        <button
+                            onClick={handleDownload}
+                            className="flex-1 py-3 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-black uppercase hover:opacity-90 transition-colors"
+                        >
                             Download Receipt
                         </button>
                     </div>
