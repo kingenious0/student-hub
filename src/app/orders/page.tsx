@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useAdmin } from '@/context/AdminContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import OmniDialog from '@/components/ui/OmniDialog';
 
 // --- Interfaces ---
 interface Order {
@@ -142,14 +143,12 @@ const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCan
                     <button className="flex-1 py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-xs rounded-xl hover:opacity-90 transition-opacity">
                         Message Partner
                     </button>
-                    {order.status !== 'PICKED_UP' && (
-                        <button
-                            onClick={() => handleCancel(order.id)}
-                            className="px-6 py-4 bg-red-500/10 text-red-500 font-black uppercase tracking-widest text-xs rounded-xl hover:bg-red-500/20 transition-colors border border-red-500/20"
-                        >
-                            Abort
-                        </button>
-                    )}
+                    <button
+                        onClick={() => handleCancel(order.id)}
+                        className="px-6 py-4 bg-red-500/10 text-red-500 font-black uppercase tracking-widest text-xs rounded-xl hover:bg-red-500/20 transition-colors border border-red-500/20"
+                    >
+                        Abort
+                    </button>
                 </div>
             </div>
         </motion.div>
@@ -289,6 +288,29 @@ export default function OrdersPage() {
     const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
     const hasAutoExpanded = useRef(false);
 
+    // Dialog State
+    const [cancelDialogState, setCancelDialogState] = useState<{ isOpen: boolean; orderId: string | null }>({
+        isOpen: false,
+        orderId: null
+    });
+
+    const executeCancellation = async () => {
+        const orderId = cancelDialogState.orderId;
+        if (!orderId) return;
+
+        try {
+            const res = await fetch(`/api/orders/${orderId}/cancel`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                fetchOrders(true);
+            } else {
+                alert(data.error || 'Failed to abort');
+            }
+        } catch (error) {
+            alert('Error aborting mission');
+        }
+    };
+
     const fetchOrders = useCallback(async (silent = false) => {
         if (!silent) setLoading(true);
         setError(null);
@@ -336,19 +358,8 @@ export default function OrdersPage() {
         };
     }, [fetchOrders]);
 
-    const handleCancelOrder = async (orderId: string) => {
-        if (!confirm('This will abort the current protocol. Confirm?')) return;
-        try {
-            const res = await fetch(`/api/orders/${orderId}/cancel`, { method: 'POST' });
-            const data = await res.json();
-            if (data.success) {
-                fetchOrders(true);
-            } else {
-                alert(data.error || 'Failed to abort');
-            }
-        } catch (error) {
-            alert('Error aborting mission');
-        }
+    const handleCancelOrder = (orderId: string) => {
+        setCancelDialogState({ isOpen: true, orderId });
     };
 
     const activeOrders = orders.filter(o => !['COMPLETED', 'CANCELLED', 'REFUNDED'].includes(o.status));
@@ -475,6 +486,17 @@ export default function OrdersPage() {
                     onClose={() => setSelectedHistoryOrder(null)}
                 />
             )}
+
+            <OmniDialog
+                isOpen={cancelDialogState.isOpen}
+                onClose={() => setCancelDialogState({ ...cancelDialogState, isOpen: false })}
+                onConfirm={executeCancellation}
+                title="Abort Protocol?"
+                message="This will immediately cancel the active order and refund funds to the student's escrow. This action cannot be undone."
+                confirmLabel="Abort Mission"
+                cancelLabel="Resume"
+                variant="destructive"
+            />
         </div>
     );
 }
