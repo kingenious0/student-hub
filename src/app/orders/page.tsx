@@ -216,9 +216,14 @@ const LedgerRow = ({ order, onClick }: { order: Order, onClick: () => void }) =>
     );
 };
 
+import { toPng } from 'html-to-image';
+
 // 4. Evidence Vault (Timeline Modal)
 const EvidenceVault = ({ order, onClose }: { order: Order, onClose: () => void }) => {
     const [copied, setCopied] = useState(false);
+    const [showFormats, setShowFormats] = useState(false);
+    const [generating, setGenerating] = useState(false);
+    const receiptRef = useRef<HTMLDivElement>(null);
 
     const timeline = [
         { label: 'Initialized', time: order.createdAt, done: true },
@@ -233,7 +238,7 @@ const EvidenceVault = ({ order, onClose }: { order: Order, onClose: () => void }
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleDownload = () => {
+    const handleDownloadTxt = () => {
         const receiptContent = `
 OMNI MARKETPLACE - DIGITAL RECEIPT
 ----------------------------------
@@ -264,6 +269,27 @@ Live. Learn. Earn.
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+        setShowFormats(false);
+    };
+
+    const handleDownloadImage = async () => {
+        if (receiptRef.current) {
+            setGenerating(true);
+            try {
+                // skipFonts: true avoids CORS SecurityError when reading external stylesheets
+                const dataUrl = await toPng(receiptRef.current, { cacheBust: true, pixelRatio: 3, skipFonts: true });
+                const link = document.createElement('a');
+                link.download = `OMNI-Receipt-${order.id.slice(0, 8)}.png`;
+                link.href = dataUrl;
+                link.click();
+            } catch (err) {
+                console.error('Failed to generate receipt image', err);
+                alert('Could not generate image. Try TXT version.');
+            } finally {
+                setGenerating(false);
+                setShowFormats(false);
+            }
+        }
     };
 
     return (
@@ -303,19 +329,100 @@ Live. Learn. Earn.
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="mt-10 pt-6 border-t border-zinc-200 dark:border-zinc-800 flex gap-4">
-                        <button
-                            onClick={handleCopy}
-                            className="flex-1 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-black uppercase text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
-                        >
-                            {copied ? '✅ Copied!' : 'Copy Evidence ID'}
-                        </button>
-                        <button
-                            onClick={handleDownload}
-                            className="flex-1 py-3 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-black uppercase hover:opacity-90 transition-colors"
-                        >
-                            Download Receipt
-                        </button>
+                    <div className="mt-10 pt-6 border-t border-zinc-200 dark:border-zinc-800 flex gap-4 h-16 items-center">
+                        {!showFormats ? (
+                            <>
+                                <button
+                                    onClick={handleCopy}
+                                    className="flex-1 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-black uppercase text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                                >
+                                    {copied ? '✅ Copied!' : 'Copy Evidence ID'}
+                                </button>
+                                <button
+                                    onClick={() => setShowFormats(true)}
+                                    className="flex-1 py-3 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-black uppercase hover:opacity-90 transition-colors"
+                                >
+                                    Download Receipt
+                                </button>
+                            </>
+                        ) : (
+                            <div className="flex-1 flex gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                <button
+                                    onClick={handleDownloadTxt}
+                                    className="flex-1 py-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl text-xs font-black uppercase hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                                >
+                                    📄 TXT
+                                </button>
+                                <button
+                                    onClick={handleDownloadImage}
+                                    disabled={generating}
+                                    className="flex-1 py-3 bg-[#39FF14] text-black rounded-xl text-xs font-black uppercase hover:bg-[#32d911] transition-colors shadow-[0_0_15px_rgba(57,255,20,0.3)]"
+                                >
+                                    {generating ? 'Wait...' : '🖼️ PNG'}
+                                </button>
+                                <button
+                                    onClick={() => setShowFormats(false)}
+                                    className="w-12 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl flex items-center justify-center hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                                    aria-label="Cancel"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* HIDDEN RECEIPT TEMPLATE FOR IMAGE GEN */}
+                <div className="absolute top-0 left-0 w-full z-[-50] opacity-0 pointer-events-none">
+                    <div ref={receiptRef} className="w-[600px] bg-black text-white p-12 font-sans relative overflow-hidden border-8 border-black">
+                        {/* Background Texture */}
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-zinc-800/30 via-black to-black"></div>
+
+                        {/* Header */}
+                        <div className="relative z-10 flex justify-between items-start mb-12 border-b border-white/10 pb-8">
+                            <div>
+                                <h1 className="text-4xl font-black uppercase tracking-tighter mb-2">Omni Market</h1>
+                                <p className="text-sm font-mono text-zinc-500">OFFICIAL DIGITAL RECEIPT</p>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-[#39FF14] text-xl font-black">{order.status}</div>
+                                <div className="text-zinc-500 text-xs font-mono mt-1">{new Date().toLocaleDateString()}</div>
+                            </div>
+                        </div>
+
+                        {/* Order Details */}
+                        <div className="relative z-10 grid grid-cols-2 gap-8 mb-12">
+                            <div>
+                                <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Product Items</div>
+                                <div className="text-2xl font-bold">{order.product.title}</div>
+                                <div className="text-sm text-zinc-400 mt-1">Vendor: {order.vendor.name}</div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Total Value</div>
+                                <div className="text-4xl font-black tracking-tight">₵{order.amount.toFixed(2)}</div>
+                            </div>
+                        </div>
+
+                        {/* ID Block */}
+                        <div className="relative z-10 bg-zinc-900/50 p-6 rounded-2xl border border-white/10 mb-8 flex items-center justify-between">
+                            <div>
+                                <div className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Transaction ID</div>
+                                <div className="font-mono text-lg tracking-widest text-[#39FF14]">{order.id.toUpperCase()}</div>
+                            </div>
+                            <div className="w-16 h-16 bg-white p-1 rounded-lg">
+                                {/* Mock QR */}
+                                <div className="w-full h-full bg-black/10 flex flex-wrap content-start">
+                                    {[...Array(16)].map((_, i) => (
+                                        <div key={i} className={`w-1/4 h-1/4 ${Math.random() > 0.5 ? 'bg-black' : 'bg-transparent'}`}></div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="relative z-10 pt-8 border-t border-white/10 text-center">
+                            <p className="text-zinc-600 text-[10px] uppercase tracking-[0.3em] font-bold">Verified by Omni Secure Protocol</p>
+                        </div>
                     </div>
                 </div>
             </motion.div>
