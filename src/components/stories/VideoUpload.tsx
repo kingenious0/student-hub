@@ -5,12 +5,21 @@ import { useState, useRef } from 'react';
 interface VideoUploadProps {
     value: string;
     onChange: (url: string) => void;
+    onError?: (message: string) => void;
 }
 
-export default function VideoUpload({ value, onChange }: VideoUploadProps) {
+export default function VideoUpload({ value, onChange, onError }: VideoUploadProps) {
     const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Helper for errors
+    const handleError = (msg: string) => {
+        setUploading(false);
+        setProgress(0);
+        if (onError) onError(msg);
+        else alert(msg); // Fallback if no error handler
+    };
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -19,14 +28,14 @@ export default function VideoUpload({ value, onChange }: VideoUploadProps) {
         // Validate file type
         const validTypes = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
         if (!validTypes.includes(file.type)) {
-            alert('Please upload a valid video file (MP4, MOV, AVI, or WebM)');
+            handleError('Invalid file format. Please upload MP4, MOV, AVI, or WebM.');
             return;
         }
 
         // Validate file size (100MB max)
-        const maxSize = 100 * 1024 * 1024; // 100MB in bytes
+        const maxSize = 100 * 1024 * 1024; // 100MB
         if (file.size > maxSize) {
-            alert('Video file is too large. Maximum size is 100MB.');
+            handleError('Video file is too large. Maximum size is 100MB.');
             return;
         }
 
@@ -34,58 +43,54 @@ export default function VideoUpload({ value, onChange }: VideoUploadProps) {
         setProgress(0);
 
         try {
+            // 1. Get Signature
+            const signRes = await fetch('/api/cloudinary-sign', { method: 'POST' });
+            if (!signRes.ok) throw new Error('Failed to authorize upload.');
+
+            const { signature, timestamp, cloudName, apiKey, folder } = await signRes.json();
+
+            // 2. Prepare Direct Upload
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('api_key', apiKey);
+            formData.append('timestamp', timestamp.toString());
+            formData.append('signature', signature);
+            formData.append('folder', folder);
 
+            // 3. Upload with XHR to track progress
+            // (Fetch doesn't support upload progress yet widely)
             const xhr = new XMLHttpRequest();
 
-            // Track upload progress
             xhr.upload.addEventListener('progress', (e) => {
                 if (e.lengthComputable) {
-                    const percentComplete = Math.round((e.loaded / e.total) * 100);
-                    setProgress(percentComplete);
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    setProgress(percent);
                 }
             });
 
-            // Handle completion
             xhr.addEventListener('load', () => {
                 if (xhr.status === 200) {
                     const response = JSON.parse(xhr.responseText);
-                    if (response.success) {
-                        onChange(response.url);
-                        setUploading(false);
-                        setProgress(0);
-                    } else {
-                        console.error('Upload failed:', response);
-                        alert(`Upload failed: ${response.error || 'Unknown error'}`);
-                        setUploading(false);
-                        setProgress(0);
-                    }
-                } else {
-                    console.error('Upload failed:', xhr.responseText);
-                    alert('Upload failed. Please try again.');
+                    onChange(response.secure_url); // Cloudinary returns secure_url
                     setUploading(false);
-                    setProgress(0);
+                    setProgress(100);
+                } else {
+                    console.error('Cloudinary Error:', xhr.responseText);
+                    handleError('Upload failed. The server rejected the file.');
                 }
             });
 
-            // Handle errors
             xhr.addEventListener('error', () => {
-                console.error('Upload error');
-                alert('Upload failed. Please check your connection and try again.');
-                setUploading(false);
-                setProgress(0);
+                handleError('Network error. Check your internet connection.');
             });
 
-            // Send to our API endpoint
-            xhr.open('POST', '/api/cloudinary-upload');
+            const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`;
+            xhr.open('POST', uploadUrl);
             xhr.send(formData);
 
         } catch (error) {
-            console.error('Upload error:', error);
-            alert('Upload failed. Please try again.');
-            setUploading(false);
-            setProgress(0);
+            console.error('Upload flow error:', error);
+            handleError('Failed to initiate upload.');
         }
     };
 
@@ -121,10 +126,10 @@ export default function VideoUpload({ value, onChange }: VideoUploadProps) {
                                 {uploading ? '⏳' : '📹'}
                             </div>
                             <p className="text-foreground font-black text-lg uppercase tracking-tight mb-2">
-                                {uploading ? `Uploading... ${progress}%` : 'Upload Video'}
+                                {uploading ? `Transmitting... ${progress}%` : 'Upload Video'}
                             </p>
                             <p className="text-foreground/40 text-xs font-bold uppercase tracking-widest">
-                                {uploading ? 'Please wait...' : 'Click to select video'}
+                                {uploading ? 'Do not close this window' : 'Click to select video'}
                             </p>
                             <p className="text-foreground/20 text-[10px] font-bold uppercase tracking-widest mt-2">
                                 MP4, MOV, AVI, WEBM • Max 100MB

@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import VideoUpload from '@/components/stories/VideoUpload';
 import { useRouter } from 'next/navigation';
+import OmniDialog from '@/components/ui/OmniDialog';
 
 export default function NewStoryPage() {
     const router = useRouter();
@@ -11,11 +12,29 @@ export default function NewStoryPage() {
     const [caption, setCaption] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
+    // UI State
+    const [dialog, setDialog] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        variant: 'default' | 'destructive' | 'success';
+        action?: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        variant: 'default',
+    });
+
+    const showDialog = (title: string, message: string, variant: 'default' | 'destructive' | 'success' = 'default', action?: () => void) => {
+        setDialog({ isOpen: true, title, message, variant, action });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!videoUrl) {
-            alert('Please upload a video first');
+            showDialog('Missing Content', 'Please upload a video file to proceed.', 'destructive');
             return;
         }
 
@@ -34,14 +53,15 @@ export default function NewStoryPage() {
             });
 
             if (res.ok) {
+                // Success!
                 router.push('/stories');
             } else {
                 const data = await res.json();
-                alert('Failed to post story: ' + (data.error || 'Unknown error'));
+                showDialog('Transmission Failed', data.error || 'Unknown server error', 'destructive');
             }
         } catch (error) {
             console.error('Error posting story:', error);
-            alert('Something went wrong');
+            showDialog('System Error', 'Could not connect to the Omni Network. Try again.', 'destructive');
         } finally {
             setSubmitting(false);
         }
@@ -69,6 +89,7 @@ export default function NewStoryPage() {
                         <VideoUpload
                             value={videoUrl}
                             onChange={setVideoUrl}
+                            onError={(msg) => showDialog('Upload Failed', msg, 'destructive')}
                         />
                     </div>
 
@@ -97,6 +118,20 @@ export default function NewStoryPage() {
                     </button>
                 </form>
             </div>
+
+            <OmniDialog
+                isOpen={dialog.isOpen}
+                onClose={() => setDialog(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={() => {
+                    if (dialog.action) dialog.action();
+                    setDialog(prev => ({ ...prev, isOpen: false }));
+                }}
+                title={dialog.title}
+                message={dialog.message}
+                variant={dialog.variant}
+                confirmLabel="ACKNOWLEDGE"
+                cancelLabel="CLOSE"
+            />
         </div>
     );
 }
