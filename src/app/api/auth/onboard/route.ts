@@ -67,14 +67,28 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // Upsert user in database (Update if exists, Create if not)
+        // Check existing user status to prevent resetting Active vendors
+        const existingUser = await prisma.user.findUnique({
+            where: { clerkId: userId },
+            select: { vendorStatus: true }
+        });
+
+        const isAlreadyApproved = ['ACTIVE', 'SUSPENDED'].includes(existingUser?.vendorStatus || '');
+
+        // If they are already approved/suspended, keep it. Otherwise, if becoming a vendor, set PENDING.
+        const targetVendorStatus = isAlreadyApproved
+            ? undefined // Don't update it in 'update' clause
+            : (role === 'VENDOR' ? 'PENDING' : 'NOT_APPLICABLE');
+
+        // Upsert user in database
         await prisma.user.upsert({
             where: { clerkId: userId },
             update: {
                 role: role,
                 isRunner: !!isRunner,
                 onboarded: true,
-                vendorStatus: role === 'VENDOR' ? 'PENDING' : 'NOT_APPLICABLE',
+                // Only update vendorStatus if we aren't preserving an existing Approved state
+                ...(targetVendorStatus ? { vendorStatus: targetVendorStatus } : {}),
                 ...vendorData
             },
             create: {
@@ -85,7 +99,7 @@ export async function POST(request: NextRequest) {
                 isRunner: !!isRunner,
                 onboarded: true,
                 vendorStatus: role === 'VENDOR' ? 'PENDING' : 'NOT_APPLICABLE',
-                university: 'KNUST', // Default
+                university: 'KNUST',
                 ...vendorData
             }
         });

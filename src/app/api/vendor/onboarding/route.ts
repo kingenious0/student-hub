@@ -18,13 +18,22 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Shop name and landmark are required' }, { status: 400 });
         }
 
+        // Check current status first to prevent resetting Active vendors
+        const existingUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { vendorStatus: true }
+        });
+
+        // Only set to PENDING if they are not already ACTIVE or SUSPENDED
+        const shouldSetPending = !['ACTIVE', 'SUSPENDED'].includes(existingUser?.vendorStatus || '');
+
         await prisma.user.update({
             where: { id: user.id },
             data: {
                 shopName,
                 shopLandmark,
                 role: 'VENDOR',
-                vendorStatus: 'PENDING', // Awaiting Admin approval
+                vendorStatus: shouldSetPending ? 'PENDING' : undefined, // Preserve existing status if established
             }
         });
 
