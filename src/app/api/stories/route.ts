@@ -8,13 +8,9 @@ import { ensureUserExists } from '@/lib/auth/sync';
 
 export async function GET() {
     try {
-        // Fetch active stories (less than 24h old)
+        // Fetch active stories (TikTok style: Permanent)
         const stories = await prisma.story.findMany({
-            where: {
-                expiresAt: {
-                    gt: new Date(),
-                },
-            },
+            // whereClause removed to show all history
             include: {
                 vendor: {
                     select: {
@@ -26,7 +22,7 @@ export async function GET() {
             orderBy: {
                 createdAt: 'desc',
             },
-            take: 20, // Pagination limit
+            take: 50, // Increased limit for permanent feed
         });
 
         return NextResponse.json({ stories });
@@ -93,8 +89,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Permanent (TikTok Style) - Set to Year 2100
         const expiresAt = new Date();
-        expiresAt.setHours(expiresAt.getHours() + 24); // Expires in 24 hours
+        expiresAt.setFullYear(2100);
 
         const story = await prisma.story.create({
             data: {
