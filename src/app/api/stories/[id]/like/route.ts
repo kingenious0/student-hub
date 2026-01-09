@@ -6,11 +6,26 @@ import { prisma } from '@/lib/db/prisma';
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    context: { params: Promise<{ id: string }> } // Fix type: Next.js 15 params are promises
 ) {
     try {
-        const { userId } = await auth();
-        const { id: storyId } = await params;
+        const { id: storyId } = await context.params;
+        let { userId } = await auth();
+
+        // Hybrid Auth Fallback
+        if (!userId) {
+            try {
+                const cookieStore = await (await import('next/headers')).cookies();
+                const isVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
+                const hybridClerkId = cookieStore.get('OMNI_HYBRID_SYNCED')?.value;
+
+                if (isVerified && hybridClerkId) {
+                    userId = hybridClerkId;
+                }
+            } catch (e) {
+                // Ignore
+            }
+        }
 
         if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -52,7 +67,7 @@ export async function POST(
             });
 
             liked = false;
-            newLikeCount = story.likes;
+            newLikeCount = Math.max(0, story.likes); // Prevent negative DB values just in case
         } else {
             // Like: Create like record and increment counter
             await prisma.storyLike.create({
@@ -84,17 +99,36 @@ export async function POST(
     }
 }
 
-// GET endpoint to check if user has liked a story
+// GET endpoint to check if user has liked a story AND get real-time count
 export async function GET(
     request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { userId } = await auth();
-        const { id: storyId } = await params;
+        const { id: storyId } = await context.params;
+        let { userId } = await auth();
+
+        // Hybrid Auth Fallback
+        if (!userId) {
+            try {
+                const cookieStore = await (await import('next/headers')).cookies();
+                const isVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
+                const hybridClerkId = cookieStore.get('OMNI_HYBRID_SYNCED')?.value;
+
+                if (isVerified && hybridClerkId) {
+                    userId = hybridClerkId;
+                }
+            } catch (e) { }
+        }
+
+        // Get live story count first (always needed)
+        const story = await prisma.story.findUnique({
+            where: { id: storyId },
+            select: { likes: true }
+        });
 
         if (!userId) {
-            return NextResponse.json({ liked: false });
+            return NextResponse.json({ liked: false, likes: story?.likes || 0 });
         }
 
         const user = await prisma.user.findUnique({
@@ -102,7 +136,7 @@ export async function GET(
         });
 
         if (!user) {
-            return NextResponse.json({ liked: false });
+            return NextResponse.json({ liked: false, likes: story?.likes || 0 });
         }
 
         const existingLike = await prisma.storyLike.findUnique({
@@ -114,9 +148,12 @@ export async function GET(
             },
         });
 
-        return NextResponse.json({ liked: !!existingLike });
+        return NextResponse.json({
+            liked: !!existingLike,
+            likes: story?.likes || 0
+        });
     } catch (error) {
         console.error('Check like error:', error);
-        return NextResponse.json({ liked: false });
+        return NextResponse.json({ liked: false, likes: 0 });
     }
 }

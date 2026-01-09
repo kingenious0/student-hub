@@ -16,6 +16,7 @@ interface Story {
         clerkId: string;
     };
     likes: number;
+    views: number;
 }
 
 export default function StoriesFeedPage() {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, ReactNode } from 'react';
-import { initializeRadar, startTracking, setUserId, setMetadata } from '@/lib/location/radar-client';
+import { initializeRadar, startTracking, stopTracking, setUserId, setMetadata } from '@/lib/location/radar-client';
 import { useUser } from '@clerk/nextjs';
 
 export default function LocationProvider({ children }: { children: ReactNode }) {
@@ -15,11 +15,14 @@ export default function LocationProvider({ children }: { children: ReactNode }) 
     useEffect(() => {
         // 2. Identify User when logged in
         if (isLoaded && user && typeof window !== 'undefined') {
-            setUserId(user.id);
+            const userId = user.id;
+            const userRole = user.publicMetadata?.role as string;
 
-            if (user.publicMetadata?.role) {
+            setUserId(userId);
+
+            if (userRole) {
                 setMetadata({
-                    role: user.publicMetadata.role as string
+                    role: userRole
                 });
             }
 
@@ -29,19 +32,29 @@ export default function LocationProvider({ children }: { children: ReactNode }) 
             // 3. Auto-Start Tracking for Students (Efficient, Foreground Only)
             // Skip web-side tracking if we are in the Mobile App (Native handles it)
             if (!isMobileApp) {
-                const isRunner = user.publicMetadata?.role === 'RUNNER' || user.publicMetadata?.isRunner;
+                const isRunner = userRole === 'RUNNER' || user.publicMetadata?.isRunner;
+
+                // Only track non-runners via web (Runners use native app primarily, or manual toggle)
                 if (!isRunner) {
                     try {
+                        // Pass 'true' to indicate this is an init call, handled safely in client
                         startTracking('EFFICIENT', false);
                     } catch (e) {
-                        console.warn('Web-side tracking failed, likely due to permissions.', e);
+                        // Rate limits might happen if we reload too fast, safely ignore
+                        console.warn('Web-side tracking init warning:', e);
                     }
                 }
             } else {
                 console.log('Mobile App detected: Web-side tracking suppressed in favor of Native Tracking.');
             }
         }
-    }, [isLoaded, user]);
+
+        // Cleanup: Stop tracking when user changes or component unmounts
+        // This prevents multiple intervals stacking up
+        return () => {
+            stopTracking();
+        };
+    }, [isLoaded, user?.id, user?.publicMetadata?.role]);
 
     return <>{children}</>;
 }
