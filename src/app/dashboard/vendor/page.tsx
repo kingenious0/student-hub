@@ -92,13 +92,18 @@ export default function VendorDashboard() {
     };
 
     // Effect
+    // Effect
     useEffect(() => {
-        if (omniToken) {
+        if (omniToken && user) {
             const maxAge = 60 * 60 * 24 * 7; // 7 days
             document.cookie = `OMNI_IDENTITY_VERIFIED=TRUE; path=/; max-age=${maxAge}; SameSite=Lax`;
             document.cookie = `OMNI_HYBRID_TOKEN=${omniToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+            // CRITICAL: Sync User ID for server-side hybrid-auth check
+            document.cookie = `OMNI_HYBRID_SYNCED=${user.id}; path=/; max-age=${maxAge}; SameSite=Lax`;
         }
-        fetchStats();
+        if (user || omniToken) {
+            fetchStats();
+        }
     }, [user, omniToken]);
 
     const toggleRushMode = async () => {
