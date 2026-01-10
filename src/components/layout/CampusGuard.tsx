@@ -31,6 +31,13 @@ export default function CampusGuard({ children }: { children: React.ReactNode })
         try {
             const res = await fetch('/api/users/me');
             const data = await res.json();
+
+            // If user is not onboarded, let OnboardingCheck handle the redirect.
+            // Do not show campus selection yet.
+            if (data && !data.onboarded) {
+                return;
+            }
+
             if (data && !data.university) {
                 setNeedsSelection(true);
             }
