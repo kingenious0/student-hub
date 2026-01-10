@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { UNIVERSITY_REGISTRY } from '@/lib/geo/distance';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function CampusGuard({ children }: { children: React.ReactNode }) {
     const { user, isLoaded } = useUser();
@@ -12,6 +12,12 @@ export default function CampusGuard({ children }: { children: React.ReactNode })
     const [selectedUni, setSelectedUni] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
+
+    // Skip checks for onboarding and auth pages to allow sequential flow
+    if (pathname?.startsWith('/onboarding') || pathname?.startsWith('/sign-in') || pathname?.startsWith('/sign-up')) {
+        return <>{children}</>;
+    }
 
     useEffect(() => {
         if (isLoaded && user) {
@@ -73,8 +79,8 @@ export default function CampusGuard({ children }: { children: React.ReactNode })
                                 key={uni.id}
                                 onClick={() => setSelectedUni(uni.id)}
                                 className={`w-full p-4 rounded-xl border flex items-center justify-between group transition-all ${selectedUni === uni.id
-                                        ? 'bg-primary text-primary-foreground border-primary'
-                                        : 'bg-background border-surface-border hover:border-primary/50'
+                                    ? 'bg-primary text-primary-foreground border-primary'
+                                    : 'bg-background border-surface-border hover:border-primary/50'
                                     }`}
                             >
                                 <span className="font-bold text-sm">{uni.name}</span>
@@ -85,8 +91,8 @@ export default function CampusGuard({ children }: { children: React.ReactNode })
                         <button
                             onClick={() => setSelectedUni('OTHER')}
                             className={`w-full p-4 rounded-xl border flex items-center justify-between group transition-all ${selectedUni === 'OTHER'
-                                    ? 'bg-primary text-primary-foreground border-primary'
-                                    : 'bg-background border-surface-border hover:border-primary/50'
+                                ? 'bg-primary text-primary-foreground border-primary'
+                                : 'bg-background border-surface-border hover:border-primary/50'
                                 }`}
                         >
                             <span className="font-bold text-sm">Other / Not Listed</span>
