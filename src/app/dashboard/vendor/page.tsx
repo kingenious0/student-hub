@@ -91,6 +91,14 @@ export default function VendorDashboard() {
         };
 
         useEffect(() => {
+            if (omniToken) {
+                // PERMANENCE PROTOCOL: Write cookies client-side to survive navigation
+                // This ensures subsequent requests (like clicking 'Home') include credentials
+                const maxAge = 60 * 60 * 24 * 7; // 7 days
+                document.cookie = `OMNI_IDENTITY_VERIFIED=TRUE; path=/; max-age=${maxAge}; SameSite=Lax`;
+                // We store the token to potentially use it again if needed, or primarily to flag usage
+                document.cookie = `OMNI_HYBRID_TOKEN=${omniToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+            }
             fetchStats();
         }, [user, omniToken]); // Add user and omniToken dependency
 

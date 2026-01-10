@@ -45,14 +45,14 @@ export default function VendorLayout({
                     <div className="flex items-center gap-4">
                         <ThemeToggle />
 
-                        {/* Switch Back to Student Mode */}
+                        {/* Switch Back / Exit Terminal */}
                         <Link
                             href="/marketplace"
-                            className="hidden md:flex items-center gap-2 text-xs font-bold text-foreground/60 hover:text-foreground transition-colors"
-                            title="Switch to Buying"
+                            className="flex items-center gap-2 text-xs font-bold text-red-500/80 hover:text-red-500 transition-colors"
+                            title="Exit Terminal"
                         >
-                            <ShoppingCartIcon className="w-4 h-4" />
-                            <span>Marketplace</span>
+                            <span className="md:hidden text-[10px] uppercase font-black tracking-widest border border-red-500/20 px-2 py-1 rounded">Exit</span>
+                            <span className="hidden md:inline">Exit Mode</span>
                         </Link>
 
                         <div className="h-8 w-[1px] bg-foreground/10 hidden md:block"></div>
@@ -65,7 +65,7 @@ export default function VendorLayout({
             </nav>
 
             {/* Main Content Area */}
-            <main className="pt-20 pb-12 px-4 max-w-7xl mx-auto">
+            <main className="pt-20 pb-24 px-4 max-w-7xl mx-auto">
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <MaintenanceGuard protocol="VENDOR">
                         {children}
@@ -90,7 +90,7 @@ function VendorLink({ href, icon, label, active }: any) {
     return (
         <Link
             href={href}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${active ? 'bg-[#39FF14] text-black shadow-[0_0_15px_rgba(57,255,20,0.3)]' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${active ? 'bg-primary/10 text-primary border border-primary/20' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}
         >
             {icon}
             <span>{label}</span>
@@ -102,7 +102,7 @@ function MobileVendorLink({ href, icon, label, active }: any) {
     return (
         <Link
             href={href}
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 ${active ? 'text-[#39FF14]' : 'text-foreground/40'}`}
+            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${active ? 'text-primary dark:text-[#39FF14]' : 'text-foreground/40'}`}
         >
             {icon}
             <span className="text-[9px] font-black uppercase tracking-wider">{label}</span>
