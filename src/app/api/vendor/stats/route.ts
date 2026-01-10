@@ -1,6 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getHybridUser } from '@/lib/auth/hybrid-auth';
+import { prisma } from '@/lib/db/prisma';
 
 // export const runtime = 'edge';
 export const dynamic = 'force-dynamic';

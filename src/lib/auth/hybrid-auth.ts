@@ -7,7 +7,7 @@ export async function getHybridUser() {
     if (userId) return { userId };
 
     // Fallback: Check Hybrid Cookies set by the native sync bridge
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const verified = cookieStore.get('OMNI_IDENTITY_VERIFIED');
     const clerkId = cookieStore.get('OMNI_HYBRID_SYNCED');
 

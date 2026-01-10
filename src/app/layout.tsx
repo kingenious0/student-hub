@@ -13,6 +13,7 @@ import ImpersonationBanner from "@/components/admin/ImpersonationBanner";
 import BanOverlay from "@/components/admin/BanOverlay";
 import Script from "next/script";
 import LocationProvider from "@/components/location/DynamicLocationProvider";
+import CampusGuard from "@/components/layout/CampusGuard";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -50,7 +51,9 @@ export default function RootLayout({
                     <Navbar />
                     <ImpersonationBanner />
                     <BanOverlay />
-                    {children}
+                    <CampusGuard>
+                      {children}
+                    </CampusGuard>
                     <Footer />
                     <GhostEditToggle />
                   </CartProvider>
