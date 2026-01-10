@@ -45,7 +45,7 @@ export default function CartPage() {
     }, {} as Record<string, { vendorName: string; items: typeof items }>);
 
     const subtotal = getCartTotal();
-    const deliveryFee = items.length > 0 ? (fulfillmentMethod === 'delivery' ? 15 : 2) : 0;
+    const deliveryFee = items.length > 0 ? (fulfillmentMethod === 'delivery' ? 15 : 0.05) : 0;
     const total = subtotal + deliveryFee;
 
     const handleCheckout = async () => {

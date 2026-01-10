@@ -1,8 +1,8 @@
 
-
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
+import { revalidateTag } from 'next/cache';
 
 export async function GET(
     request: NextRequest,
@@ -83,6 +83,9 @@ export async function PATCH(
             }
         });
 
+        // CRITICAL: Invalidate Cache
+        revalidateTag('products');
+
         return NextResponse.json({ success: true, product: updated });
     } catch (error) {
         console.error('Update error:', error);
@@ -112,6 +115,10 @@ export async function DELETE(
         }
 
         await prisma.product.delete({ where: { id } });
+
+        // CRITICAL: Invalidate Cache
+        revalidateTag('products');
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Delete error:', error);

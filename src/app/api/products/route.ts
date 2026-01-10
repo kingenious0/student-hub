@@ -5,6 +5,7 @@ import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 import { ensureUserExists } from '@/lib/auth/sync';
 import { getCachedProductsByCategory } from '@/lib/db/cached-queries';
+import { revalidateTag } from 'next/cache';
 
 // GET - List all products or vendor's products
 
@@ -133,6 +134,9 @@ export async function POST(request: NextRequest) {
                 },
             },
         });
+
+        // Cache Invalidation
+        revalidateTag('products');
 
         return NextResponse.json({ success: true, product });
     } catch (error) {
