@@ -25,10 +25,11 @@ export default function CommandCenterPage() {
     const modal = useModal();
     const [settings, setSettings] = useState<SystemSettings | null>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ESCROW' | 'USERS' | 'VENDORS'>('OVERVIEW');
+    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ESCROW' | 'USERS' | 'VENDORS' | 'SIGNALS'>('OVERVIEW');
     const [escrows, setEscrows] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [vendors, setVendors] = useState<any[]>([]);
+    const [signals, setSignals] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -136,6 +137,18 @@ export default function CommandCenterPage() {
         } catch (error) {
             console.error('[COMMAND CENTER] Error fetching vendors:', error);
             setVendors([]);
+        }
+    }
+
+    const fetchSignals = async () => {
+        try {
+            const res = await fetch('/api/feedback', { credentials: 'include' });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) setSignals(data.feedback);
+            }
+        } catch (e) {
+            console.error('Signals fetch error', e);
         }
     }
 
@@ -344,6 +357,7 @@ export default function CommandCenterPage() {
             if (activeTab === 'ESCROW') fetchEscrows();
             if (activeTab === 'USERS') fetchUsers();
             if (activeTab === 'VENDORS') fetchVendors();
+            if (activeTab === 'SIGNALS') fetchSignals();
         }
     }, [activeTab, isUnlocked, searchTerm]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -402,9 +416,8 @@ export default function CommandCenterPage() {
                     </div>
                 </div>
 
-                {/* DESKTOP TABS */}
                 <div className="hidden md:flex bg-surface rounded-lg p-1">
-                    {['OVERVIEW', 'ESCROW', 'USERS', 'VENDORS'].map(tab => (
+                    {['OVERVIEW', 'ESCROW', 'USERS', 'VENDORS', 'SIGNALS'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
@@ -443,7 +456,7 @@ export default function CommandCenterPage() {
             {mobileMenuOpen && (
                 <div className="md:hidden bg-surface border-b border-surface-border p-4">
                     <div className="flex flex-col gap-2">
-                        {['OVERVIEW', 'ESCROW', 'USERS', 'VENDORS'].map(tab => (
+                        {['OVERVIEW', 'ESCROW', 'USERS', 'VENDORS', 'SIGNALS'].map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => {
@@ -725,6 +738,40 @@ export default function CommandCenterPage() {
                                 ))
                             )}
                         </div>
+
+                        {/* SIGNALS TAB */}
+                        {activeTab === 'SIGNALS' && (
+                            <div className="space-y-4">
+                                <h1 className="text-3xl font-black text-[#39FF14] uppercase tracking-tighter mb-4 flex items-center gap-4">
+                                    <span>📡</span> Signal Intelligence
+                                </h1>
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    {signals.length === 0 ? (
+                                        <div className="col-span-full text-center py-12 text-gray-500">
+                                            No signals intercepted.
+                                        </div>
+                                    ) : (
+                                        signals.map(signal => (
+                                            <div key={signal.id} className="bg-[#111] border border-[#333] p-6 rounded-2xl hover:border-[#39FF14]/50 transition-colors">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <h3 className="font-bold text-white mb-1">{signal.userName}</h3>
+                                                        <p className="text-xs text-gray-500">{new Date(signal.createdAt).toLocaleString()}</p>
+                                                    </div>
+                                                    <span className={`text-[10px] uppercase font-black px-2 py-1 rounded ${signal.status === 'OPEN' ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-500'}`}>
+                                                        {signal.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-gray-300 text-sm whitespace-pre-wrap font-mono bg-black/50 p-3 rounded-lg border border-white/5">
+                                                    {signal.content}
+                                                </p>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
 
                         {/* POWER CARD MODAL */}
                         {selectedUser && (

@@ -29,3 +29,28 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to transmit' }, { status: 500 });
     }
 }
+
+export async function GET(request: NextRequest) {
+    try {
+        const { userId } = await auth();
+        if (!userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Check if admin
+        const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+        if (user?.role !== 'ADMIN' && user?.role !== 'GOD_MODE') {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
+        const feedback = await prisma.feedback.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 100
+        });
+
+        return NextResponse.json({ success: true, feedback });
+    } catch (error) {
+        console.error('Fetch feedback error:', error);
+        return NextResponse.json({ error: 'Failed' }, { status: 500 });
+    }
+}
