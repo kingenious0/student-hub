@@ -273,6 +273,7 @@ Live. Learn. Earn.
 
         if (window.ReactNativeWebView) {
             // Encode text to Base64 for native saving
+            // alert('Saving Receipt to Device...'); // Debug feedback
             const base64 = btoa(unescape(encodeURIComponent(receiptContent))); // handle utf8
             window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'DOWNLOAD_BLOB',
@@ -305,6 +306,7 @@ Live. Learn. Earn.
                 const filename = `OMNI-Receipt-${order.id.slice(0, 8)}.png`;
 
                 if (window.ReactNativeWebView) {
+                    // alert('Saving Image to Device...'); // Debug feedback
                     window.ReactNativeWebView.postMessage(JSON.stringify({
                         type: 'DOWNLOAD_BLOB',
                         base64: dataUrl,

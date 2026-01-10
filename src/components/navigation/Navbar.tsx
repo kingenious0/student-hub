@@ -303,7 +303,7 @@ export default function Navbar() {
                                     {/* HUSTLE SWITCH (Dual Mode) */}
                                     <div className="mb-6 p-1">
                                         <Link
-                                            href={dbUser?.role === 'VENDOR' ? "/dashboard/vendor" : "/onboarding/vendor"}
+                                            href="/dashboard/vendor"
                                             onClick={() => setIsDrawerOpen(false)}
                                             className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-background to-surface border border-primary/30 rounded-2xl shadow-lg relative overflow-hidden group"
                                         >
