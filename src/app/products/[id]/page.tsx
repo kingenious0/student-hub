@@ -252,7 +252,7 @@ export default function ProductDetailsPage() {
                     <>
                         {/* Desktop Buy Button */}
                         <SignedIn>
-                            <div className="hidden md:block">
+                            <div className="block">
                                 {isGhostAdmin ? (
                                     <button
                                         disabled
