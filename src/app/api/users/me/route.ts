@@ -1,35 +1,47 @@
-```typescript
 import { NextRequest, NextResponse } from 'next/server';
 import { getHybridUser } from '@/lib/auth/hybrid-auth';
 import { prisma } from '@/lib/db/prisma';
 import { cookies } from 'next/headers';
+import { auth } from '@clerk/nextjs/server';
 
-// export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
     try {
+        // 1. Authenticate (Hybrid Friendly)
+        // This helper checks Clerk Auth OR our Custom Mobile Cookie
         const { userId } = await getHybridUser();
-        const searchParams = request.nextUrl.searchParams;
-        const queryClerkId = searchParams.get('clerkId');
+
+        // 2. Authorization Context (for Admin/Impersonation)
         const cookieStore = await cookies();
-        const isHybridVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
-
-        // Choose the active ID: either from Clerk Auth or from our Hybrid Sync param (if verified)
-        const userId = authUserId || (isHybridVerified ? queryClerkId : null);
-
-        // Check if admin is impersonating another user
         const impersonateUserId = cookieStore.get('IMPERSONATE_USER_ID')?.value;
 
-        // If impersonating, check if current user is GOD_MODE or has admin token
+        // 3. Impersonation Logic
         if (impersonateUserId) {
+            // Verify Admin Status
+            const { sessionClaims } = await auth();
+            let isAdmin = false;
+
+            // Check Claims
             const role = (sessionClaims?.metadata as any)?.role;
-            const bossToken = cookieStore.get('OMNI_BOSS_TOKEN');
-            const isAdmin = role === 'GOD_MODE' || role === 'ADMIN' || bossToken?.value === 'AUTHORIZED_ADMIN';
+            if (role === 'GOD_MODE' || role === 'ADMIN') isAdmin = true;
+
+            // Check Boss Token
+            if (cookieStore.get('OMNI_BOSS_TOKEN')?.value === 'AUTHORIZED_ADMIN') isAdmin = true;
+
+            // Fallback: Check DB if claims missing (e.g. Hybrid Mode)
+            if (!isAdmin && userId) {
+                const adminCheck = await prisma.user.findUnique({
+                    where: { clerkId: userId },
+                    select: { role: true }
+                });
+                if (adminCheck?.role === 'ADMIN' || adminCheck?.role === 'GOD_MODE') isAdmin = true;
+            }
 
             if (isAdmin) {
-                // Return impersonated user's data
+                // Return Impersonated Profile directly
                 const impersonatedUser = await prisma.user.findUnique({
-                    where: { id: impersonateUserId },
+                    where: { id: impersonateUserId }, // ID lookup
                     select: {
                         id: true,
                         clerkId: true,
@@ -44,6 +56,7 @@ export async function GET(request: NextRequest) {
                         banned: true,
                         banReason: true,
                         shopName: true,
+                        shopLandmark: true,
                         university: true
                     }
                 });
@@ -58,8 +71,10 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Normal flow - return logged-in user's data
-        if (!userId) return NextResponse.json({ role: 'GUEST' });
+        // 4. Normal User Fetch
+        if (!userId) {
+            return NextResponse.json({ role: 'GUEST' });
+        }
 
         const user = await prisma.user.findUnique({
             where: { clerkId: userId },
@@ -87,6 +102,7 @@ export async function GET(request: NextRequest) {
         }
 
         return NextResponse.json(user);
+
     } catch (error) {
         console.error('[/api/users/me] Error:', error);
         return NextResponse.json({ error: 'FAILED_TO_FETCH_PROFILE' }, { status: 500 });

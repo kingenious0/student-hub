@@ -41,8 +41,11 @@ export async function GET(req: NextRequest) {
             });
         }
 
-        // 3. Create a response that sets the OMNI_IDENTITY cookie
-        const response = NextResponse.redirect(new URL(redirectUrl, req.url));
+        // 3. Keep the token alive by passing it to the destination (Bypassing Cookie reliance)
+        const destination = new URL(redirectUrl, req.url);
+        destination.searchParams.set('__omni_token', token);
+
+        const response = NextResponse.redirect(destination);
 
         // Critical: Set the identity cookie so the web app trusts this native user
         response.cookies.set('OMNI_IDENTITY_VERIFIED', 'TRUE', {
