@@ -303,6 +303,16 @@ export default function VendorDashboard() {
 
                     {/* Quick Actions */}
                     <div className="grid md:grid-cols-3 gap-6 mb-8">
+                        {/* 1. VERIFY RUNNER / UNLOCK FUNDS (Promoted) */}
+                        <Link
+                            href="/dashboard/vendor/scan"
+                            className="bg-yellow-500/10 backdrop-blur-lg border border-yellow-500/30 hover:bg-yellow-500/20 text-foreground rounded-[2rem] p-8 text-left transition-all block shadow-lg hover:scale-[1.02] group relative overflow-hidden"
+                        >
+                            <div className="absolute top-0 right-0 p-6 opacity-20 text-6xl group-hover:scale-110 transition-transform">🛡️</div>
+                            <div className="text-4xl mb-3 group-hover:rotate-12 transition-transform">🔑</div>
+                            <SimpleEdit id="vendor_card_verify_runner" text="Verify Runner" tag="h3" className="text-2xl font-black mb-1 uppercase tracking-tighter text-yellow-500" />
+                            <p className="text-sm text-foreground/60 font-medium opacity-80">Scan Code or Enter Key</p>
+                        </Link>
                         <Link
                             href="/products/new"
                             className="bg-gradient-to-r from-primary to-primary/60 text-primary-foreground rounded-[2rem] p-8 text-left transition-all block shadow-lg hover:scale-[1.02]"
@@ -331,14 +341,7 @@ export default function VendorDashboard() {
                             <p className="text-sm text-foreground/40 font-medium opacity-80 text-foreground/40">Manage your inventories</p>
                         </Link>
 
-                        <Link
-                            href="/dashboard/vendor/scan"
-                            className="bg-background/40 backdrop-blur-lg border border-surface-border hover:border-green-500/50 text-foreground rounded-[2rem] p-8 text-left transition-all block shadow-lg hover:scale-[1.02] group"
-                        >
-                            <div className="text-4xl mb-3 group-hover:rotate-12 transition-transform">🔑</div>
-                            <SimpleEdit id="vendor_card_unlock_funds" text="Unlock Funds" tag="h3" className="text-2xl font-black mb-1 uppercase tracking-tighter" />
-                            <p className="text-sm text-green-600 font-medium opacity-80">Enter Secure-Key to get paid</p>
-                        </Link>
+
 
                         <button className="bg-surface backdrop-blur-lg border border-surface-border hover:border-primary/50 text-foreground rounded-[2rem] p-8 text-left transition-all shadow-lg hover:scale-[1.02]">
                             <div className="text-4xl mb-3">💬</div>
