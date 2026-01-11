@@ -781,49 +781,7 @@ export default function CommandCenterPage() {
                             )}
                         </div>
 
-                        {/* APPLICATIONS TAB */}
-                        {activeTab === 'APPLICATIONS' && (
-                            <div className="space-y-4">
-                                <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest">Pending Requests</h2>
-                                {applications.length === 0 ? (
-                                    <div className="text-center py-10 text-gray-600 font-mono text-xs">NO PENDING APPLICATIONS</div>
-                                ) : (
-                                    applications.map(app => (
-                                        <div key={app.id} className="bg-white/5 border border-white/10 p-6 rounded-2xl relative overflow-hidden">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div>
-                                                    <h3 className="text-lg font-black text-white uppercase">{app.shopName}</h3>
-                                                    <p className="text-xs text-primary font-mono">{app.user.name} ({app.user.email})</p>
-                                                </div>
-                                                <div className="text-[10px] text-gray-500 bg-black/30 px-2 py-1 rounded">
-                                                    {new Date(app.createdAt).toLocaleDateString()}
-                                                </div>
-                                            </div>
 
-                                            <div className="bg-black/20 p-4 rounded-xl mb-4 border border-white/5">
-                                                <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">THE PITCH</p>
-                                                <p className="text-sm text-gray-300 italic">"{app.shopDesc}"</p>
-                                            </div>
-
-                                            {app.user.isRunner && (
-                                                <div className="mb-4 flex items-center gap-2 text-yellow-500 text-xs bg-yellow-500/10 p-2 rounded">
-                                                    <span>⚡ Is currently a Runner (Balance: ₵{app.user.balance})</span>
-                                                </div>
-                                            )}
-
-                                            <div className="flex justify-end gap-3">
-                                                <button
-                                                    onClick={() => handleApproveApplication(app.id)}
-                                                    className="px-6 py-2 bg-primary text-black rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform"
-                                                >
-                                                    Approve & Migrate
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
 
 
 
@@ -1055,6 +1013,50 @@ export default function CommandCenterPage() {
                                     </div>
                                 ))}
                             </div>
+                        )}
+                    </div>
+                )}
+
+                {/* APPLICATIONS TAB */}
+                {activeTab === 'APPLICATIONS' && (
+                    <div className="space-y-4">
+                        <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest">Pending Requests</h2>
+                        {applications.length === 0 ? (
+                            <div className="text-center py-10 text-gray-600 font-mono text-xs">NO PENDING APPLICATIONS</div>
+                        ) : (
+                            applications.map(app => (
+                                <div key={app.id} className="bg-white/5 border border-white/10 p-6 rounded-2xl relative overflow-hidden">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 className="text-lg font-black text-white uppercase">{app.shopName}</h3>
+                                            <p className="text-xs text-primary font-mono">{app.user.name} ({app.user.email})</p>
+                                        </div>
+                                        <div className="text-[10px] text-gray-500 bg-black/30 px-2 py-1 rounded">
+                                            {new Date(app.createdAt).toLocaleDateString()}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-black/20 p-4 rounded-xl mb-4 border border-white/5">
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">THE PITCH</p>
+                                        <p className="text-sm text-gray-300 italic">"{app.shopDesc}"</p>
+                                    </div>
+
+                                    {app.user.isRunner && (
+                                        <div className="mb-4 flex items-center gap-2 text-yellow-500 text-xs bg-yellow-500/10 p-2 rounded">
+                                            <span>⚡ Is currently a Runner (Balance: ₵{app.user.balance})</span>
+                                        </div>
+                                    )}
+
+                                    <div className="flex justify-end gap-3">
+                                        <button
+                                            onClick={() => handleApproveApplication(app.id)}
+                                            className="px-6 py-2 bg-primary text-black rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform"
+                                        >
+                                            Approve & Migrate
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
                         )}
                     </div>
                 )}
