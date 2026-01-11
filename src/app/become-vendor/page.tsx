@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
-import { StoreIcon, ChevronRightIcon, AlertTriangleIcon } from 'lucide-react';
+import { StoreIcon, ChevronRightIcon, AlertTriangleIcon, CheckCircle2Icon, ClockIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 const LocationPicker = dynamic(() => import('@/components/location/LocationPicker'), {
@@ -21,6 +21,23 @@ export default function BecomeVendorPage() {
         location: null as any
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [viewState, setViewState] = useState<'LOADING' | 'FORM' | 'PENDING' | 'SUCCESS'>('LOADING');
+
+    // Check existing status
+    useEffect(() => {
+        fetch('/api/users/me')
+            .then(res => res.json())
+            .then(data => {
+                if (data.vendorStatus === 'PENDING') {
+                    setViewState('PENDING');
+                } else if (data.role === 'VENDOR') {
+                    router.replace('/dashboard/vendor');
+                } else {
+                    setViewState('FORM');
+                }
+            })
+            .catch(() => setViewState('FORM'));
+    }, [router]);
 
     const handleSubmit = async () => {
         if (!formData.shopName || !formData.shopDesc || !formData.location) {
@@ -40,13 +57,89 @@ export default function BecomeVendorPage() {
             if (!res.ok) throw new Error(data.error || 'Application Failed');
 
             toast.success("Application Submitted!");
-            router.push('/dashboard/student'); // Or a Success Page
+            setViewState('SUCCESS');
         } catch (error: any) {
             toast.error(error.message);
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    if (viewState === 'LOADING') {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="animate-pulse flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 bg-white/10 rounded-full"></div>
+                    <div className="h-4 w-32 bg-white/10 rounded"></div>
+                </div>
+            </div>
+        );
+    }
+
+    if (viewState === 'PENDING' || viewState === 'SUCCESS') {
+        return (
+            <div className="min-h-screen bg-background p-6 pt-24 pb-32 max-w-2xl mx-auto flex items-center justify-center">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center space-y-6 max-w-md"
+                >
+                    <div className="w-24 h-24 bg-[#39FF14]/10 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                        {viewState === 'SUCCESS' ? (
+                            <CheckCircle2Icon className="w-12 h-12 text-[#39FF14]" />
+                        ) : (
+                            <ClockIcon className="w-12 h-12 text-yellow-500 animate-pulse" />
+                        )}
+                        {viewState === 'SUCCESS' && (
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute inset-0 border-4 border-[#39FF14] rounded-full"
+                            />
+                        )}
+                    </div>
+
+                    <div>
+                        <h1 className="text-3xl font-black uppercase tracking-tighter text-foreground mb-2">
+                            {viewState === 'SUCCESS' ? 'Application Received!' : 'Under Review'}
+                        </h1>
+                        <p className="text-foreground/60 leading-relaxed font-medium">
+                            {viewState === 'SUCCESS'
+                                ? "We have received your request to become a vendor. Our team will review your application shortly."
+                                : "Your application is currently being reviewed by the administration. Check back later."}
+                        </p>
+                    </div>
+
+                    <div className="p-4 bg-surface border border-surface-border rounded-xl text-left">
+                        <h3 className="text-xs font-black uppercase tracking-widest text-foreground/50 mb-2">What happens next?</h3>
+                        <ul className="space-y-2 text-sm text-foreground/80">
+                            <li className="flex gap-2">
+                                <span className="text-primary">1.</span>
+                                <span>Admin reviews your shop details & location.</span>
+                            </li>
+                            <li className="flex gap-2">
+                                <span className="text-primary">2.</span>
+                                <span>Once approved, you'll receive a notification.</span>
+                            </li>
+                            <li className="flex gap-2">
+                                <span className="text-primary">3.</span>
+                                <span>Your account will automatically switch to Vendor Mode.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div className="pt-8">
+                        <button
+                            onClick={() => router.push('/marketplace')}
+                            className="w-full py-4 bg-surface hover:bg-surface/80 border border-surface-border text-foreground rounded-2xl font-black uppercase tracking-widest transition-all"
+                        >
+                            Back to Marketplace
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-background p-6 pt-24 pb-32 max-w-2xl mx-auto">

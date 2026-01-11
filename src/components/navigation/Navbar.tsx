@@ -20,7 +20,8 @@ import {
     HeartIcon,
     PackageIcon,
     ZapIcon,
-    UserCircleIcon
+    UserCircleIcon,
+    ClockIcon
 } from '@/components/ui/Icons';
 
 export default function Navbar() {
@@ -321,15 +322,15 @@ export default function Navbar() {
                                         >
                                             <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors"></div>
                                             <div className="flex items-center gap-3 relative z-10">
-                                                <div className="w-10 h-10 rounded-full bg-[#39FF14] flex items-center justify-center text-black">
-                                                    <StoreIcon className="w-5 h-5" />
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-black ${dbUser?.vendorStatus === 'PENDING' ? 'bg-yellow-500' : 'bg-[#39FF14]'}`}>
+                                                    {dbUser?.vendorStatus === 'PENDING' ? <ClockIcon className="w-5 h-5" /> : <StoreIcon className="w-5 h-5" />}
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-xs font-black text-foreground uppercase tracking-widest">
-                                                        {dbUser?.role === 'VENDOR' ? 'Vendor Mode' : 'Become a Vendor'}
+                                                        {dbUser?.role === 'VENDOR' ? 'Vendor Mode' : (dbUser?.vendorStatus === 'PENDING' ? 'Application Pending' : 'Become a Vendor')}
                                                     </span>
                                                     <span className="text-[10px] font-bold text-foreground/50 uppercase tracking-wide">
-                                                        {dbUser?.role === 'VENDOR' ? 'Switch to Dashboard' : 'Start Selling Today'}
+                                                        {dbUser?.role === 'VENDOR' ? 'Switch to Dashboard' : (dbUser?.vendorStatus === 'PENDING' ? 'Under Review' : 'Start Selling Today')}
                                                     </span>
                                                 </div>
                                             </div>
