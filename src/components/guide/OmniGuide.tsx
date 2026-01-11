@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
+import { usePathname } from 'next/navigation';
 
-// Define Tour Steps for MEMBERS (Logged In)
+// --- MEMBER TOUR (Authenticated Dashboard) ---
 const MEMBER_STEPS = [
     {
-        id: 'welcome',
-        target: null, // Center
+        id: 'welcome_member',
+        target: null,
         title: 'SYSTEM INITIALIZED',
         content: 'Welcome back, Agent. Quick orientation protocol initiated.',
         position: 'center'
@@ -24,26 +25,26 @@ const MEMBER_STEPS = [
         id: 'marketplace',
         target: 'omni-nav-marketplace',
         title: 'ACQUIRE ASSETS',
-        content: 'Browse the main feed to find products, food, and services from fellow students.',
+        content: 'Browse the feed to find products from students near you. Use the Search to find specific halls.',
         position: 'bottom-left'
     },
     {
         id: 'pulse',
         target: 'omni-nav-pulse',
         title: 'CAMPUS PULSE',
-        content: 'Intercept live signals. See what is happening on campus right now through stories.',
+        content: 'Intercept live signals. See what is happening on campus right now.',
         position: 'bottom-left'
     },
     {
         id: 'runner',
         target: 'omni-nav-runner',
         title: 'SHADOW RUNNER',
-        content: 'Want to earn cash? Activate Runner Mode to deliver items securely.',
+        content: 'Want to earn cash? Activate Runner Mode to deliver items.',
         position: 'bottom-left'
     }
 ];
 
-// Define Tour Steps for GUESTS (New Users / Not Logged In)
+// --- GUEST TOUR (Landing / Not Logged In) ---
 const GUEST_STEPS = [
     {
         id: 'welcome_guest',
@@ -68,22 +69,53 @@ const GUEST_STEPS = [
     }
 ];
 
+// --- ONBOARDING TOUR (During Setup) ---
+const ONBOARDING_STEPS = [
+    {
+        id: 'onboard_welcome',
+        target: null,
+        title: 'PROFILE CONFIGURATION',
+        content: 'You must select your operating role within the OMNI Network.',
+        position: 'center'
+    },
+    {
+        id: 'onboard_student_select',
+        target: 'omni-onboard-student',
+        title: 'STUDENT ACCESS',
+        content: 'Select this if you want to buy items, browse the feed, or eventually become a Runner.',
+        position: 'right'
+    },
+    {
+        id: 'onboard_vendor_select',
+        target: 'omni-onboard-vendor',
+        title: 'VENDOR TERMINAL',
+        content: 'Select this if you have a shop or service (e.g., Food, Haircut, Graphics) and want to sell.',
+        position: 'left'
+    }
+];
+
 export default function OmniGuide() {
     const { isSignedIn, isLoaded } = useUser();
+    const pathname = usePathname();
     const [activeStep, setActiveStep] = useState<number | null>(null);
     const [coords, setCoords] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
     const [isVisible, setIsVisible] = useState(false);
 
-    // Determine which steps to use
-    // If not loaded yet, assume guest or empty, but the effect [isLoaded] handles the start.
-    const STEPS = isSignedIn ? MEMBER_STEPS : GUEST_STEPS;
+    // Determine Steps & Key
+    let STEPS = isSignedIn ? MEMBER_STEPS : GUEST_STEPS;
+    let STORAGE_KEY = isSignedIn ? 'omni_tour_member_v1' : 'omni_tour_guest_v1';
+
+    if (pathname?.startsWith('/onboarding')) {
+        STEPS = ONBOARDING_STEPS;
+        STORAGE_KEY = 'omni_tour_onboarding_v1';
+    }
 
     useEffect(() => {
         if (!isLoaded) return;
 
-        // Poll for Welcome Modal Completion
+        // Poll for conditions
         const checkStart = setInterval(() => {
-            const tutorialDone = localStorage.getItem('omni_tutorial_completed');
+            const tutorialDone = localStorage.getItem(STORAGE_KEY);
             const alphaWelcomeDone = localStorage.getItem('OMNI_ALPHA_WELCOME_V1_KCS');
 
             if (tutorialDone) {
@@ -91,9 +123,13 @@ export default function OmniGuide() {
                 return;
             }
 
+            // Wait for Alpha Welcome (unless we are deep in the app, maybe it was skipped? but alpha needs it)
+            // Actually for Onboarding, WelcomeModal might still be active?
+            // Let's assume on Onboarding page, WelcomeModal might NOT appear if it only appears on layout?
+            // WelcomeModal is in layout. So it appears everywhere.
+            // We wait for it.
             if (alphaWelcomeDone) {
                 clearInterval(checkStart);
-                // Start Tour after small delay
                 setTimeout(() => {
                     setIsVisible(true);
                     setActiveStep(0);
@@ -102,7 +138,7 @@ export default function OmniGuide() {
         }, 1000);
 
         return () => clearInterval(checkStart);
-    }, [isLoaded]);
+    }, [isLoaded, STORAGE_KEY, pathname]);
 
     useEffect(() => {
         if (activeStep === null) return;
@@ -111,7 +147,6 @@ export default function OmniGuide() {
 
         // Handle Target Highlighting
         if (step.target) {
-            // Retry mechanism for async elements
             let attempts = 0;
             const findElement = () => {
                 const el = document.getElementById(step.target!);
@@ -125,17 +160,18 @@ export default function OmniGuide() {
                     });
                 } else {
                     attempts++;
-                    if (attempts < 5) {
+                    // More attempts for onboarding transition
+                    if (attempts < 8) {
                         setTimeout(findElement, 500);
                     } else {
                         console.log(`Target ${step.target} not found, skipping...`);
-                        handleNext(true); // Auto skip if not found
+                        handleNext(true);
                     }
                 }
             };
             findElement();
         } else {
-            setCoords(null); // Center mode
+            setCoords(null);
         }
     }, [activeStep, STEPS]);
 
@@ -158,7 +194,7 @@ export default function OmniGuide() {
     };
 
     const finishTour = () => {
-        localStorage.setItem('omni_tutorial_completed', 'true');
+        localStorage.setItem(STORAGE_KEY, 'true');
         setIsVisible(false);
         setActiveStep(null);
     };
@@ -169,24 +205,38 @@ export default function OmniGuide() {
     const isCenter = !current.target || !coords;
 
     // Calculate Tooltip Position
-    let tooltipStyle = {};
+    let tooltipStyle: any = {};
     if (coords && !isCenter) {
         // Default: Bottom Center
         tooltipStyle = {
             top: coords.top + coords.height + 20,
-            left: coords.left + (coords.width / 2) - 160 // Center 320px width
+            left: coords.left + (coords.width / 2) - 160
         };
 
-        // Edge containment
-        if (coords.left < 50) tooltipStyle = { top: coords.top + coords.height + 20, left: 20 };
-        if (coords.left > window.innerWidth - 350) tooltipStyle = { top: coords.top + coords.height + 20, left: 'auto', right: 20 };
-
-        // If element is at bottom, show above
-        if (coords.top > window.innerHeight - 200) {
+        // Side positioning preferences from data
+        if (current.position === 'right') {
             tooltipStyle = {
-                bottom: window.innerHeight - coords.top + 20,
-                left: coords.left + (coords.width / 2) - 160,
-                top: 'auto'
+                top: coords.top,
+                left: coords.left + coords.width + 20
+            };
+        }
+        else if (current.position === 'left') {
+            tooltipStyle = {
+                top: coords.top,
+                left: coords.left - 340 // width of card + margin
+            };
+        }
+        else {
+            // Smart Fallback
+            if (coords.left < 50) tooltipStyle = { top: coords.top + coords.height + 20, left: 20 };
+            if (coords.left > window.innerWidth - 350) tooltipStyle = { top: coords.top + coords.height + 20, left: 'auto', right: 20 };
+
+            if (coords.top > window.innerHeight - 200) {
+                tooltipStyle = {
+                    bottom: window.innerHeight - coords.top + 20,
+                    left: coords.left + (coords.width / 2) - 160,
+                    top: 'auto'
+                }
             }
         }
     }
@@ -204,7 +254,7 @@ export default function OmniGuide() {
                                     initial={{ x: coords.left, y: coords.top, width: coords.width, height: coords.height }}
                                     animate={{ x: coords.left - 10, y: coords.top - 10, width: coords.width + 20, height: coords.height + 20 }}
                                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    rx="12"
+                                    rx="24"
                                     fill="black"
                                 />
                             )}
@@ -222,7 +272,7 @@ export default function OmniGuide() {
                             initial={{ x: coords.left, y: coords.top, width: coords.width, height: coords.height }}
                             animate={{ x: coords.left - 10, y: coords.top - 10, width: coords.width + 20, height: coords.height + 20 }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            rx="12"
+                            rx="24"
                             fill="none"
                             stroke="#39FF14"
                             strokeWidth="2"
@@ -243,8 +293,7 @@ export default function OmniGuide() {
                         top: '50%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        // Center override classes
-                        marginLeft: '-10rem', // w-80 is 20rem
+                        marginLeft: '-10rem',
                         marginTop: '-8rem'
                     } : tooltipStyle}
                 >

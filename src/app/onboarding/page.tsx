@@ -118,6 +118,7 @@ export default function OnboardingPage() {
 
                             <div className="grid md:grid-cols-2 gap-8">
                                 <button
+                                    id="omni-onboard-student"
                                     onClick={() => { setRole('STUDENT'); setStep(2); }}
                                     className="p-10 bg-surface border-2 border-surface-border rounded-[3rem] text-left group hover:border-primary transition-all"
                                 >
@@ -127,6 +128,7 @@ export default function OnboardingPage() {
                                 </button>
 
                                 <button
+                                    id="omni-onboard-vendor"
                                     onClick={() => { setRole('VENDOR'); setStep(3); }}
                                     className="p-10 bg-surface border-2 border-surface-border rounded-[3rem] text-left group hover:border-primary transition-all"
                                 >
