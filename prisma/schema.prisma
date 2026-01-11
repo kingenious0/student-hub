@@ -56,6 +56,8 @@ model User {
   // Admin Actions
   banned       Boolean   @default(false)
   banReason    String?   // Why user was banned
+  
+  application  VendorApplication?
 }
 
 model PayoutRequest {
@@ -287,4 +289,17 @@ model Feedback {
   rating    Int?
   status    String   @default("OPEN") // OPEN, RESOLVED
   createdAt DateTime @default(now())
+}
+
+model VendorApplication {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  shopName  String
+  shopDesc  String?  // The "Why"
+  location  Json     // {lat, lng, address}
+  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt DateTime @default(now())
+
+  @@index([status])
 }
