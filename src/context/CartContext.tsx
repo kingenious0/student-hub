@@ -14,7 +14,7 @@ export interface CartItem {
 
 interface CartContextType {
     items: CartItem[];
-    addToCart: (product: any) => void;
+    addToCart: (product: any, quantity?: number) => void;
     removeFromCart: (productId: string) => void;
     updateQuantity: (productId: string, quantity: number) => void;
     clearCart: () => void;
@@ -48,13 +48,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
     }, [items, isLoaded]);
 
-    const addToCart = (product: any) => {
+    const addToCart = (product: any, quantity: number = 1) => {
         setItems(prev => {
             const existing = prev.find(item => item.id === product.id);
             if (existing) {
                 return prev.map(item =>
                     item.id === product.id
-                        ? { ...item, quantity: item.quantity + 1 }
+                        ? { ...item, quantity: item.quantity + quantity }
                         : item
                 );
             }
@@ -65,7 +65,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 imageUrl: product.imageUrl,
                 vendorId: product.vendor?.id || product.vendorId,
                 vendorName: product.vendor?.name || product.vendorName || 'Vendor',
-                quantity: 1
+                quantity: quantity
             }];
         });
     };

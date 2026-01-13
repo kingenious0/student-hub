@@ -98,24 +98,24 @@ export default function Home() {
       {/* Footer with Vendor/Runner CTAs */}
       <footer className="bg-surface border-t border-surface-border mt-20">
         <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
-            <Link href="/become-vendor" className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-8 md:p-10">
-              <div className="relative z-10">
-                <div className="text-4xl mb-4">🏪</div>
-                <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Sell on Omni</h3>
-                <p className="text-white/80 text-sm font-medium mb-6">Open your shop in minutes. Reach thousands of students.</p>
-                <span className="inline-block px-6 py-3 bg-white text-indigo-600 font-black uppercase text-xs tracking-widest rounded-xl group-hover:scale-105 transition-transform">
+          <div className="grid grid-cols-2 gap-4 mb-8 md:mb-12">
+            <Link href="/become-vendor" className="group relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-5 md:p-10 transition-all hover:scale-[1.02] active:scale-95">
+              <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left">
+                <div className="text-3xl md:text-4xl mb-2 md:mb-4">🏪</div>
+                <h3 className="text-sm md:text-2xl font-black uppercase tracking-tight mb-1 md:mb-2">Sell on Omni</h3>
+                <p className="text-white/80 text-[10px] md:text-sm font-medium mb-3 md:mb-6 line-clamp-2 md:line-clamp-none">Open your shop. Reach students.</p>
+                <span className="inline-block px-4 py-2 md:px-6 md:py-3 bg-white text-indigo-600 font-black uppercase text-[10px] md:text-xs tracking-widest rounded-lg md:rounded-xl group-hover:scale-105 transition-transform">
                   Start Selling
                 </span>
               </div>
             </Link>
 
-            <Link href="/runner" className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white p-8 md:p-10">
-              <div className="relative z-10">
-                <div className="text-4xl mb-4">⚡</div>
-                <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Become a Runner</h3>
-                <p className="text-white/80 text-sm font-medium mb-6">Earn money making deliveries on campus. Flexible hours.</p>
-                <span className="inline-block px-6 py-3 bg-white text-emerald-600 font-black uppercase text-xs tracking-widest rounded-xl group-hover:scale-105 transition-transform">
+            <Link href="/runner" className="group relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white p-5 md:p-10 transition-all hover:scale-[1.02] active:scale-95">
+              <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left">
+                <div className="text-3xl md:text-4xl mb-2 md:mb-4">⚡</div>
+                <h3 className="text-sm md:text-2xl font-black uppercase tracking-tight mb-1 md:mb-2">Become Runner</h3>
+                <p className="text-white/80 text-[10px] md:text-sm font-medium mb-3 md:mb-6 line-clamp-2 md:line-clamp-none">Earn money. Flexible hours.</p>
+                <span className="inline-block px-4 py-2 md:px-6 md:py-3 bg-white text-emerald-600 font-black uppercase text-[10px] md:text-xs tracking-widest rounded-lg md:rounded-xl group-hover:scale-105 transition-transform">
                   Join Fleet
                 </span>
               </div>

@@ -4,58 +4,26 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { SignedIn, SignedOut, SignInButton, useUser } from '@clerk/nextjs';
 import { useCart } from '@/context/CartContext';
-
-interface Product {
-    id: string;
-    title: string;
-    description: string;
-    price: number;
-    category: {
-        name: string;
-        icon: string | null;
-    };
-    imageUrl: string | null;
-    hotspot: string | null;
-    vendor: {
-        id: string;
-        name: string | null;
-        clerkId: string;
-        isActive: boolean;
-        currentHotspot: string | null;
-    };
-}
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ProductDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const { user } = useUser();
     const { addToCart } = useCart();
-    const [product, setProduct] = useState<Product | null>(null);
+
+    const [product, setProduct] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [showFAB, setShowFAB] = useState(false);
+    const [quantity, setQuantity] = useState(1);
+    const [activeTab, setActiveTab] = useState('details');
     const [isGhostAdmin, setIsGhostAdmin] = useState(false);
-    const [isHybridAuth, setIsHybridAuth] = useState(false);
+    const [zoomImage, setZoomImage] = useState(false);
 
     useEffect(() => {
         fetchProduct();
-        // Check if admin is viewing
         const ghost = localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
         if (ghost) setIsGhostAdmin(true);
-
-        // Check for Native Session Sync manually (no external deps)
-        const isVerified = document.cookie.split('; ').some(c => c.startsWith('OMNI_IDENTITY_VERIFIED=TRUE'));
-        if (isVerified) {
-            setIsHybridAuth(true);
-        }
     }, [params.id]);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setShowFAB(window.scrollY > 300);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     const fetchProduct = async () => {
         try {
@@ -71,240 +39,238 @@ export default function ProductDetailsPage() {
         }
     };
 
-    const handleBuyNow = () => {
-        // Block buying if admin is viewing
-        if (isGhostAdmin) {
-            alert('🛡️ ADMIN MODE ACTIVE\n\nBuying is disabled in Ghost Admin mode.\n\nTo purchase, please sign out of admin mode.');
-            return;
-        }
-        if (product) {
-            addToCart(product);
-            router.push('/cart');
-        }
+    const handleAddToCart = () => {
+        if (!product) return;
+
+        // Use flash sale price if active
+        const finalPrice = product.flashSale ? product.flashSale.salePrice : product.price;
+
+        // Create product object for cart (normalized)
+        const cartItem = {
+            id: product.id,
+            title: product.title,
+            price: finalPrice,
+            imageUrl: product.imageUrl,
+            vendorId: product.vendor.id,
+            vendorName: product.vendor.shopName || product.vendor.name,
+            flashSaleId: product.flashSale?.id
+        };
+
+        addToCart(cartItem, quantity);
+
+        // Show success feedback (TODO: Toast)
+        router.push('/cart');
     };
 
     if (loading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin omni-glow"></div>
+                <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full" />
             </div>
         );
     }
 
-    if (!product) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="text-center">
-                    <div className="text-6xl mb-4">📦</div>
-                    <h2 className="text-2xl font-black text-foreground/50 uppercase">Product Not Found</h2>
-                </div>
-            </div>
-        );
-    }
+    if (!product) return null; // Or 404 component
+
+    const isOnSale = !!product.flashSale;
+    const currentPrice = isOnSale ? product.flashSale.salePrice : product.price;
+    const originalPrice = isOnSale ? product.flashSale.originalPrice : product.price;
+    const discount = isOnSale ? product.flashSale.discountPercent : 0;
 
     return (
-        <div className="min-h-screen bg-background transition-colors duration-300">
-            {/* Simplified Header with Back Button */}
-            <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-surface-border">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-                    <button
-                        onClick={() => router.back()}
-                        className="w-10 h-10 bg-surface hover:bg-surface-hover rounded-full flex items-center justify-center transition-colors"
-                    >
-                        <span className="text-lg">←</span>
+        <div className="min-h-screen bg-background pb-32 md:pb-12">
+            {/* Header */}
+            <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-surface-border">
+                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                    <button onClick={() => router.back()} className="p-2 hover:bg-surface rounded-full transition-colors">
+                        ← Back
                     </button>
-                    <h1 className="text-lg font-bold truncate flex-1">{product.title}</h1>
-                    <div className="text-xl font-black text-primary">₵{product.price.toFixed(2)}</div>
+                    <h1 className="font-bold truncate max-w-[200px] md:max-w-md opacity-0 md:opacity-100 transition-opacity">
+                        {product.title}
+                    </h1>
+                    <div className="w-10" /> {/* Spacer */}
                 </div>
-            </div>
+            </header>
 
-            {/* Product Image Section - Clean & Simple */}
-            <div className="max-w-7xl mx-auto px-4 py-6">
-                <div className="grid md:grid-cols-2 gap-8">
-                    {/* Left: Image */}
-                    <div className="relative aspect-square rounded-3xl overflow-hidden bg-surface border border-surface-border">
-                        {product.imageUrl ? (
-                            <img
-                                src={product.imageUrl}
-                                alt={product.title}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-9xl">
-                                📦
-                            </div>
-                        )}
+            <main className="max-w-7xl mx-auto px-4 py-8">
+                <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
 
-                        {/* Vendor Status Badge */}
-                        {product.vendor.isActive && (
-                            <div className="absolute top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-full text-xs font-black uppercase flex items-center gap-2 shadow-lg">
-                                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                                Online Now
-                            </div>
-                        )}
+                    {/* LEFT: Product Image */}
+                    <div className="space-y-4">
+                        <div
+                            className="relative aspect-square rounded-3xl overflow-hidden bg-surface border border-surface-border cursor-zoom-in group"
+                            onClick={() => setZoomImage(!zoomImage)}
+                        >
+                            {product.imageUrl ? (
+                                <img
+                                    src={product.imageUrl}
+                                    alt={product.title}
+                                    className={`w-full h-full object-cover transition-transform duration-500 ${zoomImage ? 'scale-150' : 'group-hover:scale-110'}`}
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-6xl">📦</div>
+                            )}
+
+                            {isOnSale && (
+                                <div className="absolute top-4 left-4 bg-red-600 text-white px-4 py-2 rounded-full font-black uppercase text-sm shadow-xl animate-pulse">
+                                    ⚡ Flash Sale • -{discount}%
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Right: Product Info */}
-                    <div className="space-y-6">
-                        {/* Title & Price */}
-                        <div>
-                            <h1 className="text-3xl md:text-4xl font-black text-foreground mb-3 leading-tight">
+                    {/* RIGHT: Product Details */}
+                    <div>
+                        <div className="mb-6">
+                            <span className="text-primary font-bold text-sm uppercase tracking-wider bg-primary/10 px-3 py-1 rounded-full">
+                                {product.category?.name || 'General'}
+                            </span>
+                            <h1 className="text-3xl md:text-5xl font-black mt-4 mb-2 leading-tight">
                                 {product.title}
                             </h1>
-                            <div className="flex items-baseline gap-2 mb-4">
-                                <span className="text-4xl md:text-5xl font-black text-primary">
-                                    ₵{product.price.toFixed(2)}
+
+                            {/* Price Block */}
+                            <div className="flex items-end gap-3 mt-6">
+                                <span className="text-4xl md:text-6xl font-black text-primary">
+                                    ₵{currentPrice.toFixed(2)}
                                 </span>
-                                <span className="text-sm font-bold text-foreground/40 uppercase">GHS</span>
-                            </div>
-                            <div className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-bold">
-                                {product.category?.name || 'General'}
-                            </div>
-                        </div>
-
-                        {/* Trust Badges */}
-                        <div className="flex flex-wrap gap-2">
-                            <div className="trust-badge">
-                                🛡️ Escrow Protected
-                            </div>
-                            <div className="trust-badge">
-                                ✓ Verified Vendor
-                            </div>
-                            <div className="trust-badge">
-                                ⚡ Fast Delivery
-                            </div>
-                        </div>
-
-                        {/* Description */}
-                        <div className="bg-surface border border-surface-border rounded-2xl p-6">
-                            <h2 className="text-sm font-black text-foreground/40 uppercase tracking-widest mb-3">
-                                Product Details
-                            </h2>
-                            <p className="text-foreground/80 leading-relaxed">
-                                {product.description}
-                            </p>
-                        </div>
-
-                        {/* Vendor Info */}
-                        <div className="bg-surface border border-surface-border rounded-2xl p-6">
-                            <h3 className="text-sm font-black text-foreground/40 uppercase tracking-widest mb-4">
-                                Sold By
-                            </h3>
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-lg font-black text-primary-foreground">
-                                    {product.vendor.name?.[0] || 'V'}
-                                </div>
-                                <div>
-                                    <p className="text-lg font-bold text-foreground">
-                                        {product.vendor.name || 'Anonymous Vendor'}
-                                    </p>
-                                    <p className="text-xs font-medium text-foreground/50">
-                                        📍 {product.hotspot || 'Main Campus'}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        {(isHybridAuth || isGhostAdmin) ? (
-                            <div>
-                                {(product.vendor.clerkId === user?.id && !isGhostAdmin) ? (
-                                    <button
-                                        disabled
-                                        className="w-full py-5 bg-surface border-2 border-surface-border text-foreground/40 rounded-2xl font-black text-sm uppercase tracking-widest cursor-not-allowed"
-                                    >
-                                        You Own This Item
-                                    </button>
-                                ) : (
-                                    <button
-                                        onClick={handleBuyNow}
-                                        className="w-full py-5 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black text-base uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
-                                    >
-                                        🛒 Add to Cart • ₵{product.price.toFixed(2)}
-                                    </button>
+                                {isOnSale && (
+                                    <div className="flex flex-col mb-2">
+                                        <span className="text-lg text-foreground/40 line-through font-bold">
+                                            ₵{originalPrice.toFixed(2)}
+                                        </span>
+                                        <span className="text-xs font-bold text-red-500 uppercase">
+                                            Save ₵{(originalPrice - currentPrice).toFixed(2)}
+                                        </span>
+                                    </div>
                                 )}
                             </div>
-                        ) : (
-                            <>
-                                <SignedIn>
-                                    <div>
-                                        {isGhostAdmin ? (
-                                            <button
-                                                disabled
-                                                className="w-full py-5 bg-red-500/10 border-2 border-red-500/30 text-red-500 rounded-2xl font-black text-sm uppercase tracking-widest cursor-not-allowed"
-                                            >
-                                                👁️ ADMIN MODE • BUYING DISABLED
-                                            </button>
-                                        ) : user?.id === product.vendor.clerkId ? (
-                                            <button
-                                                disabled
-                                                className="w-full py-5 bg-surface border-2 border-surface-border text-foreground/40 rounded-2xl font-black text-sm uppercase tracking-widest cursor-not-allowed"
-                                            >
-                                                You Own This Item
-                                            </button>
+                        </div>
+
+                        {/* Vendor Profile Card */}
+                        <div className="bg-surface border border-surface-border rounded-2xl p-4 mb-8 flex items-center gap-4 hover:border-primary/50 transition-colors cursor-pointer">
+                            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-black text-lg">
+                                {product.vendor.shopName?.[0] || product.vendor.name?.[0]}
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-sm font-bold opacity-60 uppercase">Sold by</p>
+                                <p className="font-black text-lg">{product.vendor.shopName || product.vendor.name}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-xs font-bold opacity-60">Location</p>
+                                <p className="font-bold text-sm">📍 {product.hotspot || 'Campus'}</p>
+                            </div>
+                        </div>
+
+                        {/* Quantity & Actions */}
+                        <div className="bg-surface/50 border border-surface-border rounded-3xl p-6 mb-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <span className="font-bold text-lg">Quantity</span>
+                                <div className="flex items-center gap-4 bg-background border border-surface-border rounded-xl p-1">
+                                    <button
+                                        onClick={() => quantity > 1 && setQuantity(q => q - 1)}
+                                        className="w-10 h-10 flex items-center justify-center hover:bg-surface rounded-lg font-bold text-xl"
+                                    >
+                                        -
+                                    </button>
+                                    <span className="w-8 text-center font-black text-lg">{quantity}</span>
+                                    <button
+                                        onClick={() => setQuantity(q => q + 1)}
+                                        className="w-10 h-10 flex items-center justify-center hover:bg-surface rounded-lg font-bold text-xl"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleAddToCart}
+                                disabled={isGhostAdmin}
+                                className={`w-full py-4 text-xl font-black uppercase tracking-widest rounded-2xl shadow-lg transform transition-all active:scale-95 ${isGhostAdmin
+                                    ? 'bg-gray-500 cursor-not-allowed opacity-50'
+                                    : 'bg-gradient-to-r from-orange-500 to-red-600 text-white hover:scale-[1.02]'
+                                    }`}
+                            >
+                                {isGhostAdmin ? 'Admin Mode (No Buy)' : `Add to Cart • ₵${(currentPrice * quantity).toFixed(2)}`}
+                            </button>
+                        </div>
+
+                        {/* Tabs: Details / Reviews */}
+                        <div className="mt-8">
+                            <div className="flex border-b border-surface-border mb-6">
+                                <button
+                                    onClick={() => setActiveTab('details')}
+                                    className={`px-6 py-3 font-bold text-sm uppercase tracking-widest border-b-2 transition-colors ${activeTab === 'details' ? 'border-primary text-primary' : 'border-transparent text-foreground/40'
+                                        }`}
+                                >
+                                    Details
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('reviews')}
+                                    className={`px-6 py-3 font-bold text-sm uppercase tracking-widest border-b-2 transition-colors ${activeTab === 'reviews' ? 'border-primary text-primary' : 'border-transparent text-foreground/40'
+                                        }`}
+                                >
+                                    Reviews ({product.reviews?.length || 0})
+                                </button>
+                            </div>
+
+                            <AnimatePresence mode="wait">
+                                {activeTab === 'details' ? (
+                                    <motion.div
+                                        key="details"
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="text-foreground/80 leading-relaxed text-lg"
+                                    >
+                                        <p>{product.description}</p>
+
+                                        <div className="grid grid-cols-2 gap-4 mt-8">
+                                            <div className="bg-surface p-4 rounded-xl border border-surface-border">
+                                                <p className="text-xs uppercase font-bold text-foreground/40 mb-1">Condition</p>
+                                                <p className="font-bold">New</p>
+                                            </div>
+                                            <div className="bg-surface p-4 rounded-xl border border-surface-border">
+                                                <p className="text-xs uppercase font-bold text-foreground/40 mb-1">Stock</p>
+                                                <p className="font-bold text-green-500">In Stock</p>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ) : (
+                                    <motion.div
+                                        key="reviews"
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="space-y-6"
+                                    >
+                                        {product.reviews && product.reviews.length > 0 ? (
+                                            product.reviews.map((review: any) => (
+                                                <div key={review.id} className="bg-surface p-4 rounded-xl border border-surface-border">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="font-bold">{review.userName || 'Student'}</span>
+                                                        <div className="flex text-yellow-500">
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <span key={i}>{i < review.rating ? '★' : '☆'}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-foreground/80">{review.comment}</p>
+                                                </div>
+                                            ))
                                         ) : (
-                                            <button
-                                                onClick={handleBuyNow}
-                                                className="w-full py-5 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black text-base uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
-                                            >
-                                                🛒 Add to Cart • ₵{product.price.toFixed(2)}
-                                            </button>
+                                            <div className="text-center py-12 text-foreground/40">
+                                                <p className="font-bold">No reviews yet</p>
+                                                <p className="text-sm">Be the first to review this product!</p>
+                                            </div>
                                         )}
-                                    </div>
-                                </SignedIn>
-
-                                <SignedOut>
-                                    <div className="bg-surface border border-surface-border rounded-2xl p-6 text-center">
-                                        <h3 className="text-lg font-black text-foreground mb-3 uppercase">
-                                            Sign In to Purchase
-                                        </h3>
-                                        <SignInButton mode="modal">
-                                            <button className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black uppercase tracking-widest hover:scale-105 transition-all">
-                                                Sign In
-                                            </button>
-                                        </SignInButton>
-                                    </div>
-                                </SignedOut>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-
-                {/* Additional Info Section */}
-                <div className="mt-12 bg-green-500/5 border border-green-500/20 rounded-3xl p-8">
-                    <h3 className="text-lg font-black text-green-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        🛡️ Buyer Protection Guarantee
-                    </h3>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        <div>
-                            <div className="text-3xl mb-2">💰</div>
-                            <h4 className="font-bold text-foreground mb-1">Escrow Protection</h4>
-                            <p className="text-sm text-foreground/60">Your money is held safely until you confirm delivery</p>
-                        </div>
-                        <div>
-                            <div className="text-3xl mb-2">✅</div>
-                            <h4 className="font-bold text-foreground mb-1">Verified Handover</h4>
-                            <p className="text-sm text-foreground/60">Secure pickup code system for safe exchanges</p>
-                        </div>
-                        <div>
-                            <div className="text-3xl mb-2">↩️</div>
-                            <h4 className="font-bold text-foreground mb-1">Full Refund</h4>
-                            <p className="text-sm text-foreground/60">100% money-back if something goes wrong</p>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Floating Action Button (Mobile) */}
-            {(isHybridAuth || isGhostAdmin || (user && user.id !== product.vendor.clerkId)) && (
-                <button
-                    onClick={handleBuyNow}
-                    className={`fixed bottom-6 right-6 w-16 h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all md:hidden ${showFAB ? 'scale-100' : 'scale-0'}`}
-                >
-                    🛒
-                </button>
-            )}
-        </div >
+            </main>
+        </div>
     );
 }

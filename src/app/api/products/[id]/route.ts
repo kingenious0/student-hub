@@ -20,9 +20,25 @@ export async function GET(
                         clerkId: true,
                         currentHotspot: true,
                         lastActive: true,
+                        shopName: true,
+                        vendorStatus: true
                     },
                 },
                 category: true,
+                flashSale: {
+                    where: { isActive: true },
+                },
+                reviews: {
+                    take: 5,
+                    orderBy: { createdAt: 'desc' },
+                    select: {
+                        id: true,
+                        rating: true,
+                        comment: true,
+                        userName: true,
+                        createdAt: true
+                    }
+                }
             },
         });
 

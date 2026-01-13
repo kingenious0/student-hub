@@ -80,33 +80,68 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing Product ID' }, { status: 400 });
         }
 
-        // Get the product
+        // Get the product with active flash sale
         const product = await prisma.product.findUnique({
             where: { id: productId },
-            include: { vendor: true },
+            include: {
+                vendor: true,
+                flashSale: {
+                    where: { isActive: true }
+                }
+            },
         });
 
         if (!product) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
 
+        // --- PRICE CALCULATION LOGIC ---
+        let finalPrice = product.price;
+        let activeFlashSaleId = null;
+
+        if (product.flashSale) {
+            const now = new Date();
+            const { startTime, endTime, salePrice, stockSold, stockLimit } = product.flashSale;
+
+            // Check if within time window AND has stock
+            if (now >= startTime && now <= endTime && stockSold < stockLimit) {
+                console.log(`⚡ Applying Flash Sale Price: ${salePrice} (Original: ${product.price})`);
+                finalPrice = salePrice;
+                activeFlashSaleId = product.flashSale.id;
+            }
+        }
+
         // Calculation
         const deliveryFee = fulfillmentType === 'DELIVERY' ? 5.00 : 0.00;
-        const totalAmount = (product.price * quantity) + deliveryFee;
+        const totalAmount = (finalPrice * quantity) + deliveryFee;
 
         // Create order in database (PENDING status)
         console.log(`Creating order for product ${productId}, student ${student.id}, vendor ${product.vendorId}`);
 
-        const order = await prisma.order.create({
-            data: {
-                productId: product.id,
-                studentId: student.id,
-                vendorId: product.vendorId,
-                amount: totalAmount,
-                fulfillmentType: fulfillmentType as 'PICKUP' | 'DELIVERY', // Typed as enum in DB
-                status: 'PENDING',
-                escrowStatus: 'PENDING',
-            },
+        // Use transaction to ensure we update flash sale stock atomically if needed
+        const order = await prisma.$transaction(async (tx) => {
+            // 1. Create the order
+            const newOrder = await tx.order.create({
+                data: {
+                    productId: product.id,
+                    studentId: student.id,
+                    vendorId: product.vendorId,
+                    amount: totalAmount,
+                    fulfillmentType: fulfillmentType as 'PICKUP' | 'DELIVERY',
+                    status: 'PENDING',
+                    escrowStatus: 'PENDING',
+                },
+            });
+
+            // 2. If it was a flash sale, increment the stockSold
+            if (activeFlashSaleId) {
+                await tx.flashSale.update({
+                    where: { id: activeFlashSaleId },
+                    data: { stockSold: { increment: quantity } }
+                });
+            }
+
+            return newOrder;
         });
 
         console.log(`✅ Order created successfully: ${order.id}`);
