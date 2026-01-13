@@ -37,16 +37,27 @@ interface Category {
 type SortOption = 'newest' | 'price-low' | 'price-high' | 'popular';
 
 const categoryConfig = [
-    { slug: 'food-and-snacks', name: 'Food & Snacks', icon: '🍕' },
-    { slug: 'tech-and-gadgets', name: 'Tech & Gadgets', icon: '💻' },
+    { slug: 'food', name: 'Food & Snacks', icon: '🍕' },
+    { slug: 'tech', name: 'Tech & Gadgets', icon: '💻' },
     { slug: 'fashion', name: 'Fashion', icon: '👕' },
-    { slug: 'books-and-notes', name: 'Books & Notes', icon: '📚' },
+    { slug: 'books', name: 'Books & Notes', icon: '📚' },
     { slug: 'services', name: 'Services', icon: '⚡' },
-    { slug: 'everything-else', name: 'Everything Else', icon: '🎯' }
+    { slug: 'beauty', name: 'Beauty & Health', icon: '💄' },
+    { slug: 'sports', name: 'Sports & Fitness', icon: '⚽' },
+    { slug: 'other', name: 'Everything Else', icon: '🎯' }
 ];
 
 export default function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
-    const { slug } = use(params);
+    const { slug: rawSlug } = use(params);
+
+    // Normalize legacy slugs to new premium hubs
+    const slugMap: Record<string, string> = {
+        'food-and-snacks': 'food',
+        'tech-and-gadgets': 'tech',
+        'books-and-notes': 'books',
+        'everything-else': 'other'
+    };
+    const slug = slugMap[rawSlug] || rawSlug;
     const { addToCart } = useCart();
     const [category, setCategory] = useState<Category | null>(null);
     const [loading, setLoading] = useState(true);
@@ -125,8 +136,8 @@ export default function CategoryHubPage({ params }: { params: Promise<{ slug: st
 
         if (selectedHotspot) filtered = filtered.filter(p => p.hotspot === selectedHotspot);
         if (showActiveOnly) filtered = filtered.filter(p => p.vendor.isAcceptingOrders);
-        if (slug === 'food-and-snacks' && spicyLevel) filtered = filtered.filter(p => p.details?.spicyLevel === spicyLevel);
-        if (slug === 'tech-and-gadgets' && condition) filtered = filtered.filter(p => p.details?.condition === condition);
+        if (slug === 'food' && spicyLevel) filtered = filtered.filter(p => p.details?.spicyLevel === spicyLevel);
+        if (slug === 'tech' && condition) filtered = filtered.filter(p => p.details?.condition === condition);
 
         switch (sortBy) {
             case 'newest': filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break;
@@ -139,7 +150,7 @@ export default function CategoryHubPage({ params }: { params: Promise<{ slug: st
     const handleQuickFilter = (filter: string) => {
         setActiveQuickFilter(filter);
         // Apply filter logic based on category
-        if (slug === 'food-and-snacks') {
+        if (slug === 'food') {
             // Food quick filters: Breakfast, Lunch, Dinner, Snacks, Drinks
             // For now, just set as active - can be expanded later
         }
@@ -148,16 +159,20 @@ export default function CategoryHubPage({ params }: { params: Promise<{ slug: st
     // Get quick filters based on category
     const getQuickFilters = () => {
         switch (slug) {
-            case 'food-and-snacks':
+            case 'food':
                 return ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Drinks'];
-            case 'tech-and-gadgets':
+            case 'tech':
                 return ['Laptops', 'Phones', 'Accessories', 'Gaming'];
             case 'fashion':
                 return ['Men', 'Women', 'Unisex', 'Accessories'];
             case 'services':
                 return ['Cleaning', 'Tutoring', 'Delivery', 'Tech Support'];
-            case 'books-and-notes':
+            case 'books':
                 return ['Textbooks', 'Notes', 'Study Guides', 'Stationery'];
+            case 'beauty':
+                return ['Makeup', 'Skincare', 'Hair', 'Perfumes'];
+            case 'sports':
+                return ['Gym Gear', 'Jerseys', 'Equipment', 'Supplements'];
             default:
                 return [];
         }
@@ -166,7 +181,7 @@ export default function CategoryHubPage({ params }: { params: Promise<{ slug: st
     // Category "Energy Color" System - King Kong Edition
     const getCategoryTheme = () => {
         switch (slug) {
-            case 'food-and-snacks':
+            case 'food':
                 return {
                     bg: 'from-orange-500/10 to-red-500/10',
                     text: 'text-[#FF4D00]',
@@ -178,7 +193,7 @@ export default function CategoryHubPage({ params }: { params: Promise<{ slug: st
                     border: 'group-hover:border-[#FF4D00]/50',
                     accent: 'from-[#FF4D00]/10'
                 };
-            case 'tech-and-gadgets':
+            case 'tech':
                 return {
                     bg: 'from-blue-500/10 to-cyan-500/10',
                     text: 'text-[#0070FF]',
@@ -202,7 +217,7 @@ export default function CategoryHubPage({ params }: { params: Promise<{ slug: st
                     border: 'group-hover:border-[#A333FF]/50',
                     accent: 'from-[#A333FF]/10'
                 };
-            case 'books-and-notes':
+            case 'books':
                 return {
                     bg: 'from-green-500/10 to-emerald-500/10',
                     text: 'text-[#2ECC71]',
@@ -225,6 +240,30 @@ export default function CategoryHubPage({ params }: { params: Promise<{ slug: st
                     badge: 'bg-yellow-500',
                     border: 'group-hover:border-yellow-500/50',
                     accent: 'from-yellow-500/10'
+                };
+            case 'beauty':
+                return {
+                    bg: 'from-pink-500/10 to-rose-500/10',
+                    text: 'text-pink-500',
+                    icon: '💄',
+                    energy: '#EC4899',
+                    shadow: 'hover:shadow-[0_8px_30px_rgb(236,72,153,0.2)]',
+                    glow: 'group-hover:shadow-[0_0_20px_rgba(236,72,153,0.15)]',
+                    badge: 'bg-pink-500',
+                    border: 'group-hover:border-pink-500/50',
+                    accent: 'from-pink-500/10'
+                };
+            case 'sports':
+                return {
+                    bg: 'from-emerald-500/10 to-teal-500/10',
+                    text: 'text-emerald-500',
+                    icon: '⚽',
+                    energy: '#10B981',
+                    shadow: 'hover:shadow-[0_8px_30px_rgb(16,185,129,0.2)]',
+                    glow: 'group-hover:shadow-[0_0_20px_rgba(16,185,129,0.15)]',
+                    badge: 'bg-emerald-500',
+                    border: 'group-hover:border-emerald-500/50',
+                    accent: 'from-emerald-500/10'
                 };
             default:
                 return {

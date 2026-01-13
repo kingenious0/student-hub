@@ -136,19 +136,36 @@ export default function NewProductPage() {
                         <label className="block text-sm font-black uppercase tracking-widest text-foreground/60 mb-2">
                             Category *
                         </label>
-                        <select
-                            value={formData.categoryId}
-                            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                            className="w-full px-4 py-3 bg-background border-2 border-surface-border rounded-xl focus:outline-none focus:border-primary"
-                            required
-                        >
-                            <option value="">Select a category</option>
-                            {categories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>
-                                    {cat.icon} {cat.name}
-                                </option>
-                            ))}
-                        </select>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {categories.map((cat) => {
+                                const isSelected = formData.categoryId === cat.id;
+                                return (
+                                    <button
+                                        key={cat.id}
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, categoryId: cat.id })}
+                                        className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-300 gap-3 group relative overflow-hidden
+                                            ${isSelected
+                                                ? 'border-primary bg-primary/5 shadow-[0_0_30px_rgba(var(--primary-rgb),0.15)] scale-[1.02]'
+                                                : 'border-surface-border bg-background hover:border-primary/50 hover:bg-surface-highlight'
+                                            }
+                                        `}
+                                    >
+                                        <div className={`absolute inset-0 bg-gradient-to-br from-transparent to-black/5 opacity-0 transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'group-hover:opacity-100'}`} />
+
+                                        <span className={`text-4xl transition-transform duration-300 relative z-10 ${isSelected ? 'scale-110' : 'group-hover:scale-110'}`}>
+                                            {cat.icon || '📦'}
+                                        </span>
+                                        <span className={`font-bold text-sm text-center relative z-10 ${isSelected ? 'text-primary' : 'text-foreground/80'}`}>
+                                            {cat.name}
+                                        </span>
+                                        {isSelected && (
+                                            <div className="absolute top-3 right-3 w-4 h-4 bg-primary rounded-full animate-bounce shadow-lg shadow-primary/50" />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
 
                     {/* Image Upload */}

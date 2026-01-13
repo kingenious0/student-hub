@@ -9,8 +9,21 @@ export async function GET(
     try {
         const { slug } = await params;
 
-        const category = await prisma.category.findUnique({
-            where: { slug },
+        // Legacy Slug Mapping for Database Compatibility
+        const legacyMapping: Record<string, string> = {
+            'food': 'food-and-snacks',
+            'tech': 'tech-and-gadgets',
+            'books': 'books-and-notes',
+            'other': 'everything-else'
+        };
+
+        const category = await prisma.category.findFirst({
+            where: {
+                OR: [
+                    { slug: slug },
+                    ...(legacyMapping[slug] ? [{ slug: legacyMapping[slug] }] : [])
+                ]
+            },
             include: {
                 products: {
                     include: {
