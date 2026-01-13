@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import ImageUpload from '@/components/products/ImageUpload';
 
 export default function NewProductPage() {
     const router = useRouter();
@@ -150,42 +151,16 @@ export default function NewProductPage() {
                         </select>
                     </div>
 
-                    {/* Image URL */}
+                    {/* Image Upload */}
                     <div>
                         <label className="block text-sm font-black uppercase tracking-widest text-foreground/60 mb-2">
-                            Image URL
+                            Product Image *
                         </label>
-                        <input
-                            type="url"
+                        <ImageUpload
                             value={formData.imageUrl}
-                            onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                            placeholder="https://example.com/image.jpg"
-                            className="w-full px-4 py-3 bg-background border-2 border-surface-border rounded-xl focus:outline-none focus:border-primary"
+                            onChange={(url) => setFormData({ ...formData, imageUrl: url })}
                         />
-                        <p className="text-xs text-foreground/40 mt-2">
-                            Paste a direct link to your product image
-                        </p>
                     </div>
-
-                    {/* Preview */}
-                    {formData.imageUrl && (
-                        <div>
-                            <label className="block text-sm font-black uppercase tracking-widest text-foreground/60 mb-2">
-                                Preview
-                            </label>
-                            <div className="aspect-square max-w-xs bg-surface-hover rounded-xl overflow-hidden">
-                                <img
-                                    src={formData.imageUrl}
-                                    alt="Preview"
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = '';
-                                        (e.target as HTMLImageElement).alt = 'Invalid image URL';
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    )}
 
                     {/* Actions */}
                     <div className="flex gap-4 pt-4">

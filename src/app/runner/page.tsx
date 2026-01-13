@@ -14,31 +14,133 @@ import SimpleEdit from '@/components/admin/SimpleEdit';
 import { useModal } from '@/context/ModalContext';
 import { startTracking, stopTracking } from '@/lib/location/radar-client';
 
-export default function RunnerDashboard() {
+export default function RunnerPage() {
     const { user, isLoaded } = useUser();
-    const modal = useModal();
     const { isGhostAdmin } = useAdmin();
-    const router = useRouter();
+    const [isRunner, setIsRunner] = useState(false);
+    const [checkingStatus, setCheckingStatus] = useState(true);
 
-    // Access Control
     useEffect(() => {
-        if (isLoaded && !isGhostAdmin) {
-            // Check if user is runner (assuming publicMetadata.role or similar)
-            const isRunner = user?.publicMetadata?.role === 'RUNNER' || user?.publicMetadata?.isRunner;
-            if (!isRunner) {
-                // router.push('/marketplace'); 
-                // Commented out to prevent accidental locking during dev, 
-                // but this is where the check goes.
+        if (isLoaded) {
+            // Check Clerk Metadata first for speed
+            const metaRunner = user?.publicMetadata?.isRunner === true || user?.publicMetadata?.role === 'RUNNER';
+            if (metaRunner) {
+                setIsRunner(true);
+                setCheckingStatus(false);
+            } else {
+                // Double check API just in case metadata is stale? 
+                // Alternatively, just trust metadata for UI speed, API will block specific actions.
+                // Let's rely on metadata + db sync.
+                // Assuming sync is good.
+                setIsRunner(false);
+                setCheckingStatus(false);
             }
         }
-    }, [isLoaded, user, isGhostAdmin, router]);
+    }, [isLoaded, user]);
+
+    if (checkingStatus) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="animate-spin w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full" />
+            </div>
+        );
+    }
+
+    if (isRunner || isGhostAdmin) {
+        return <RunnerDashboardSection />;
+    }
+
+    return <RunnerLandingSection onSuccess={() => setIsRunner(true)} />;
+}
+
+// --- SUB-COMPONENTS ---
+
+function RunnerLandingSection({ onSuccess }: { onSuccess: () => void }) {
+    const [applying, setApplying] = useState(false);
+
+    const handleApply = async () => {
+        setApplying(true);
+        try {
+            const res = await fetch('/api/runner/apply', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                // Reload window to refresh Clerk session/metadata if needed, 
+                // or just trigger success state
+                window.location.reload();
+            } else {
+                alert('Application failed. Please try again.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Network error');
+        } finally {
+            setApplying(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-black text-white p-6 relative overflow-hidden">
+            {/* Background Effects */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+
+            <div className="max-w-md mx-auto relative z-10 pt-10">
+                <Link href="/" className="inline-block mb-8 text-white/50 hover:text-white transition-colors">← Back to Campus</Link>
+
+                <h1 className="text-5xl font-black uppercase tracking-tighter mb-4 leading-none">
+                    Run the<br />
+                    <span className="text-yellow-500">Campus</span>
+                </h1>
+
+                <p className="text-xl text-white/80 font-medium mb-10 leading-relaxed">
+                    Make money on your schedule. Deliver food, tech, and essentials to fellow students. No vehicle required.
+                </p>
+
+                <div className="space-y-6 mb-12">
+                    <BenefitRow icon="⚡" title="Instant Payouts" desc="Get paid directly after every mission." />
+                    <BenefitRow icon="🎒" title="Zero Gear Needed" desc="Just your phone and your legs." />
+                    <BenefitRow icon="🕒" title="Flexible Hours" desc="Turn on when you're free. Turn off for class." />
+                </div>
+
+                <button
+                    onClick={handleApply}
+                    disabled={applying}
+                    className="w-full py-5 bg-gradient-to-r from-yellow-500 to-amber-500 text-black font-black text-lg uppercase tracking-widest rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {applying ? 'Setting up Access...' : 'Join the Fleet (Instant)'}
+                </button>
+
+                <p className="text-center text-white/30 text-xs mt-6 uppercase tracking-widest">
+                    By joining, you agree to the Runner Code of Conduct.
+                </p>
+            </div>
+        </div>
+    );
+}
+
+function BenefitRow({ icon, title, desc }: { icon: string, title: string, desc: string }) {
+    return (
+        <div className="flex items-start gap-4">
+            <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-2xl border border-white/10">
+                {icon}
+            </div>
+            <div>
+                <h3 className="font-bold text-lg mb-1">{title}</h3>
+                <p className="text-white/60 text-sm">{desc}</p>
+            </div>
+        </div>
+    );
+}
+
+function RunnerDashboardSection() {
+    const { user } = useUser();
+    const modal = useModal();
+    const router = useRouter();
 
     const [isOnline, setIsOnline] = useState(false);
-    const [missions, setMissions] = useState<any[]>([]); // Available
-    const [activeMission, setActiveMission] = useState<any>(null); // Current
+    const [missions, setMissions] = useState<any[]>([]);
+    const [activeMission, setActiveMission] = useState<any>(null);
     const [balance, setBalance] = useState(0.00);
-    const [isLoading, setIsLoading] = useState(true);
-
     const [lastMissionCount, setLastMissionCount] = useState(0);
 
     // Initial Load & Polling
@@ -47,8 +149,7 @@ export default function RunnerDashboard() {
         fetch('/api/runner/status').then(res => res.json()).then(data => {
             setIsOnline(data.status === 'ONLINE');
             setBalance(data.balance || 0);
-            setIsLoading(false);
-        });
+        }).catch(e => console.error(e));
 
         // Fetch immediately on mount
         fetchActiveMission();
@@ -56,10 +157,10 @@ export default function RunnerDashboard() {
         const interval = setInterval(() => {
             if (isOnline) fetchMissions();
             fetchActiveMission();
-        }, 3000); // Faster poll for demo (3s)
+        }, 3000);
 
         return () => clearInterval(interval);
-    }, [isOnline]); // Depend on isOnline to toggle fetching
+    }, [isOnline]);
 
     const fetchActiveMission = async () => {
         try {
@@ -68,8 +169,6 @@ export default function RunnerDashboard() {
             if (data.success && data.mission) {
                 setActiveMission(data.mission);
             } else {
-                // Only clear if we thought we had one, to prevent flickering? 
-                // Actually if null, we should clear it.
                 if (activeMission) setActiveMission(null);
             }
         } catch (e) { console.error('Active fetch error', e); }
@@ -81,15 +180,7 @@ export default function RunnerDashboard() {
             const data = await res.json();
             if (data.success) {
                 setMissions(data.missions);
-
-                // Play Sound on New Mission
                 if (data.missions.length > lastMissionCount) {
-                    const audio = new Audio('/sounds/notification.mp3'); // We need this file, or use a data URI
-                    // Using a short beep data URI for reliability without external files
-                    const beep = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"); // Short placeholder or...
-                    // Let's use a browser native notification or standard alert sound approach if possible?
-                    // actually let's just log for now or try a simple beep.
-                    // Or better, just vibrate if mobile.
                     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
                 }
                 setLastMissionCount(data.missions.length);
@@ -99,11 +190,9 @@ export default function RunnerDashboard() {
 
     const toggleStatus = async () => {
         const newStatus = !isOnline ? 'ONLINE' : 'OFFLINE';
-        setIsOnline(!isOnline); // Optimistic UI
+        setIsOnline(!isOnline);
 
-        // Radar Tracking Logic
         if (newStatus === 'ONLINE') {
-            // Request Background (Always) permission for Runners
             startTracking('RESPONSIVE', true);
         } else {
             stopTracking();
@@ -117,36 +206,33 @@ export default function RunnerDashboard() {
             });
         } catch (e) {
             console.error('Toggle failed', e);
-            setIsOnline(isOnline); // Revert
+            setIsOnline(isOnline);
         }
     };
 
     const handleAccept = async (missionId: string) => {
-        // Optimistic UI: Find mission and set as "Active" immediately
         const mission = missions.find(m => m.id === missionId);
         if (mission) {
-            // Optimistically set active mission with a temporary Loading status
             setActiveMission({
                 id: mission.id,
                 title: mission.title,
                 vendorName: mission.vendorName,
                 pickupLocation: mission.pickupLocation,
                 dropoffLocation: mission.dropoffLocation,
-                status: 'ASSIGNING...', // Temp status
-                earning: mission.earning
+                status: 'ASSIGNING...',
+                earning: mission.earning,
+                pickupCode: mission.pickupCode // Ensure we persist this if available
             });
-            // Remove from feed
             setMissions(prev => prev.filter(m => m.id !== missionId));
         }
 
         try {
             const res = await fetch(`/api/runner/missions/${missionId}/accept`, { method: 'POST' });
             if (res.ok) {
-                // Determine true server state
                 fetchActiveMission();
             } else {
                 alert('Too slow! Mission taken.');
-                fetchMissions(); // Revert
+                fetchMissions();
                 if (activeMission?.id === missionId) setActiveMission(null);
             }
         } catch (e) {
@@ -157,16 +243,6 @@ export default function RunnerDashboard() {
     };
 
     const handleComplete = async () => {
-        if (!activeMission) return;
-        // Only verify logic here if needed, but the API handles the heavy lifting
-        // We probably need input for the student release key here if we want to be fancy
-        // For MVP, if we click "Complete", prompt for the key or just call the API?
-        // The previous implementation did not prompt for key. 
-        // We should PROMPT for the key here?
-        // The previous implementation did not prompt for key. 
-        // We should PROMPT for the key here?
-        // Actually, the previous implementation of verify-key endpoint TAKES key in body.
-
         const releaseKey = await modal.prompt("Ask Student for their Shield Key (6-digits):", "Verify Delivery");
         if (!releaseKey) return;
 
@@ -179,10 +255,9 @@ export default function RunnerDashboard() {
             const data = await res.json();
 
             if (res.ok && data.success) {
-                await modal.alert(`✅ Mission Complete! You earned GHS ${data.order.runnerEarnings || 5.00}`, 'Good Job!'); // use server data
+                await modal.alert(`✅ Mission Complete! You earned GHS ${data.order.runnerEarnings || 5.00}`, 'Good Job!');
                 setActiveMission(null);
                 setBalance(prev => prev + (data.order.runnerEarnings || 5.00));
-                // Optional: Play Ka-ching sound
             } else {
                 alert(data.error || 'Invalid Key');
             }
@@ -197,7 +272,6 @@ export default function RunnerDashboard() {
         <MaintenanceGuard protocol="RUNNER">
             <div className="min-h-screen bg-background">
                 <div className="max-w-md mx-auto space-y-6 pb-20 pt-20 px-4">
-                    {/* Back Navigation */}
                     <div className="flex items-center gap-4 mb-4">
                         <BackButton />
                         <div className="flex items-center gap-2 text-xs font-bold text-foreground/40 uppercase tracking-widest">
@@ -206,22 +280,20 @@ export default function RunnerDashboard() {
                             <span className="text-foreground/60">Runner Terminal</span>
                         </div>
                     </div>
-                    {/* Header */}
+
                     <div className="flex justify-between items-start">
                         <div className="flex flex-col gap-1">
                             <SimpleEdit id="runner_terminal_title" text="Runner Terminal" tag="h1" className="text-3xl font-black text-foreground uppercase tracking-tighter" />
                             <p className="text-foreground/40 text-xs font-bold uppercase tracking-widest">
-                                Secure Channel • <span className="text-yellow-500">Legon Campus</span>
+                                Secure Channel • <span className="text-yellow-500">Campus Grid</span>
                             </p>
                         </div>
-                        {/* Balance Card (Mini) */}
                         <div className="text-right">
                             <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">Wallet</p>
                             <p className="text-xl font-black text-green-500">₵{balance.toFixed(2)}</p>
                         </div>
                     </div>
 
-                    {/* Hustle Switch */}
                     <div className={`flex items-center justify-between p-6 rounded-3xl border relative overflow-hidden transition-all ${isOnline ? 'bg-surface border-yellow-500/50' : 'bg-surface border-surface-border'}`}>
                         <div className="relative z-10">
                             <SimpleEdit id="runner_duty_status" text="Duty Status" tag="h2" className="text-xl font-black uppercase tracking-tight text-foreground" />
@@ -238,7 +310,6 @@ export default function RunnerDashboard() {
                         </button>
                     </div>
 
-                    {/* WALLET / WITHDRAW SECTION */}
                     <div className="bg-surface border border-surface-border p-6 rounded-3xl space-y-4">
                         <div className="flex justify-between items-center">
                             <SimpleEdit id="runner_earnings_title" text="Earnings Available" tag="h3" className="text-sm font-black text-foreground uppercase tracking-tight" />
@@ -255,8 +326,6 @@ export default function RunnerDashboard() {
                         </div>
                     </div>
 
-
-                    {/* ACTIVE MISSION CARD (2-STAGE) */}
                     <AnimatePresence>
                         {activeMission && (
                             <motion.div
@@ -268,7 +337,6 @@ export default function RunnerDashboard() {
                                     : 'bg-yellow-500 text-black border-yellow-400'
                                     }`}
                             >
-                                {/* Status Label */}
                                 <div className="absolute top-0 right-0 p-4 opacity-10 font-black text-6xl rotate-12">
                                     {activeMission.status === 'PICKED_UP' ? 'GO' : 'GET'}
                                 </div>
@@ -277,7 +345,6 @@ export default function RunnerDashboard() {
                                     {activeMission.status === 'PICKED_UP' ? 'OMNI EXPRESS ⚡' : 'VENDOR HAND-OFF'}
                                 </h3>
 
-                                {/* STAGE A: PICKUP */}
                                 {activeMission.status !== 'PICKED_UP' && (
                                     <div className="space-y-4 relative z-10">
                                         <div className="p-4 bg-foreground/5 rounded-xl border border-foreground/10">
@@ -298,7 +365,6 @@ export default function RunnerDashboard() {
                                     </div>
                                 )}
 
-                                {/* STAGE B: DELIVERY */}
                                 {activeMission.status === 'PICKED_UP' && (
                                     <div className="space-y-4 relative z-10">
                                         <div className="p-4 bg-foreground/5 rounded-xl border border-foreground/10">
@@ -317,12 +383,10 @@ export default function RunnerDashboard() {
                                         </button>
                                     </div>
                                 )}
-
                             </motion.div>
                         )}
                     </AnimatePresence>
 
-                    {/* AVAILABLE MISSIONS */}
                     <AnimatePresence mode="wait">
                         {isOnline && !activeMission ? (
                             <motion.div
@@ -337,7 +401,6 @@ export default function RunnerDashboard() {
                                 )}
                                 {missions.map((mission) => (
                                     <div key={mission.id} className="bg-surface border border-surface-border rounded-3xl p-6 relative overflow-hidden group hover:border-yellow-500/50 transition-all cursor-pointer">
-                                        {/* ... existing card UI ... */}
                                         <div className="flex items-start gap-4 mb-4 relative z-10">
                                             <div className="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-500 border border-yellow-500/20">
                                                 <ZapIcon className="w-6 h-6" />

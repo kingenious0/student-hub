@@ -52,7 +52,7 @@ export default function VendorLayout({
 
                         {/* Switch Back / Exit Terminal */}
                         <Link
-                            href="/marketplace"
+                            href="/"
                             className="flex items-center gap-2 text-xs font-bold text-green-500 transition-colors"
                             title="Exit Terminal"
                         >
