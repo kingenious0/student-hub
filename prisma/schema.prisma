@@ -34,6 +34,7 @@ model User {
   lastActive     DateTime @default(now())
   
   onboarded     Boolean   @default(false)
+  appliedForVendor Boolean @default(false)  // Track if user has applied to become vendor
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   
@@ -107,6 +108,19 @@ model Product {
   // Hotspot-based location for Flash-Match
   hotspot     String?  // e.g., "Bush Canteen", "Balme Library"
   
+  // Stock Management (NEW)
+  stockQuantity     Int      @default(0)
+  lowStockThreshold Int      @default(5)
+  isInStock         Boolean  @default(true)
+  
+  // Ratings & Reviews (NEW)
+  averageRating     Float?
+  totalReviews      Int      @default(0)
+  
+  // Analytics (NEW)
+  viewCount         Int      @default(0)
+  salesCount        Int      @default(0)
+  
   vendorId    String
   vendor      User     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   
@@ -115,6 +129,63 @@ model Product {
   
   // Relations
   orders      Order[]
+  reviews     Review[]
+  flashSale   FlashSale?
+  
+  @@index([vendorId])
+  @@index([categoryId])
+  @@index([isInStock])
+}
+
+// Flash Sales Model (NEW)
+model FlashSale {
+  id              String   @id @default(uuid())
+  name            String   // "Weekend Tech Deals"
+  
+  productId       String   @unique
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  originalPrice   Float
+  salePrice       Float
+  discountPercent Int
+  
+  startTime       DateTime
+  endTime         DateTime
+  
+  stockLimit      Int      // Max items for this sale
+  stockSold       Int      @default(0)
+  
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([isActive])
+  @@index([endTime])
+}
+
+// Product Reviews Model (NEW)
+model Review {
+  id               String   @id @default(uuid())
+  
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  userId           String
+  userName         String   // Cached for display
+  
+  rating           Int      // 1-5 stars
+  comment          String?
+  
+  verifiedPurchase Boolean  @default(false)
+  helpfulCount     Int      @default(0)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([productId])
+  @@index([userId])
+  @@index([rating])
 }
 
 model Category {

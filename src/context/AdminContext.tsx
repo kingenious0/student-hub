@@ -102,7 +102,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
                 if (data.contentOverride) setContentOverrides(data.contentOverride);
             }
         } catch (e) {
-            console.error("Config sync failed", e);
+            console.warn("Config sync failed (likely network/server issue):", e);
         }
     };
 

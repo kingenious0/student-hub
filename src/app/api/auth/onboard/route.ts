@@ -16,16 +16,14 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { role, isRunner, shopName, shopLandmark, shopCoordinates } = body;
+        const { name: providedName, university } = body;
 
         console.log('Onboarding User:', {
             id: user.id,
             emailAddresses: user.emailAddresses,
             primaryEmailId: user.primaryEmailAddressId,
-            role,
-            shopName,
-            shopLandmark,
-            shopCoordinates
+            providedName,
+            university
         });
 
         const email = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress
@@ -39,102 +37,25 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'No email found' }, { status: 400 });
         }
 
-        const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Anonymous Student';
+        const name = providedName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Anonymous Student';
 
-        // Additional data for VENDOR
-        const vendorData = role === 'VENDOR' ? {
-            shopName: shopName || 'New Shop',
-            shopLandmark: shopLandmark || 'Campus'
-        } : {
-            shopName: null,
-            shopLandmark: null
-        };
-
-        // Radar Geofence Creation for Vendors
-        if (role === 'VENDOR' && shopCoordinates) {
-            try {
-                await createGeofence({
-                    tag: 'vendor',
-                    externalId: user.id, // Use Clerk ID to link systems
-                    description: shopName || 'Vendor Shop',
-                    coordinates: [shopCoordinates.lng, shopCoordinates.lat], // Radar uses [lng, lat]
-                    radius: 100 // 100m radius
-                });
-                console.log('Radar Geofence created for vendor:', user.id);
-            } catch (radarError) {
-                console.error('Failed to create Radar geofence:', radarError);
-                // Proceed anyway, don't block onboarding
-            }
-        }
-
-        // Check existing user status to prevent resetting Active vendors
-        const existingUser = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { vendorStatus: true, id: true }
-        });
-
-        const isAlreadyApproved = ['ACTIVE', 'SUSPENDED'].includes(existingUser?.vendorStatus || '');
-        let targetVendorStatus: 'ACTIVE' | 'PENDING' | 'NOT_APPLICABLE' = 'NOT_APPLICABLE';
-
-        if (isAlreadyApproved) {
-            // Preserve existing status if they are already established
-            // We pass undefined to the update query to avoid changing it
-            // ensuring we don't accidentally demote an active vendor
-        } else if (role === 'VENDOR') {
-            // === AUTOMATED VENDOR APPROVAL LOGIC ===
-
-            // 1. Uniqueness Check
-            const nameTaken = await prisma.user.findFirst({
-                where: {
-                    shopName: { equals: shopName, mode: 'insensitive' },
-                    NOT: { clerkId: userId } // Ignore self
-                }
-            });
-
-            if (nameTaken) {
-                return NextResponse.json({
-                    error: 'Shop name is already taken. Please choose a unique name.'
-                }, { status: 409 });
-            }
-
-            // 2. Risk/Keyword Analysis
-            const prohibitedKeywords = ['admin', 'omni', 'support', 'official', 'staff', 'manager', 'scam', 'test'];
-            const textToScan = `${shopName} ${shopLandmark}`.toLowerCase();
-            const hasRiskKeywords = prohibitedKeywords.some(word => textToScan.includes(word));
-
-            // 3. Decision Engine
-            if (hasRiskKeywords) {
-                console.warn(`[Risk Flag] Vendor ${user.id} flagged for manual review due to keywords.`);
-                targetVendorStatus = 'PENDING';
-            } else {
-                console.log(`[Auto-Approve] Vendor ${user.id} passed all checks. Activating immediately.`);
-                targetVendorStatus = 'ACTIVE';
-
-                // TODO: Trigger "Welcome" Email/Notification here
-            }
-        }
-
-        // Upsert user in database
+        // Everyone starts as STUDENT by default (Jumia-style)
+        // They can apply to become a vendor later via /become-vendor
         await prisma.user.upsert({
             where: { clerkId: userId },
             update: {
-                role: role,
-                isRunner: !!isRunner,
+                name: name,
+                university: university || 'KNUST',
                 onboarded: true,
-                // Only update vendorStatus if we aren't preserving an existing Approved state
-                ...(isAlreadyApproved ? {} : { vendorStatus: targetVendorStatus }),
-                ...vendorData
             },
             create: {
                 clerkId: userId,
                 email: email,
                 name: name,
-                role: role,
-                isRunner: !!isRunner,
+                role: 'STUDENT', // Everyone starts as STUDENT
+                university: university || 'KNUST',
                 onboarded: true,
-                vendorStatus: targetVendorStatus,
-                university: 'KNUST',
-                ...vendorData
+                vendorStatus: 'NOT_APPLICABLE',
             }
         });
 

@@ -1,38 +1,25 @@
-// src/app/dashboard/vendor/products/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-interface Product {
-    id: string;
-    title: string;
-    description: string;
-    price: number;
-    category: {
-        name: string;
-    };
-    imageUrl: string | null;
-    hotspot: string | null;
-    createdAt: string;
-}
-
 export default function VendorProductsPage() {
-    const [products, setProducts] = useState<Product[]>([]);
+    const router = useRouter();
+    const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         fetchProducts();
     }, []);
 
     const fetchProducts = async () => {
-        setLoading(true);
         try {
-            const response = await fetch('/api/products?vendorOnly=true');
-            const data = await response.json();
-
-            if (data.success) {
-                setProducts(data.products);
+            const res = await fetch('/api/vendor/products');
+            if (res.ok) {
+                const data = await res.json();
+                setProducts(data.products || []);
             }
         } catch (error) {
             console.error('Failed to fetch products:', error);
@@ -41,102 +28,139 @@ export default function VendorProductsPage() {
         }
     };
 
+    const handleDelete = async (productId: string) => {
+        if (!confirm('Delete this product? This cannot be undone.')) return;
+
+        try {
+            const res = await fetch(`/api/vendor/products/${productId}`, {
+                method: 'DELETE',
+            });
+
+            if (res.ok) {
+                alert('Product deleted successfully!');
+                fetchProducts();
+            } else {
+                alert('Failed to delete product');
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Error deleting product');
+        }
+    };
+
+    const filteredProducts = products.filter(p =>
+        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full"></div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-background py-8 transition-colors duration-300">
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="flex items-center justify-between mb-8">
+        <div className="min-h-screen bg-background">
+            {/* Header */}
+            <div className="bg-surface border-b border-surface-border py-6 px-4">
+                <div className="max-w-7xl mx-auto flex justify-between items-center">
                     <div>
-                        <h1 className="text-4xl font-black text-foreground mb-2 uppercase tracking-tighter">
-                            📦 My Products
-                        </h1>
-                        <p className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">
-                            Manage your marketplace listings
-                        </p>
+                        <h1 className="text-3xl font-black uppercase tracking-tighter">My Products</h1>
+                        <p className="text-foreground/60 mt-1">Manage your product catalog</p>
                     </div>
                     <Link
-                        href="/products/new"
-                        className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest transition-all omni-glow active:scale-95"
+                        href="/dashboard/vendor/products/new"
+                        className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-black uppercase text-sm tracking-widest hover:scale-105 transition-transform"
                     >
                         ➕ Add Product
                     </Link>
                 </div>
+            </div>
 
-                {loading ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-                        <p className="mt-4 text-foreground/40 text-[10px] font-black uppercase tracking-widest">Loading products...</p>
-                    </div>
-                ) : products.length === 0 ? (
-                    <div className="bg-surface border border-surface-border rounded-[2.5rem] p-12 text-center">
-                        <div className="text-6xl mb-4"> Deserted 📦 </div>
-                        <h2 className="text-2xl font-black text-foreground mb-2 uppercase tracking-tighter">
-                            No products yet
-                        </h2>
-                        <p className="text-foreground/40 text-[10px] font-black uppercase tracking-widest mb-6">
-                            Start selling by adding your first product
-                        </p>
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                {/* Search */}
+                <div className="mb-6">
+                    <input
+                        type="text"
+                        placeholder="Search products..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-4 py-3 bg-surface border-2 border-surface-border rounded-xl focus:outline-none focus:border-primary"
+                    />
+                </div>
+
+                {/* Products Grid */}
+                {filteredProducts.length === 0 ? (
+                    <div className="text-center py-20">
+                        <div className="text-8xl mb-6">📦</div>
+                        <h2 className="text-2xl font-black mb-2">No Products Yet</h2>
+                        <p className="text-foreground/60 mb-6">Start by adding your first product</p>
                         <Link
-                            href="/products/new"
-                            className="inline-block px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all omni-glow active:scale-95"
+                            href="/dashboard/vendor/products/new"
+                            className="inline-block px-8 py-4 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-black uppercase text-sm tracking-widest hover:scale-105 transition-transform"
                         >
                             Add Your First Product
                         </Link>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {products.map((product) => (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredProducts.map((product) => (
                             <div
                                 key={product.id}
-                                className="bg-surface border border-surface-border rounded-[2rem] overflow-hidden hover:border-primary/50 transition-all group"
+                                className="bg-surface border-2 border-surface-border rounded-2xl overflow-hidden hover:border-primary transition-colors"
                             >
-                                {/* Product Image */}
-                                <div className="h-48 bg-primary/5 flex items-center justify-center relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
+                                {/* Image */}
+                                <div className="aspect-square bg-surface-hover flex items-center justify-center">
                                     {product.imageUrl ? (
                                         <img
                                             src={product.imageUrl}
                                             alt={product.title}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <span className="text-6xl group-hover:scale-110 transition-transform duration-500">📦</span>
+                                        <div className="text-6xl">📦</div>
                                     )}
                                 </div>
 
-                                {/* Product Info */}
-                                <div className="p-6">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <h3 className="text-xl font-black text-foreground uppercase tracking-tight">
-                                            {product.title}
-                                        </h3>
-                                        <span className="px-2 py-1 bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest rounded-full border border-primary/20">
-                                            {product.category.name}
+                                {/* Info */}
+                                <div className="p-4">
+                                    <div className="flex items-start justify-between mb-2">
+                                        <h3 className="font-black text-lg line-clamp-2">{product.title}</h3>
+                                        <span className={`text-xs px-2 py-1 rounded-full font-bold ${product.isInStock
+                                                ? 'bg-green-500/10 text-green-500'
+                                                : 'bg-red-500/10 text-red-500'
+                                            }`}>
+                                            {product.isInStock ? 'In Stock' : 'Out of Stock'}
                                         </span>
                                     </div>
 
-                                    <p className="text-xs text-foreground/40 mb-5 line-clamp-2 font-medium">
-                                        {product.description}
+                                    <p className="text-sm text-foreground/60 mb-3 line-clamp-2">
+                                        {product.description || 'No description'}
                                     </p>
 
-                                    {product.hotspot && (
-                                        <div className="flex items-center gap-2 mb-5 text-[10px] font-black text-primary uppercase tracking-widest">
-                                            <span>📍</span>
-                                            <span>{product.hotspot}</span>
-                                        </div>
-                                    )}
-
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-2xl font-black text-foreground tracking-tighter">
-                                            ₵{product.price.toFixed(2)}
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-2xl font-black text-primary">₵{product.price.toFixed(2)}</span>
+                                        <span className="text-sm text-foreground/60">
+                                            Stock: {product.stockQuantity || 0}
                                         </span>
-                                        <div className="flex gap-2">
-                                            <Link href={`/products/edit/${product.id}`} className="px-4 py-2 bg-foreground/5 hover:bg-foreground/10 text-foreground rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
-                                                Edit
-                                            </Link>
-                                            <button className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-red-500/20">
-                                                Delete
-                                            </button>
-                                        </div>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex gap-2">
+                                        <Link
+                                            href={`/dashboard/vendor/products/${product.id}/edit`}
+                                            className="flex-1 py-2 bg-blue-500/10 text-blue-500 rounded-lg font-bold text-sm text-center hover:bg-blue-500/20 transition-colors"
+                                        >
+                                            Edit
+                                        </Link>
+                                        <button
+                                            onClick={() => handleDelete(product.id)}
+                                            className="flex-1 py-2 bg-red-500/10 text-red-500 rounded-lg font-bold text-sm hover:bg-red-500/20 transition-colors"
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
                                 </div>
                             </div>

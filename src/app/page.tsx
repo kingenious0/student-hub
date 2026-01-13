@@ -1,98 +1,395 @@
+'use client';
+
 import Link from "next/link";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import SimpleEdit from "@/components/admin/SimpleEdit";
+import { SearchIcon, ShoppingCartIcon, ChevronRightIcon } from "@/components/ui/Icons";
+import SmartFeed from "@/components/marketplace/SmartFeed";
+import { Suspense } from "react";
+import RefreshButton from "@/components/ui/RefreshButton";
+import * as React from "react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex items-center justify-center relative overflow-hidden transition-colors duration-500">
-      {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,var(--primary)/0.03,transparent_50%)] pointer-events-none"></div>
-      <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
-      <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
 
-      <main className="max-w-6xl mx-auto px-6 py-16 text-center relative z-10">
-        {/* Logo and Tagline */}
-        <div className="mb-20">
-          <div className="flex justify-center mb-12">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-primary/20 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-1000"></div>
-              <img src="/OMNI-LOGO.ico" alt="OMNI" className="relative w-32 h-32 object-contain invert-on-light" />
+      {/* 1. PROMO HERO BANNER - Jumia Style */}
+      <div className="relative bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 pt-32 pb-8 px-4 overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-300 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Main Promo */}
+          <div className="text-center mb-8">
+            <div className="inline-block bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full mb-4">
+              <span className="text-white font-black text-sm uppercase tracking-widest">🔥 Campus Flash Sale</span>
             </div>
-          </div>
-          <h1 className="text-6xl sm:text-7xl md:text-9xl font-black mb-6 uppercase tracking-[-0.05em] leading-[0.9] animate-in fade-in slide-in-from-bottom duration-700 break-words">
-            MOST<br /><span className="text-foreground">POWERFUL</span>
-          </h1>
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-[10px] sm:text-[12px] font-black text-foreground/60 uppercase tracking-[0.4em] sm:tracking-[0.8em] mb-4 text-center px-4">
-              University Marketplace Ever Made
+            <h1 className="text-5xl md:text-7xl font-black text-white mb-3 tracking-tighter drop-shadow-lg">
+              Up to 60% OFF
+            </h1>
+            <p className="text-white/90 text-lg md:text-xl font-bold mb-6">
+              On Food, Tech & Fashion • Limited Time Only!
             </p>
-            <div className="h-[2px] w-24 bg-primary/30"></div>
+            <Link href="/deals" className="inline-block bg-white text-orange-600 px-8 py-4 rounded-full font-black uppercase tracking-widest text-sm hover:scale-105 active:scale-95 transition-transform shadow-2xl">
+              Shop Deals Now →
+            </Link>
+          </div>
+
+          {/* Quick Search Bar */}
+          <div className="max-w-2xl mx-auto">
+            <form action="/search" className="relative flex items-center bg-white rounded-full shadow-2xl h-14 px-5">
+              <SearchIcon className="w-5 h-5 text-gray-400 mr-3" />
+              <input
+                name="q"
+                type="text"
+                placeholder="Search for products, vendors..."
+                className="w-full bg-transparent text-gray-900 placeholder:text-gray-400 focus:outline-none font-medium"
+              />
+              <button type="submit" className="p-2 bg-orange-500 rounded-full text-white hover:bg-orange-600 transition-colors">
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
+            </form>
           </div>
         </div>
+      </div>
 
-        {/* Features Matrix */}
-        <div className="grid md:grid-cols-3 gap-8 mb-20 max-w-5xl mx-auto">
-          <div className="bg-surface/50 backdrop-blur-3xl border border-surface-border rounded-[2.5rem] p-10 hover:bg-surface hover:border-primary/30 transition-all group">
-            <div className="text-5xl mb-8 group-hover:scale-110 transition-transform duration-500">⚡</div>
-            <SimpleEdit id="feature_flashmatch_title" text="Flash-Match" tag="h3" className="text-xl font-black text-foreground mb-4 uppercase tracking-tighter" />
-            <SimpleEdit id="feature_flashmatch_desc" text="Hyper-local detection. Find assets in your immediate proximity." tag="p" className="text-foreground/60 text-xs font-bold uppercase tracking-widest leading-loose" />
-          </div>
-
-          <div className="bg-surface/50 backdrop-blur-3xl border border-surface-border rounded-[2.5rem] p-10 hover:bg-surface hover:border-primary/30 transition-all group">
-            <div className="text-5xl mb-8 group-hover:scale-110 transition-transform duration-500">🛡️</div>
-            <SimpleEdit id="feature_escrow_title" text="Shield Escrow" tag="h3" className="text-xl font-black text-foreground mb-4 uppercase tracking-tighter" />
-            <SimpleEdit id="feature_escrow_desc" text="Immutable transaction security. Funds released only upon key validation." tag="p" className="text-foreground/60 text-xs font-bold uppercase tracking-widest leading-loose" />
-          </div>
-
-          <div className="bg-surface/50 backdrop-blur-3xl border border-surface-border rounded-[2.5rem] p-10 hover:bg-surface hover:border-primary/30 transition-all group">
-            <div className="text-5xl mb-8 group-hover:scale-110 transition-transform duration-500">🏃</div>
-            <SimpleEdit id="feature_runner_title" text="Shadow Runner" tag="h3" className="text-xl font-black text-foreground mb-4 uppercase tracking-tighter" />
-            <SimpleEdit id="feature_runner_desc" text="Deploy as a high-speed logistics entity. Earn GH₵ on every transit." tag="p" className="text-foreground/60 text-xs font-bold uppercase tracking-widest leading-loose" />
+      {/* 2. QUICK CATEGORIES - Clean Grid */}
+      <div className="bg-background border-b border-surface-border">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+            <QuickCategoryCard href="/category/food" icon="🍔" label="Food" />
+            <QuickCategoryCard href="/category/tech" icon="📱" label="Tech" />
+            <QuickCategoryCard href="/category/fashion" icon="👟" label="Fashion" />
+            <QuickCategoryCard href="/category/books" icon="📚" label="Books" />
+            <QuickCategoryCard href="/category/services" icon="✂️" label="Services" />
+            <QuickCategoryCard href="/category/beauty" icon="💄" label="Beauty" />
+            <QuickCategoryCard href="/category/sports" icon="⚽" label="Sports" />
+            <QuickCategoryCard href="/category/more" icon="➕" label="More" />
           </div>
         </div>
+      </div>
 
-        {/* Action Center */}
-        <div className="flex flex-col items-center gap-12">
-          <SignedIn>
-            <div className="flex flex-col sm:flex-row gap-6">
-              <Link
-                href="/marketplace"
-                className="px-12 py-6 bg-primary text-primary-foreground rounded-[2rem] font-black text-[10px] uppercase tracking-[0.4em] transition-all omni-glow hover:scale-105 active:scale-95"
-              >
-                <SimpleEdit id="cta_marketplace" text="Initialize Acquisition" tag="span" className="" />
-              </Link>
-              <Link
-                href="/dashboard/vendor"
-                className="px-12 py-6 bg-surface border border-surface-border text-foreground rounded-[2rem] font-black text-[10px] uppercase tracking-[0.4em] transition-all hover:bg-surface/80 active:scale-95"
-              >
-                <SimpleEdit id="cta_vendor" text="Supply Terminal" tag="span" className="" />
-              </Link>
-            </div>
-          </SignedIn>
+      {/* MAIN CONTENT */}
+      <main className="max-w-7xl mx-auto px-4 py-12 space-y-12">
 
-          <SignedOut>
-            <div className="p-8 bg-surface/50 border border-surface-border rounded-[2rem]">
-              <SimpleEdit id="signed_out_message" text="Awaiting Uplink Initialization" tag="p" className="text-[10px] font-black text-primary uppercase tracking-[0.4em]" />
-            </div>
-          </SignedOut>
+        {/* Flash Sales Section - Jumia Style with LIVE Countdown */}
+        <section>
+          <FlashSalesSection />
+        </section>
 
-          {/* Network Stats */}
-          <div className="pt-12 grid grid-cols-2 md:grid-cols-3 gap-12 border-t border-surface-border w-full max-w-4xl">
-            <div>
-              <div className="text-4xl font-black text-foreground tracking-tighter">~5M</div>
-              <SimpleEdit id="stat_speed_label" text="Operational Speed" tag="div" className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.4em] mt-1" />
-            </div>
-            <div>
-              <div className="text-4xl font-black text-foreground tracking-tighter">100%</div>
-              <SimpleEdit id="stat_escrow_label" text="Escrow Efficiency" tag="div" className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.4em] mt-1" />
-            </div>
-            <div className="hidden md:block">
-              <div className="text-4xl font-black text-foreground tracking-tighter">24/7</div>
-              <SimpleEdit id="stat_coverage_label" text="Sector Coverage" tag="div" className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.4em] mt-1" />
-            </div>
+        {/* Fresh Arrivals - Main Product Feed */}
+        <section>
+          <div className="flex justify-between items-center mb-6 px-2">
+            <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight">
+              Fresh Arrivals
+            </h2>
+            <RefreshButton />
           </div>
-        </div>
+
+          <Suspense fallback={<div className="h-96 w-full bg-surface/50 rounded-3xl animate-pulse"></div>}>
+            <SmartFeed />
+          </Suspense>
+        </section>
+
       </main>
+
+      {/* Footer with Vendor/Runner CTAs */}
+      <footer className="bg-surface border-t border-surface-border mt-20">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            <Link href="/become-vendor" className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-8 md:p-10">
+              <div className="relative z-10">
+                <div className="text-4xl mb-4">🏪</div>
+                <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Sell on Omni</h3>
+                <p className="text-white/80 text-sm font-medium mb-6">Open your shop in minutes. Reach thousands of students.</p>
+                <span className="inline-block px-6 py-3 bg-white text-indigo-600 font-black uppercase text-xs tracking-widest rounded-xl group-hover:scale-105 transition-transform">
+                  Start Selling
+                </span>
+              </div>
+            </Link>
+
+            <Link href="/runner" className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white p-8 md:p-10">
+              <div className="relative z-10">
+                <div className="text-4xl mb-4">⚡</div>
+                <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Become a Runner</h3>
+                <p className="text-white/80 text-sm font-medium mb-6">Earn money making deliveries on campus. Flexible hours.</p>
+                <span className="inline-block px-6 py-3 bg-white text-emerald-600 font-black uppercase text-xs tracking-widest rounded-xl group-hover:scale-105 transition-transform">
+                  Join Fleet
+                </span>
+              </div>
+            </Link>
+          </div>
+
+          {/* Footer Links */}
+          <div className="text-center text-foreground/40 text-sm">
+            <p className="font-medium">© 2026 Omni Student Marketplace • Built for Students, by Students</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+
+// Quick Category Card (Simplified Jumia Style)
+function QuickCategoryCard({ href, icon, label }: { href: string; icon: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex flex-col items-center justify-center p-3 rounded-2xl bg-surface hover:bg-surface-hover border border-surface-border transition-all hover:scale-105 active:scale-95"
+    >
+      <span className="text-2xl mb-1">{icon}</span>
+      <span className="font-bold text-[10px] uppercase tracking-wide text-foreground/70">{label}</span>
+    </Link>
+  )
+}
+
+function CategoryCard({ href, icon, label, color }: { href: string; icon: string; label: string; color: string }) {
+  return (
+    <Link
+      href={href}
+      className={`flex flex-col items-center justify-center p-6 rounded-3xl border transition-all hover:scale-105 active:scale-95 ${color} bg-opacity-10 border-opacity-20 hover:bg-opacity-20`}
+    >
+      <span className="text-3xl mb-2 filter drop-shadow-sm">{icon}</span>
+      <span className="font-black text-xs uppercase tracking-widest">{label}</span>
+    </Link>
+  )
+}
+
+// Flash Deal Card Component
+function FlashDealCard({
+  title,
+  price,
+  originalPrice,
+  discount,
+  stock
+}: {
+  title: string;
+  price: number;
+  originalPrice: number;
+  discount: number;
+  stock: number;
+}) {
+  const isLowStock = stock <= 5;
+
+  return (
+    <div className="bg-white rounded-2xl p-4 hover:scale-105 transition-transform cursor-pointer">
+      {/* Discount Badge */}
+      <div className="relative aspect-square bg-gray-100 rounded-xl mb-3 flex items-center justify-center">
+        <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-lg text-xs font-black">
+          -{discount}%
+        </div>
+        <div className="text-5xl">📦</div>
+      </div>
+
+      {/* Product Info */}
+      <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2">{title}</h3>
+
+      {/* Price */}
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className="text-xl font-black text-orange-600">₵{price}</span>
+        <span className="text-xs text-gray-400 line-through">₵{originalPrice}</span>
+      </div>
+
+      {/* Stock Indicator */}
+      {isLowStock && (
+        <div className="text-xs font-bold text-orange-600 animate-pulse">
+          Only {stock} left!
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Flash Sales Section with LIVE Countdown and REAL DATA
+function FlashSalesSection() {
+  const [timeLeft, setTimeLeft] = React.useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [flashSales, setFlashSales] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [endTime, setEndTime] = React.useState<Date | null>(null);
+
+  // Fetch flash sales from API
+  React.useEffect(() => {
+    fetch('/api/flash-sales')
+      .then(res => res.json())
+      .then(data => {
+        setFlashSales(data.flashSales || []);
+        if (data.endTime) {
+          setEndTime(new Date(data.endTime));
+        }
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Failed to fetch flash sales:', error);
+        setLoading(false);
+      });
+  }, []);
+
+  // Update countdown timer
+  React.useEffect(() => {
+    if (!endTime) {
+      // Fallback to tomorrow midnight if no flash sales
+      const fallbackEndTime = new Date();
+      fallbackEndTime.setDate(fallbackEndTime.getDate() + 1);
+      fallbackEndTime.setHours(0, 0, 0, 0);
+      setEndTime(fallbackEndTime);
+      return;
+    }
+
+    const calculateTimeLeft = () => {
+      const difference = endTime.getTime() - new Date().getTime();
+
+      if (difference <= 0) {
+        return { hours: 0, minutes: 0, seconds: 0 };
+      }
+
+      return {
+        hours: Math.floor(difference / (1000 * 60 * 60)),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      };
+    };
+
+    setTimeLeft(calculateTimeLeft());
+
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [endTime]);
+
+  // Don't show section if no flash sales
+  if (!loading && flashSales.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-3xl p-6 md:p-8 text-white">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="text-3xl">⚡</div>
+          <div>
+            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight">
+              Flash Sales
+            </h2>
+            <p className="text-white/80 text-sm font-bold">
+              Limited time offers • Hurry up!
+            </p>
+          </div>
+        </div>
+
+        {/* LIVE Countdown Timer */}
+        <div className="hidden md:flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3">
+          <span className="text-xs font-bold uppercase tracking-wide">Ends in</span>
+          <div className="flex items-center gap-1">
+            <div className="flex flex-col items-center bg-white/30 backdrop-blur-sm rounded-lg px-2 py-1 min-w-[3rem]">
+              <span className="text-2xl font-black leading-none tabular-nums">
+                {String(timeLeft.hours).padStart(2, '0')}
+              </span>
+              <span className="text-[10px] font-bold uppercase opacity-80">h</span>
+            </div>
+            <span className="text-xl font-black">:</span>
+            <div className="flex flex-col items-center bg-white/30 backdrop-blur-sm rounded-lg px-2 py-1 min-w-[3rem]">
+              <span className="text-2xl font-black leading-none tabular-nums">
+                {String(timeLeft.minutes).padStart(2, '0')}
+              </span>
+              <span className="text-[10px] font-bold uppercase opacity-80">m</span>
+            </div>
+            <span className="text-xl font-black">:</span>
+            <div className="flex flex-col items-center bg-white/30 backdrop-blur-sm rounded-lg px-2 py-1 min-w-[3rem]">
+              <span className="text-2xl font-black leading-none tabular-nums">
+                {String(timeLeft.seconds).padStart(2, '0')}
+              </span>
+              <span className="text-[10px] font-bold uppercase opacity-80">s</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Flash Sale Products */}
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white/20 rounded-2xl p-4 animate-pulse">
+              <div className="aspect-square bg-white/30 rounded-xl mb-3"></div>
+              <div className="h-4 bg-white/30 rounded mb-2"></div>
+              <div className="h-6 bg-white/30 rounded"></div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {flashSales.slice(0, 4).map((sale) => (
+            <Link
+              key={sale.id}
+              href={`/products/${sale.product.id}`}
+              className="bg-white rounded-2xl p-4 hover:scale-105 transition-transform cursor-pointer"
+            >
+              {/* Discount Badge */}
+              <div className="relative aspect-square bg-gray-100 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
+                <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-lg text-xs font-black z-10">
+                  -{sale.discountPercent}%
+                </div>
+                {sale.product.imageUrl ? (
+                  <img
+                    src={sale.product.imageUrl}
+                    alt={sale.product.title}
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                ) : (
+                  <div className="text-5xl">📦</div>
+                )}
+              </div>
+
+              {/* Product Info */}
+              <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2">
+                {sale.product.title}
+              </h3>
+
+              {/* Price */}
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-xl font-black text-orange-600">
+                  ₵{sale.salePrice.toFixed(2)}
+                </span>
+                <span className="text-xs text-gray-400 line-through">
+                  ₵{sale.originalPrice.toFixed(2)}
+                </span>
+              </div>
+
+              {/* Stock Indicator */}
+              {sale.stockRemaining <= 5 && sale.stockRemaining > 0 && (
+                <div className="text-xs font-bold text-orange-600 animate-pulse">
+                  Only {sale.stockRemaining} left!
+                </div>
+              )}
+              {sale.stockRemaining > 5 && (
+                <div className="text-xs text-green-600 font-bold">
+                  In Stock
+                </div>
+              )}
+              {sale.stockRemaining === 0 && (
+                <div className="text-xs text-red-600 font-bold">
+                  Sold Out
+                </div>
+              )}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* View All Link */}
+      <div className="text-center">
+        <Link
+          href="/deals"
+          className="inline-block bg-white text-orange-600 px-8 py-3 rounded-full font-black uppercase text-sm tracking-widest hover:scale-105 active:scale-95 transition-transform shadow-lg"
+        >
+          See All Flash Deals →
+        </Link>
+      </div>
     </div>
   );
 }

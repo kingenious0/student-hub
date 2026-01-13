@@ -155,7 +155,7 @@ export default function CommandCenterPage() {
 
     const fetchApplications = async () => {
         try {
-            const res = await fetch('/api/admin/applications', { credentials: 'include' });
+            const res = await fetch('/api/admin/vendor-applications', { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setApplications(data.applications || []);
@@ -164,16 +164,16 @@ export default function CommandCenterPage() {
     }
 
     const handleApproveApplication = async (appId: string) => {
-        if (!confirm('APPROVE VENDOR APPLICATION? This will migrate user role.')) return;
+        if (!confirm('APPROVE VENDOR APPLICATION? This will promote user to VENDOR role.')) return;
         try {
-            const res = await fetch('/api/admin/promote', {
+            const res = await fetch('/api/admin/vendor-applications', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ applicationId: appId })
+                body: JSON.stringify({ applicationId: appId, action: 'APPROVE' })
             });
             const data = await res.json();
             if (res.ok) {
-                alert(`SUCCESS: ${data.email} promoted!`);
+                alert(`SUCCESS: ${data.message}`);
                 fetchApplications();
             } else {
                 alert(`ERROR: ${data.error}`);
@@ -182,17 +182,17 @@ export default function CommandCenterPage() {
     }
 
     const handleDeleteApplication = async (appId: string) => {
-        if (!confirm('DELETE APPLICATION? This will reset the user status.')) return;
+        if (!confirm('REJECT APPLICATION? User will be able to reapply.')) return;
         try {
-            const res = await fetch('/api/admin/applications', {
-                method: 'DELETE',
+            const res = await fetch('/api/admin/vendor-applications', {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: appId })
+                body: JSON.stringify({ applicationId: appId, action: 'REJECT' })
             });
             if (res.ok) {
                 fetchApplications();
             } else {
-                alert('Failed to delete');
+                alert('Failed to reject');
             }
         } catch (e) { alert('Error'); }
     }
@@ -583,6 +583,14 @@ export default function CommandCenterPage() {
                                 <a href="/stories" target="_blank" className="p-4 rounded-2xl bg-pink-500/10 border border-pink-500/20 hover:bg-pink-500/20 transition-all group text-center">
                                     <div className="text-2xl mb-2">📹</div>
                                     <div className="text-pink-500 font-black uppercase tracking-widest text-[10px]">Pulse Feed</div>
+                                </a>
+                                <a href="/dashboard/admin/flash-sales" target="_blank" className="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 transition-all group text-center">
+                                    <div className="text-2xl mb-2">⚡</div>
+                                    <div className="text-orange-500 font-black uppercase tracking-widest text-[10px]">Flash Sales CMS</div>
+                                </a>
+                                <a href="/dashboard/admin" target="_blank" className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all group text-center">
+                                    <div className="text-2xl mb-2">📊</div>
+                                    <div className="text-blue-500 font-black uppercase tracking-widest text-[10px]">Admin Dashboard</div>
                                 </a>
                             </div>
                         </div>

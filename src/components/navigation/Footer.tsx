@@ -64,7 +64,7 @@ export default function Footer() {
                         <div className="space-y-4">
                             <FooterLink href="/stories" label="Campus Pulse" />
                             <FooterLink href="/runner" label="Runner Dashboard" />
-                            <FooterLink href="/onboarding/vendor" label="Become a Vendor" />
+                            <FooterLink href="/become-vendor" label="Become a Vendor" />
                             <FooterLink href="/about" label="About OMNI" />
                         </div>
                     </div>

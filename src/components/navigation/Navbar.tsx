@@ -32,6 +32,40 @@ export default function Navbar() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [globalNotice, setGlobalNotice] = useState<string | null>(null);
 
+    // Triple-tap easter egg for Command Center
+    const [tapCount, setTapCount] = useState(0);
+    const [tapTimeout, setTapTimeout] = useState<NodeJS.Timeout | null>(null);
+
+    // Handle logo click for triple-tap easter egg
+    const handleLogoClick = () => {
+        // Only work for GOD_MODE users
+        if (user?.publicMetadata?.role !== 'GOD_MODE') {
+            // Regular users - do nothing (let them stay on current page)
+            return;
+        }
+
+        const newCount = tapCount + 1;
+        setTapCount(newCount);
+
+        // Clear existing timeout
+        if (tapTimeout) {
+            clearTimeout(tapTimeout);
+        }
+
+        // If triple-tapped, go to Command Center
+        if (newCount === 3) {
+            setTapCount(0);
+            window.location.href = '/command-center-z';
+            return;
+        }
+
+        // Reset after 1 second of no taps
+        const timeout = setTimeout(() => {
+            setTapCount(0);
+        }, 1000);
+        setTapTimeout(timeout);
+    };
+
     useEffect(() => {
         // Fetch User
         if (clerkLoaded && user) {
@@ -105,9 +139,7 @@ export default function Navbar() {
     return (
         <>
             <nav id="omni-navbar" className="fixed top-0 w-full z-50 backdrop-blur-xl bg-background/80 border-b border-surface-border shadow-2xl transition-all duration-300">
-                <div className="flex justify-between items-center px-4 h-16 max-w-7xl mx-auto">
-                    {/* ... (Existing Logo etc) */}
-
+                <div className="flex justify-between items-center px-4 h-16 max-w-7xl mx-auto gap-4">
                     {/* LEFT: Mobile Hamburger / Desktop Logo */}
                     <div className="flex items-center gap-4">
                         {/* Hamburger Trigger (Mobile Only) */}
@@ -120,81 +152,41 @@ export default function Navbar() {
                             <MenuIcon className="w-6 h-6 text-foreground" />
                         </button>
 
-                        {/* Logo - Ghost Trigger */}
-                        <div
-                            onClick={(e) => {
-                                // Triple Click Logic
-                                const now = Date.now();
-                                const lastClick = (window as any).lastGhostClick || 0;
-                                const clicks = (window as any).ghostClicks || 0;
-
-                                if (now - lastClick < 500) { // 500ms between clicks
-                                    (window as any).ghostClicks = clicks + 1;
-                                } else {
-                                    (window as any).ghostClicks = 1;
-                                }
-                                (window as any).lastGhostClick = now;
-
-                                if ((window as any).ghostClicks >= 3) {
-                                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                                    window.location.href = '/command-center-z';
-                                    (window as any).ghostClicks = 0;
-                                }
-                            }}
-                            className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none"
-                        >
-                            <img
-                                src="/OMNI-LOGO.ico"
-                                alt="OMNI"
-                                className="h-10 lg:h-12 w-auto transition-transform group-hover:scale-110 invert-on-light"
-                            />
-                        </div>
-
-                        {/* Desktop Navigation Links */}
-                        <div className="hidden lg:flex items-center gap-1 ml-4">
-                            <SignedIn>
-                                <div id="omni-nav-marketplace">
-                                    <NavLink href="/marketplace" isActive={isActive('/marketplace')}>
-                                        🛍️ Marketplace
-                                    </NavLink>
-                                </div>
-                                <NavLink href="/orders" isActive={isActive('/orders')}>
-                                    📦 My Orders
-                                </NavLink>
-                                <div id="omni-nav-pulse">
-                                    <NavLink href="/stories" isActive={isActive('/stories')}>
-                                        📱 Campus Pulse
-                                    </NavLink>
-                                </div>
-                                <NavLink href="/stories/my-pulse" isActive={isActive('/stories/my-pulse')}>
-                                    📹 My Pulse
-                                </NavLink>
-
-                                {dbUser?.role !== 'VENDOR' && (
-                                    <div id="omni-nav-runner">
-                                        <NavLink href="/runner" isActive={isActive('/runner')}>
-                                            🏃 Runner Mode
-                                        </NavLink>
-                                    </div>
-                                )}
-                            </SignedIn>
-                        </div>
+                        {/* Logo with Triple-Tap Easter Egg */}
+                        {user?.publicMetadata?.role === 'GOD_MODE' ? (
+                            <div
+                                onClick={handleLogoClick}
+                                className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none"
+                            >
+                                <img
+                                    src="/OMNI-LOGO.ico"
+                                    alt="OMNI"
+                                    className="h-10 lg:h-8 w-auto transition-transform group-hover:scale-110 invert-on-light"
+                                />
+                                <span className="hidden lg:block font-black tracking-tighter text-lg">OMNI</span>
+                            </div>
+                        ) : (
+                            <Link href="/" className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none">
+                                <img
+                                    src="/OMNI-LOGO.ico"
+                                    alt="OMNI"
+                                    className="h-10 lg:h-8 w-auto transition-transform group-hover:scale-110 invert-on-light"
+                                />
+                                <span className="hidden lg:block font-black tracking-tighter text-lg">OMNI</span>
+                            </Link>
+                        )}
                     </div>
 
-                    {/* RIGHT: Actions (Search, Cart, Profile) */}
-                    <div className="flex items-center gap-3 md:gap-6">
-                        {/* Search Icon (Mobile/Desktop) - Expandable logic could go here */}
-                        <Link href="/search" className="p-2 text-foreground/60 hover:text-primary transition-colors">
-                            <SearchIcon className="w-6 h-6" />
-                        </Link>
-
+                    {/* RIGHT: Actions (Cart, Profile) */}
+                    <div className="flex items-center gap-3 md:gap-6 flex-shrink-0">
                         <ThemeToggle />
 
                         <SignedIn>
-                            {/* Desktop: Text Role */}
-                            <span className="hidden lg:block text-xs font-black text-foreground/40 uppercase tracking-widest">
-                                {dbUser?.role || 'STUDENT'}
-                            </span>
+                            {/* Desktop Links (Icons) */}
+                            <div className="hidden lg:flex items-center gap-4 mr-2">
+                                <Link href="/marketplace" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
+                                <Link href="/orders" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Orders</Link>
+                            </div>
 
                             {/* Cart Icon */}
                             <Link

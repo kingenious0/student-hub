@@ -1,48 +1,97 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
     try {
         const { userId } = await auth();
-        if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const user = await currentUser();
 
-        const body = await request.json();
-        const { shopName, shopDesc, location } = body;
-
-        if (!shopName || !shopDesc || !location) {
-            return NextResponse.json({ error: 'Missing Required Fields' }, { status: 400 });
+        if (!userId || !user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Check for existing user
-        const user = await prisma.user.findUnique({
+        const body = await req.json();
+        const { shopName, shopDescription, location, phoneNumber } = body;
+
+        // Validate required fields
+        if (!shopName || !shopDescription || !location || !phoneNumber) {
+            return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+        }
+
+        // Get internal user ID from Clerk ID
+        const dbUser = await prisma.user.findUnique({
             where: { clerkId: userId },
-            include: { application: true }
+            select: { id: true, appliedForVendor: true }
         });
 
-        if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-
-        if (user.role === 'VENDOR') {
-            return NextResponse.json({ error: 'Already a Vendor' }, { status: 400 });
+        if (!dbUser) {
+            return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
         }
 
-        if (user.application) {
-            return NextResponse.json({ error: 'Application already pending' }, { status: 400 });
+        // Check if user already has a pending or approved application
+        const existingApplication = await prisma.vendorApplication.findUnique({
+            where: { userId: dbUser.id },
+        });
+
+        if (existingApplication) {
+            if (existingApplication.status === 'PENDING') {
+                return NextResponse.json({
+                    error: 'You already have a pending application. Please wait for admin review.'
+                }, { status: 400 });
+            }
+            if (existingApplication.status === 'APPROVED') {
+                return NextResponse.json({
+                    error: 'You are already a vendor!'
+                }, { status: 400 });
+            }
         }
 
-        const application = await prisma.vendorApplication.create({
-            data: {
-                userId: user.id,
-                shopName,
-                shopDesc,
-                location // Expecting { lat, lng, address }
+        // Check if shop name is already taken
+        const nameTaken = await prisma.user.findFirst({
+            where: {
+                shopName: { equals: shopName, mode: 'insensitive' },
             }
         });
 
-        return NextResponse.json({ success: true, application });
+        if (nameTaken) {
+            return NextResponse.json({
+                error: 'Shop name is already taken. Please choose a unique name.'
+            }, { status: 409 });
+        }
+
+        // Create vendor application
+        const application = await prisma.vendorApplication.upsert({
+            where: { userId: dbUser.id },
+            update: {
+                shopName,
+                shopDesc: shopDescription,
+                location: { location, phoneNumber }, // Store as JSON
+                status: 'PENDING',
+            },
+            create: {
+                userId: dbUser.id,
+                shopName,
+                shopDesc: shopDescription,
+                location: { location, phoneNumber }, // Store as JSON
+                status: 'PENDING',
+            }
+        });
+
+        // Update user to mark they've applied
+        await prisma.user.update({
+            where: { clerkId: userId },
+            data: { appliedForVendor: true }
+        });
+
+        return NextResponse.json({
+            success: true,
+            message: 'Application submitted successfully! We\'ll review it within 24 hours.',
+            application
+        });
 
     } catch (error) {
-        console.error('Vendor Application Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        console.error('Vendor application error:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

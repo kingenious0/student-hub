@@ -104,205 +104,203 @@ export default function ProductDetailsPage() {
 
     return (
         <div className="min-h-screen bg-background transition-colors duration-300">
-            {/* Immersive Media Section - 60% of screen */}
-            <div className="relative h-[60vh] md:h-[65vh] overflow-hidden">
-                {/* Product Image */}
-                {product.imageUrl ? (
-                    <img
-                        src={product.imageUrl}
-                        alt={product.title}
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-surface to-background flex items-center justify-center text-9xl">
-                        📦
-                    </div>
-                )}
-
-                {/* Glass Overlay for Title & Price */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 glass-strong border-t border-surface-border">
-                    <div className="max-w-7xl mx-auto">
-                        <h1 className="text-4xl md:text-6xl font-black text-white mb-3 uppercase tracking-tighter drop-shadow-lg">
-                            {product.title}
-                        </h1>
-                        <div className="flex items-baseline gap-3">
-                            <span className="text-5xl md:text-6xl font-black text-primary tracking-tighter drop-shadow-lg">
-                                ₵{product.price.toFixed(2)}
-                            </span>
-                            <span className="text-sm font-bold text-white/60 uppercase tracking-widest">GHS</span>
-                        </div>
-                    </div>
+            {/* Simplified Header with Back Button */}
+            <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-surface-border">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
+                    <button
+                        onClick={() => router.back()}
+                        className="w-10 h-10 bg-surface hover:bg-surface-hover rounded-full flex items-center justify-center transition-colors"
+                    >
+                        <span className="text-lg">←</span>
+                    </button>
+                    <h1 className="text-lg font-bold truncate flex-1">{product.title}</h1>
+                    <div className="text-xl font-black text-primary">₵{product.price.toFixed(2)}</div>
                 </div>
-
-                {/* Back Button */}
-                <button
-                    onClick={() => router.back()}
-                    className="absolute top-28 left-6 w-12 h-12 bg-black/50 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all z-20 shadow-lg"
-                >
-                    <span className="text-xl pb-1">←</span>
-                </button>
             </div>
 
-            {/* Content Section */}
-            <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-                {/* Trust Badge Row */}
-                <div className="flex flex-wrap gap-3 mb-8">
-                    <div className="trust-badge">
-                        🛡️ Shield Escrow Protected
-                    </div>
-                    <div className="trust-badge">
-                        ✓ Verified Student Vendor
-                    </div>
-                    <div className="trust-badge">
-                        ⚡ Flash-Match Ready
-                    </div>
-                    {product.vendor.isActive && (
-                        <div className="trust-badge bg-green-500/10 border-green-500/30">
-                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                            Online Now
-                        </div>
-                    )}
-                </div>
+            {/* Product Image Section - Clean & Simple */}
+            <div className="max-w-7xl mx-auto px-4 py-6">
+                <div className="grid md:grid-cols-2 gap-8">
+                    {/* Left: Image */}
+                    <div className="relative aspect-square rounded-3xl overflow-hidden bg-surface border border-surface-border">
+                        {product.imageUrl ? (
+                            <img
+                                src={product.imageUrl}
+                                alt={product.title}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-9xl">
+                                📦
+                            </div>
+                        )}
 
-                {/* Product Details Grid */}
-                <div className="grid md:grid-cols-3 gap-8 mb-12">
-                    {/* Description */}
-                    <div className="md:col-span-2 space-y-6">
-                        <div className="bento-card">
-                            <h2 className="text-2xl font-black text-foreground uppercase tracking-tighter mb-4">
+                        {/* Vendor Status Badge */}
+                        {product.vendor.isActive && (
+                            <div className="absolute top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-full text-xs font-black uppercase flex items-center gap-2 shadow-lg">
+                                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                                Online Now
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Right: Product Info */}
+                    <div className="space-y-6">
+                        {/* Title & Price */}
+                        <div>
+                            <h1 className="text-3xl md:text-4xl font-black text-foreground mb-3 leading-tight">
+                                {product.title}
+                            </h1>
+                            <div className="flex items-baseline gap-2 mb-4">
+                                <span className="text-4xl md:text-5xl font-black text-primary">
+                                    ₵{product.price.toFixed(2)}
+                                </span>
+                                <span className="text-sm font-bold text-foreground/40 uppercase">GHS</span>
+                            </div>
+                            <div className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-bold">
+                                {product.category?.name || 'General'}
+                            </div>
+                        </div>
+
+                        {/* Trust Badges */}
+                        <div className="flex flex-wrap gap-2">
+                            <div className="trust-badge">
+                                🛡️ Escrow Protected
+                            </div>
+                            <div className="trust-badge">
+                                ✓ Verified Vendor
+                            </div>
+                            <div className="trust-badge">
+                                ⚡ Fast Delivery
+                            </div>
+                        </div>
+
+                        {/* Description */}
+                        <div className="bg-surface border border-surface-border rounded-2xl p-6">
+                            <h2 className="text-sm font-black text-foreground/40 uppercase tracking-widest mb-3">
                                 Product Details
                             </h2>
-                            <p className="text-foreground/60 text-lg leading-relaxed">
+                            <p className="text-foreground/80 leading-relaxed">
                                 {product.description}
                             </p>
                         </div>
 
                         {/* Vendor Info */}
-                        <div className="bento-card">
+                        <div className="bg-surface border border-surface-border rounded-2xl p-6">
                             <h3 className="text-sm font-black text-foreground/40 uppercase tracking-widest mb-4">
-                                Vendor Information
+                                Sold By
                             </h3>
                             <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-2xl font-black text-primary-foreground">
+                                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-lg font-black text-primary-foreground">
                                     {product.vendor.name?.[0] || 'V'}
                                 </div>
                                 <div>
-                                    <p className="text-xl font-black text-foreground uppercase tracking-tight">
+                                    <p className="text-lg font-bold text-foreground">
                                         {product.vendor.name || 'Anonymous Vendor'}
                                     </p>
-                                    <p className="text-xs font-bold text-foreground/40 uppercase tracking-widest">
+                                    <p className="text-xs font-medium text-foreground/50">
                                         📍 {product.hotspot || 'Main Campus'}
                                     </p>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Sidebar */}
-                    <div className="space-y-6">
-                        <div className="bento-card bg-gradient-to-br from-primary/5 to-transparent">
-                            <h3 className="text-sm font-black text-foreground/40 uppercase tracking-widest mb-4">
-                                Category
-                            </h3>
-                            <p className="text-lg font-black text-primary uppercase tracking-tight">
-                                {product.category?.name || 'General'}
-                            </p>
-                        </div>
-
-                        <div className="bento-card bg-gradient-to-br from-green-500/5 to-transparent border-green-500/20">
-                            <h3 className="text-sm font-black text-green-500 uppercase tracking-widest mb-3">
-                                🛡️ Buyer Protection
-                            </h3>
-                            <ul className="space-y-2 text-sm text-foreground/60">
-                                <li className="flex items-start gap-2">
-                                    <span className="text-green-500">✓</span>
-                                    <span>Funds held in escrow until delivery</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="text-green-500">✓</span>
-                                    <span>Secure handover verification</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="text-green-500">✓</span>
-                                    <span>Full refund protection</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-
-                {/* Action Buttons (Hybrid-Aware) */}
-                {(isHybridAuth || isGhostAdmin) ? (
-                    <div className="md:block">
-                        {(product.vendor.clerkId === user?.id && !isGhostAdmin) ? (
-                            <button
-                                disabled
-                                className="w-full py-6 bg-surface border border-surface-border text-foreground/40 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] cursor-not-allowed"
-                            >
-                                You Own This Item
-                            </button>
-                        ) : (
-                            <button
-                                onClick={handleBuyNow}
-                                className="w-full py-6 bg-primary hover:brightness-110 text-primary-foreground rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 omni-glow-strong"
-                            >
-                                Buy Now - ₵{product.price.toFixed(2)}
-                            </button>
-                        )}
-                    </div>
-                ) : (
-                    <>
-                        {/* Desktop Buy Button */}
-                        <SignedIn>
-                            <div className="block">
-                                {isGhostAdmin ? (
+                        {/* Action Buttons */}
+                        {(isHybridAuth || isGhostAdmin) ? (
+                            <div>
+                                {(product.vendor.clerkId === user?.id && !isGhostAdmin) ? (
                                     <button
                                         disabled
-                                        className="w-full py-6 bg-red-500/10 border-2 border-red-500/30 text-red-500 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] cursor-not-allowed"
-                                    >
-                                        👁️ ADMIN MODE • BUYING DISABLED
-                                    </button>
-                                ) : user?.id === product.vendor.clerkId ? (
-                                    <button
-                                        disabled
-                                        className="w-full py-6 bg-surface border border-surface-border text-foreground/40 rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] cursor-not-allowed"
+                                        className="w-full py-5 bg-surface border-2 border-surface-border text-foreground/40 rounded-2xl font-black text-sm uppercase tracking-widest cursor-not-allowed"
                                     >
                                         You Own This Item
                                     </button>
                                 ) : (
                                     <button
                                         onClick={handleBuyNow}
-                                        className="w-full py-6 bg-primary hover:brightness-110 text-primary-foreground rounded-[2rem] font-black text-sm uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 omni-glow-strong"
+                                        className="w-full py-5 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black text-base uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
                                     >
-                                        Buy Now - ₵{product.price.toFixed(2)}
+                                        🛒 Add to Cart • ₵{product.price.toFixed(2)}
                                     </button>
                                 )}
                             </div>
-                        </SignedIn>
+                        ) : (
+                            <>
+                                <SignedIn>
+                                    <div>
+                                        {isGhostAdmin ? (
+                                            <button
+                                                disabled
+                                                className="w-full py-5 bg-red-500/10 border-2 border-red-500/30 text-red-500 rounded-2xl font-black text-sm uppercase tracking-widest cursor-not-allowed"
+                                            >
+                                                👁️ ADMIN MODE • BUYING DISABLED
+                                            </button>
+                                        ) : user?.id === product.vendor.clerkId ? (
+                                            <button
+                                                disabled
+                                                className="w-full py-5 bg-surface border-2 border-surface-border text-foreground/40 rounded-2xl font-black text-sm uppercase tracking-widest cursor-not-allowed"
+                                            >
+                                                You Own This Item
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={handleBuyNow}
+                                                className="w-full py-5 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-black text-base uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-lg"
+                                            >
+                                                🛒 Add to Cart • ₵{product.price.toFixed(2)}
+                                            </button>
+                                        )}
+                                    </div>
+                                </SignedIn>
 
-                        <SignedOut>
-                            <div className="bento-card text-center">
-                                <h3 className="text-xl font-black text-foreground mb-4 uppercase">
-                                    Sign In to Purchase
-                                </h3>
-                                <SignInButton mode="modal">
-                                    <button className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black uppercase tracking-widest hover:scale-105 transition-all">
-                                        Sign In
-                                    </button>
-                                </SignInButton>
-                            </div>
-                        </SignedOut>
-                    </>
-                )}
+                                <SignedOut>
+                                    <div className="bg-surface border border-surface-border rounded-2xl p-6 text-center">
+                                        <h3 className="text-lg font-black text-foreground mb-3 uppercase">
+                                            Sign In to Purchase
+                                        </h3>
+                                        <SignInButton mode="modal">
+                                            <button className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black uppercase tracking-widest hover:scale-105 transition-all">
+                                                Sign In
+                                            </button>
+                                        </SignInButton>
+                                    </div>
+                                </SignedOut>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+
+                {/* Additional Info Section */}
+                <div className="mt-12 bg-green-500/5 border border-green-500/20 rounded-3xl p-8">
+                    <h3 className="text-lg font-black text-green-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        🛡️ Buyer Protection Guarantee
+                    </h3>
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <div>
+                            <div className="text-3xl mb-2">💰</div>
+                            <h4 className="font-bold text-foreground mb-1">Escrow Protection</h4>
+                            <p className="text-sm text-foreground/60">Your money is held safely until you confirm delivery</p>
+                        </div>
+                        <div>
+                            <div className="text-3xl mb-2">✅</div>
+                            <h4 className="font-bold text-foreground mb-1">Verified Handover</h4>
+                            <p className="text-sm text-foreground/60">Secure pickup code system for safe exchanges</p>
+                        </div>
+                        <div>
+                            <div className="text-3xl mb-2">↩️</div>
+                            <h4 className="font-bold text-foreground mb-1">Full Refund</h4>
+                            <p className="text-sm text-foreground/60">100% money-back if something goes wrong</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Floating Action Button (Mobile) */}
             {(isHybridAuth || isGhostAdmin || (user && user.id !== product.vendor.clerkId)) && (
                 <button
                     onClick={handleBuyNow}
-                    className={`fab md:hidden ${showFAB ? 'scale-100' : 'scale-0'} transition-transform duration-300`}
-                    style={{ width: '4rem', height: '4rem', fontSize: '1.5rem' }}
+                    className={`fixed bottom-6 right-6 w-16 h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all md:hidden ${showFAB ? 'scale-100' : 'scale-0'}`}
                 >
                     🛒
                 </button>

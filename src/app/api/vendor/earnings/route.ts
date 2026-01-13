@@ -12,36 +12,43 @@ export async function GET(req: NextRequest) {
 
         const vendor = await prisma.user.findUnique({
             where: { clerkId: userId },
-            select: { id: true, role: true }
+            select: {
+                id: true,
+                role: true,
+                balance: true,
+                frozenBalance: true
+            }
         });
 
         if (!vendor || vendor.role !== 'VENDOR') {
             return NextResponse.json({ error: 'Not a vendor' }, { status: 403 });
         }
 
-        const orders = await prisma.order.findMany({
+        const payouts = await prisma.payoutRequest.findMany({
             where: { vendorId: vendor.id },
-            include: {
-                product: {
-                    select: {
-                        title: true,
-                        imageUrl: true
-                    }
-                },
-                student: {
-                    select: {
-                        name: true,
-                        email: true
-                    }
-                }
-            },
             orderBy: { createdAt: 'desc' }
         });
 
-        return NextResponse.json({ orders });
+        const pendingPayouts = payouts
+            .filter(p => p.status === 'PENDING')
+            .reduce((sum, p) => sum + p.amount, 0);
+
+        const totalWithdrawn = payouts
+            .filter(p => p.status === 'PROCESSED')
+            .reduce((sum, p) => sum + p.amount, 0);
+
+        return NextResponse.json({
+            stats: {
+                balance: vendor.balance,
+                frozenBalance: vendor.frozenBalance,
+                pendingPayouts,
+                totalWithdrawn,
+            },
+            payouts
+        });
 
     } catch (error) {
-        console.error('Fetch orders error:', error);
+        console.error('Fetch earnings error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
