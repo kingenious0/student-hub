@@ -44,9 +44,28 @@ export default function VendorOrdersPage() {
         }
     };
 
+    const handleSelfDeliver = async (orderId: string) => {
+        if (!confirm('Deliver this yourself? You will earn the delivery fee.')) return;
+        try {
+            const res = await fetch(`/api/vendor/orders/${orderId}/self-deliver`, { method: 'POST' });
+            if (res.ok) {
+                alert('✅ You are now the runner! Check "In Progress"');
+                fetchOrders();
+            } else {
+                const data = await res.json();
+                alert(`❌ Error: ${data.error}`);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     const filteredOrders = filter === 'ALL'
         ? orders
-        : orders.filter(o => o.status === filter);
+        : orders.filter(o => {
+            if (filter === 'IN_PROGRESS') return ['PREPARING', 'READY', 'PICKED_UP'].includes(o.status);
+            return o.status === filter;
+        });
 
     if (loading) {
         return (
@@ -74,8 +93,8 @@ export default function VendorOrdersPage() {
                             key={f}
                             onClick={() => setFilter(f as any)}
                             className={`px-6 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all ${filter === f
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-surface border border-surface-border hover:border-primary'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-surface border border-surface-border hover:border-primary'
                                 }`}
                         >
                             {f.replace('_', ' ')}
@@ -108,9 +127,9 @@ export default function VendorOrdersPage() {
                                                 <p className="text-sm text-foreground/60">Order #{order.id.slice(0, 8)}</p>
                                             </div>
                                             <span className={`px-3 py-1 rounded-full text-xs font-black ${order.status === 'COMPLETED' ? 'bg-green-500/10 text-green-500' :
-                                                    order.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-500' :
-                                                        order.status === 'IN_PROGRESS' ? 'bg-blue-500/10 text-blue-500' :
-                                                            'bg-purple-500/10 text-purple-500'
+                                                order.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-500' :
+                                                    ['IN_PROGRESS', 'READY', 'PICKED_UP'].includes(order.status) ? 'bg-blue-500/10 text-blue-500' :
+                                                        'bg-purple-500/10 text-purple-500'
                                                 }`}>
                                                 {order.status.replace('_', ' ')}
                                             </span>
@@ -140,14 +159,24 @@ export default function VendorOrdersPage() {
                                     </div>
 
                                     {/* Actions */}
-                                    {order.status === 'PENDING' && (
-                                        <button
-                                            onClick={() => handleMarkReady(order.id)}
-                                            className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-black uppercase text-sm tracking-widest hover:scale-105 transition-transform whitespace-nowrap"
-                                        >
-                                            Mark Ready
-                                        </button>
-                                    )}
+                                    <div className="flex flex-col gap-2">
+                                        {order.status === 'PENDING' && (
+                                            <button
+                                                onClick={() => handleMarkReady(order.id)}
+                                                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-black uppercase text-sm tracking-widest hover:scale-105 transition-transform whitespace-nowrap"
+                                            >
+                                                Mark Ready
+                                            </button>
+                                        )}
+                                        {order.status === 'READY' && !order.runnerId && (
+                                            <button
+                                                onClick={() => handleSelfDeliver(order.id)}
+                                                className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-black uppercase text-sm tracking-widest hover:scale-105 transition-transform whitespace-nowrap shadow-lg shadow-orange-500/20"
+                                            >
+                                                Deliver Myself (+Fee)
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}

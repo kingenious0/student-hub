@@ -16,7 +16,7 @@ function useDebounceValue<T>(value: T, delay: number): T {
     return debouncedValue;
 }
 
-export default function GlobalSearch({ className = "", variant = "navbar" }: { className?: string, variant?: "navbar" | "hero" }) {
+export default function GlobalSearch({ className = "", variant = "navbar", dropdownMode = "absolute" }: { className?: string, variant?: "navbar" | "hero", dropdownMode?: "absolute" | "static" }) {
     const router = useRouter();
     const [query, setQuery] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -136,7 +136,7 @@ export default function GlobalSearch({ className = "", variant = "navbar" }: { c
 
             {/* Dropdown Results */}
             {isOpen && (results || query.length > 0) && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-surface border border-gray-200 dark:border-surface-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className={`${dropdownMode === 'absolute' ? 'absolute top-full left-0 right-0' : 'relative w-full'} mt-2 bg-white dark:bg-surface border border-gray-200 dark:border-surface-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-[101]`}>
 
                     {/* Loading Skeleton */}
                     {isLoading && !results && (

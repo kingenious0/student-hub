@@ -237,7 +237,7 @@ export default function Navbar() {
                             className="lg:hidden border-t border-surface-border bg-background/95 backdrop-blur-md overflow-hidden"
                         >
                             <div className="p-4">
-                                <GlobalSearch />
+                                <GlobalSearch dropdownMode="static" />
                             </div>
                         </motion.div>
                     )}
