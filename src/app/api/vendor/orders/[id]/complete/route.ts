@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { auth } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
+import { sendSMS } from '@/lib/sms/wigal';
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
+    props: { params: Promise<{ id: string }> }
 ) {
     try {
         const { userId } = await auth();
@@ -12,7 +13,8 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { id: orderId } = await params;
+        const params = await props.params;
+        const { id: orderId } = params;
         const { releaseKey } = await request.json();
 
         if (!releaseKey) {
@@ -29,16 +31,17 @@ export async function POST(
         }
 
         const order = await prisma.order.findUnique({
-            where: { id: orderId }
+            where: { id: orderId },
+            include: {
+                student: { select: { phoneNumber: true, name: true } },
+                product: { select: { title: true } }
+            }
         });
 
         if (!order) {
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
-        // Vendor Authorizaton
-        // Only Vendor (who is also Runner, or manually overriding?) can use this.
-        // Actually allowing Vendor to complete ANY order if they have the key is reasonable (Manual Override).
         if (order.vendorId !== user.id) {
             return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
         }
@@ -60,7 +63,6 @@ export async function POST(
             });
 
             // Update Mission if exists
-            // Verify if mission table exists and sync status
             const mission = await tx.mission.findUnique({
                 where: { orderId: orderId }
             });
@@ -71,10 +73,15 @@ export async function POST(
                     data: { status: 'COMPLETED' }
                 });
             }
-
-            // Payout Logic could go here (Add to Vendor Balance / Runner Balance)
-            // For MVP, we just mark Complete.
         });
+
+        // Send Notification
+        if (order.student?.phoneNumber) {
+            await sendSMS(
+                order.student.phoneNumber,
+                `OMNI: Order Completed. Delivery confirmed for ${order.product.title}. Thank you for trading.`
+            );
+        }
 
         return NextResponse.json({ success: true, message: 'Order Completed' });
 
