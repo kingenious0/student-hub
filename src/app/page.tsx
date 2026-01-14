@@ -15,11 +15,13 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
 
       {/* 1. PROMO HERO BANNER - Jumia Style */}
-      <div className="relative bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 pt-32 pb-8 px-4 overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-300 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div className="relative bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 pt-32 pb-8 px-4">
+        {/* Animated Background - Isolated Overflow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-300 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          </div>
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
