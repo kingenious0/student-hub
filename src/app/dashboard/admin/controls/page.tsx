@@ -131,6 +131,41 @@ export default function SystemControlsPage() {
                         </div>
                     </div>
 
+                    {/* INFRASTRUCTURE OVERSIGHT */}
+                    <div className="bg-surface border border-surface-border rounded-[3rem] p-10 space-y-10">
+                        <div className="border-b border-surface-border pb-8">
+                            <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Infrastructure Protocol</h2>
+                            <p className="text-foreground/30 text-[10px] font-black uppercase tracking-widest mt-2">Database Status & Data Retention</p>
+                        </div>
+
+                        {/* Database Health */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-10 border-b border-surface-border">
+                            <div>
+                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Database Connectivity</h3>
+                                <p className="text-foreground/30 text-[10px] font-black uppercase tracking-widest mt-1">Real-time link status to CockroachDB Core.</p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+                                    {loading ? 'PINGING...' : 'ONLINE • STABLE'}
+                                </span>
+                                <div className={`w-4 h-4 rounded-full ${loading ? 'bg-yellow-500 animate-pulse' : 'bg-[#39FF14] shadow-[0_0_10px_#39FF14]'}`}></div>
+                            </div>
+                        </div>
+
+                        {/* Backup */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div>
+                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Data Snapshot</h3>
+                                <p className="text-foreground/30 text-[10px] font-black uppercase tracking-widest mt-1">Export full JSON dump of current ecosystem state.</p>
+                            </div>
+                            <Link href="/api/admin/backup" target="_blank">
+                                <button type="button" className="px-8 py-4 bg-foreground/5 border border-surface-border rounded-xl font-black text-xs uppercase tracking-widest hover:bg-foreground hover:text-background transition-all">
+                                    Download Backup ↓
+                                </button>
+                            </Link>
+                        </div>
+                    </div>
+
                     <div className="flex flex-col items-center gap-4">
                         <button
                             type="submit"

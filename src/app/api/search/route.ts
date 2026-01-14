@@ -15,16 +15,25 @@ export async function GET(req: NextRequest) {
 
         const query = q.trim();
 
+        // Tokenize query for "Google-like" AND logic (e.g. "hand sanitizer" -> contains "hand" AND "sanitizer")
+        const terms = query.split(/\s+/).filter(t => t.length > 0);
+
+        const searchConditions = terms.map(term => ({
+            OR: [
+                { title: { contains: term, mode: 'insensitive' } },
+                { description: { contains: term, mode: 'insensitive' } },
+            ]
+        }));
+
         // Run searches in parallel
         const [products, vendors, categories] = await Promise.all([
             // 1. Search Products
             prisma.product.findMany({
                 where: {
-                    OR: [
-                        { title: { contains: query, mode: 'insensitive' } },
-                        { description: { contains: query, mode: 'insensitive' } },
-                    ],
-                    isArchived: false,
+                    AND: [
+                        ...searchConditions,
+                        { isArchived: false }
+                    ]
                 },
                 take: 6,
                 select: {
