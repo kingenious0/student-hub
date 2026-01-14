@@ -33,10 +33,17 @@ export async function GET(request: NextRequest) {
         }
 
         if (query) {
-            where.OR = [
-                { title: { contains: query, mode: 'insensitive' } },
-                { description: { contains: query, mode: 'insensitive' } },
-            ];
+            // Tokenize query for "Google-like" AND logic
+            const terms = query.split(/\s+/).filter(t => t.length > 0);
+
+            const searchConditions = terms.map(term => ({
+                OR: [
+                    { title: { contains: term, mode: 'insensitive' } },
+                    { description: { contains: term, mode: 'insensitive' } },
+                ]
+            }));
+
+            where.AND = searchConditions;
         }
 
         if (categoryId) {

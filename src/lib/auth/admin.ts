@@ -14,13 +14,13 @@ export async function isAuthorizedAdmin() {
         const { userId } = await auth();
         if (!userId) return false;
 
-        // 1. Check Cookie (Uplink Token)
-        const cookieStore = await cookies();
-        const bossToken = cookieStore.get('OMNI_BOSS_TOKEN');
-        if (!bossToken || bossToken.value !== 'AUTHORIZED_ADMIN') {
-            console.warn(`[SECURITY] Potential Admin bypass attempt by: ${userId}`);
-            return false;
-        }
+        // 1. Check Cookie (Uplink Token) - Optional/Deprecated for now
+        // const cookieStore = await cookies();
+        // const bossToken = cookieStore.get('OMNI_BOSS_TOKEN');
+        // if (!bossToken || bossToken.value !== 'AUTHORIZED_ADMIN') {
+        //     console.warn(`[SECURITY] Potential Admin bypass attempt by: ${userId}`);
+        //     return false;
+        // }
 
         // 2. Check Database Role
         const user = await prisma.user.findUnique({

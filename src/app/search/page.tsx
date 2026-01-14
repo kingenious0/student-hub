@@ -45,7 +45,7 @@ function SearchResults() {
             {/* Search Header */}
             <div className="mb-12">
                 <div className="flex items-center gap-4 mb-8">
-                    <Link href="/marketplace" className="text-foreground/40 hover:text-primary transition-colors font-black text-[10px] uppercase tracking-widest">
+                    <Link href="/" className="text-foreground/40 hover:text-primary transition-colors font-black text-[10px] uppercase tracking-widest">
                         ← Back to Market
                     </Link>
                 </div>
