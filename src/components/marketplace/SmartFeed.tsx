@@ -56,58 +56,100 @@ export default function SmartFeed() {
         </div>
     );
 
-    if (!feed) return null;
+
+    // NEW: Premium Empty State
+    const isEmpty = !feed || (feed.newArrivals.length === 0 && feed.trending.length === 0 && feed.recommended.length === 0);
+
+    if (isEmpty) {
+        return (
+
+            <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 animate-in fade-in zoom-in duration-500">
+                <div className="relative">
+                    <div className="absolute -inset-4 bg-orange-500/20 rounded-full blur-xl animate-pulse"></div>
+                    <div className="relative bg-surface border border-surface-border p-8 rounded-full shadow-2xl">
+                        <span className="text-4xl">🔥</span>
+                    </div>
+                </div>
+                <div className="space-y-4 max-w-md px-4">
+                    <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">
+                        AAMUSTED’s Biggest Hustle is About to Begin
+                    </h2>
+                    <p className="text-sm text-foreground/60 font-medium leading-relaxed">
+                        The marketplace is fresh, and the opportunity is huge. <br />
+                        Be the first to list your products and earn the exclusive <span className="text-primary font-bold">"Founding Vendor"</span> badge!
+                    </p>
+                </div>
+                <div className="flex flex-col gap-3 w-full max-w-xs">
+                    <Link
+                        href="/become-vendor"
+                        className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
+                    >
+                        <span>🚀</span> Register as a Seller
+                    </Link>
+                    <p className="text-[10px] uppercase font-bold text-foreground/30">
+                        Limited Spots for Alpha Launch
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-12 pb-24">
 
             {/* Section 1: Recommended For You (Horizontal) */}
-            <section>
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-black uppercase tracking-tight text-foreground">Just For You</h2>
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Personalized</span>
-                </div>
-                <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-                    <div className="flex gap-4">
-                        {feed.recommended.map((item, i) => (
-                            <ProductCard key={item.id} product={item} index={i} compact />
-                        ))}
+            {feed.recommended.length > 0 && (
+                <section>
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-black uppercase tracking-tight text-foreground">Just For You</h2>
+                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Personalized</span>
                     </div>
-                </div>
-            </section>
+                    <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+                        <div className="flex gap-4">
+                            {feed.recommended.map((item, i) => (
+                                <ProductCard key={item.id} product={item} index={i} compact />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* Section 2: Trending Now (Horizontal) */}
-            <section>
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-black uppercase tracking-tight text-foreground">Trending @ Campus</h2>
-                    <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest animate-pulse">🔥 Live</span>
-                </div>
-                <div className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    {feed.trending.map((item, i) => (
-                        <div key={item.id} className="snap-center">
-                            <ProductCard product={item} index={i} compact badge="POPULAR" badgeColor="bg-orange-500" />
-                        </div>
-                    ))}
-                </div>
-            </section>
+            {feed.trending.length > 0 && (
+                <section>
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-black uppercase tracking-tight text-foreground">Trending @ Campus</h2>
+                        <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest animate-pulse">🔥 Live</span>
+                    </div>
+                    <div className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+                        {feed.trending.map((item, i) => (
+                            <div key={item.id} className="snap-center">
+                                <ProductCard product={item} index={i} compact badge="POPULAR" badgeColor="bg-orange-500" />
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
 
             {/* Section 3: New Arrivals (Vertical Infinite Feed) */}
-            <section>
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">Fresh Drops</h2>
-                    <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Realtime</span>
-                </div>
+            {feed.newArrivals.length > 0 && (
+                <section>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">Fresh Drops</h2>
+                        <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">Realtime</span>
+                    </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {feed.newArrivals.map((item, i) => (
-                        <ProductCard key={item.id} product={item} index={i} badge="NEW DROP" badgeColor="bg-blue-500" />
-                    ))}
-                </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {feed.newArrivals.map((item, i) => (
+                            <ProductCard key={item.id} product={item} index={i} badge="NEW DROP" badgeColor="bg-blue-500" />
+                        ))}
+                    </div>
 
-                <div className="mt-8 text-center">
-                    <p className="text-[10px] font-bold text-foreground/20 uppercase tracking-widest">End of Feed</p>
-                </div>
-            </section>
+                    <div className="mt-8 text-center">
+                        <p className="text-[10px] font-bold text-foreground/20 uppercase tracking-widest">End of Feed</p>
+                    </div>
+                </section>
+            )}
         </div>
     );
 }
