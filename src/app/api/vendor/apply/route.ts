@@ -67,26 +67,30 @@ export async function POST(req: NextRequest) {
                 shopName,
                 shopDesc: shopDescription,
                 location: { location, phoneNumber }, // Store as JSON
-                status: 'PENDING',
+                status: 'APPROVED',
             },
             create: {
                 userId: dbUser.id,
                 shopName,
                 shopDesc: shopDescription,
                 location: { location, phoneNumber }, // Store as JSON
-                status: 'PENDING',
+                status: 'APPROVED',
             }
         });
 
-        // Update user to mark they've applied
+        // Update user to mark they've applied AND UPGRADE ROLE
         await prisma.user.update({
             where: { clerkId: userId },
-            data: { appliedForVendor: true }
+            data: {
+                appliedForVendor: true,
+                role: 'VENDOR',
+                vendorStatus: 'ACTIVE'
+            }
         });
 
         return NextResponse.json({
             success: true,
-            message: 'Application submitted successfully! We\'ll review it within 24 hours.',
+            message: 'Application approved! Welcome to the marketplace.',
             application
         });
 
