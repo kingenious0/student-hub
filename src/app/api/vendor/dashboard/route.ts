@@ -25,14 +25,19 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Not a vendor' }, { status: 403 });
         }
 
+        // Calculate date 6 months ago
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+        sixMonthsAgo.setDate(1);
+
         // Fetch stats
-        const [totalProducts, orders, activeFlashSales] = await Promise.all([
+        const [totalProducts, orders, activeFlashSales, revenueOrders] = await Promise.all([
             // Total products
             prisma.product.count({
                 where: { vendorId: vendor.id }
             }),
 
-            // All orders
+            // Recent orders (for list)
             prisma.order.findMany({
                 where: { vendorId: vendor.id },
                 select: {
@@ -47,7 +52,7 @@ export async function GET(req: NextRequest) {
                     }
                 },
                 orderBy: { createdAt: 'desc' },
-                take: 10
+                take: 5 // Changed from 10 to 5 to match UI
             }),
 
             // Active flash sales
@@ -61,13 +66,53 @@ export async function GET(req: NextRequest) {
                         gte: new Date()
                     }
                 }
+            }),
+
+            // Revenue Data for Chart (Last 6 months)
+            prisma.order.findMany({
+                where: {
+                    vendorId: vendor.id,
+                    status: 'COMPLETED',
+                    createdAt: { gte: sixMonthsAgo }
+                },
+                select: {
+                    amount: true,
+                    createdAt: true
+                }
             })
         ]);
 
-        const totalOrders = orders.length;
-        const pendingOrders = orders.filter(o => o.status === 'PENDING').length;
-        const completedOrders = orders.filter(o => o.status === 'COMPLETED');
-        const totalEarnings = completedOrders.reduce((sum, o) => sum + o.amount, 0);
+        const totalOrders = await prisma.order.count({ where: { vendorId: vendor.id } }); // Get real total count
+        const pendingOrders = await prisma.order.count({ where: { vendorId: vendor.id, status: 'PENDING' } });
+
+        // Calculate total earnings (all time)
+        // Note: For large scale, you'd aggregate this in DB. For now, aggregating strictly completed orders is fine.
+        const allCompletedOrders = await prisma.order.aggregate({
+            where: { vendorId: vendor.id, status: 'COMPLETED' },
+            _sum: { amount: true }
+        });
+        const totalEarnings = allCompletedOrders._sum.amount || 0;
+
+        // Process Graph Data
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const revenueMap = new Map<string, number>();
+
+        // Initialize last 6 months with 0
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            const monthName = monthNames[d.getMonth()];
+            revenueMap.set(monthName, 0);
+        }
+
+        revenueOrders.forEach(order => {
+            const monthName = monthNames[new Date(order.createdAt).getMonth()];
+            if (revenueMap.has(monthName)) {
+                revenueMap.set(monthName, (revenueMap.get(monthName) || 0) + order.amount);
+            }
+        });
+
+        const monthlyRevenue = Array.from(revenueMap).map(([name, total]) => ({ name, total }));
 
         return NextResponse.json({
             stats: {
@@ -77,7 +122,8 @@ export async function GET(req: NextRequest) {
                 pendingOrders,
                 activeFlashSales,
             },
-            recentOrders: orders.slice(0, 5)
+            monthlyRevenue,
+            recentOrders: orders
         });
 
     } catch (error) {
