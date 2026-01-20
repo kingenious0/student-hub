@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import { useModal } from '@/context/ModalContext';
 
 export default function BecomeVendorPage() {
     const { user, isLoaded } = useUser();
     const router = useRouter();
+    const modal = useModal();
+    const clerk = useClerk();
     const [showForm, setShowForm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -51,10 +54,7 @@ export default function BecomeVendorPage() {
         );
     }
 
-    if (!user) {
-        router.push('/sign-in');
-        return null;
-    }
+
 
     return (
         <div className="min-h-screen bg-background">
@@ -89,7 +89,20 @@ export default function BecomeVendorPage() {
                                 </li>
                             </ul>
                             <button
-                                onClick={() => setShowForm(true)}
+                                onClick={async () => {
+                                    if (!user) {
+                                        const confirmed = await modal.confirm(
+                                            "You must be signed in to apply as a vendor. Join the marketplace to start selling.",
+                                            "Authentication Required",
+                                            false
+                                        );
+                                        if (confirmed) {
+                                            clerk.redirectToSignIn({ redirectUrl: '/become-vendor' });
+                                        }
+                                        return;
+                                    }
+                                    setShowForm(true);
+                                }}
                                 className="px-10 py-5 bg-white text-orange-600 rounded-2xl font-black text-lg uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform shadow-2xl"
                             >
                                 Start Selling Now →
@@ -310,7 +323,20 @@ export default function BecomeVendorPage() {
                         Join hundreds of vendors already making money on campus
                     </p>
                     <button
-                        onClick={() => setShowForm(true)}
+                        onClick={async () => {
+                            if (!user) {
+                                const confirmed = await modal.confirm(
+                                    "You must be signed in to apply as a vendor. Join the marketplace to start selling.",
+                                    "Authentication Required",
+                                    false
+                                );
+                                if (confirmed) {
+                                    clerk.redirectToSignIn({ redirectUrl: '/become-vendor' });
+                                }
+                                return;
+                            }
+                            setShowForm(true);
+                        }}
                         className="px-12 py-6 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl font-black text-lg uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform shadow-2xl"
                     >
                         Apply Now - It's Free!

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ZapIcon, MapPinIcon, ClockIcon } from '@/components/ui/Icons';
 import MaintenanceGuard from '@/components/admin/MaintenanceGuard';
 import { useAdmin } from '@/context/AdminContext';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import BackButton from '@/components/BackButton';
@@ -56,6 +56,10 @@ export default function RunnerPage() {
 // --- SUB-COMPONENTS ---
 
 function RunnerLandingSection({ onSuccess }: { onSuccess: () => void }) {
+    const modal = useModal();
+    const clerk = useClerk();
+    const { user } = useUser();
+    const router = useRouter();
     const [applying, setApplying] = useState(false);
 
     const handleApply = async () => {
@@ -103,7 +107,20 @@ function RunnerLandingSection({ onSuccess }: { onSuccess: () => void }) {
                 </div>
 
                 <button
-                    onClick={handleApply}
+                    onClick={async () => {
+                        if (!user) {
+                            const confirmed = await modal.confirm(
+                                "You must be signed in to join the Runner Fleet. Access is restricted to verified students only.",
+                                "Authentication Required",
+                                false
+                            );
+                            if (confirmed) {
+                                clerk.redirectToSignIn({ redirectUrl: '/runner' });
+                            }
+                            return;
+                        }
+                        handleApply();
+                    }}
                     disabled={applying}
                     className="w-full py-5 bg-gradient-to-r from-yellow-500 to-amber-500 text-black font-black text-lg uppercase tracking-widest rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >

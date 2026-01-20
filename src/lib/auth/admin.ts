@@ -28,7 +28,7 @@ export async function isAuthorizedAdmin() {
             select: { role: true }
         });
 
-        return user?.role === 'ADMIN';
+        return user?.role === 'ADMIN' || user?.role === 'GOD_MODE';
     } catch (error) {
         console.error('[SECURITY] Admin authorization check failed:', error);
         return false;
