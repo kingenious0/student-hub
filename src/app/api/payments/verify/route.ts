@@ -1,5 +1,3 @@
-
-// src/app/api/payments/verify/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 
@@ -7,12 +5,6 @@ import { prisma } from '@/lib/db/prisma';
  * Verify a Paystack payment and generate the Secure Release Key for escrow release
  * This endpoint should be called after the student completes payment
  */
-
-// export const runtime = 'edge';
-
-// src/app/api/payments/verify/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/prisma';
 
 export async function POST(request: NextRequest) {
     try {

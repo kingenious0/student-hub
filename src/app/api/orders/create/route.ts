@@ -1,11 +1,3 @@
-// src/app/api/orders/create/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/prisma';
-import { ensureUserExists } from '@/lib/auth/sync';
-
-// export const runtime = 'edge';
-
-// src/app/api/orders/create/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { ensureUserExists } from '@/lib/auth/sync';
