@@ -28,7 +28,7 @@ import {
 export default function Navbar() {
     const pathname = usePathname();
     const { user, isLoaded: clerkLoaded } = useUser();
-    const itemCount = useCartStore((state) => state.getItemCount());
+    const itemCount = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -48,7 +48,13 @@ export default function Navbar() {
     // Handle logo click for triple-tap easter egg
     const handleLogoClick = (e: React.MouseEvent) => {
         // Only work for GOD_MODE or ADMIN users
-        if (user?.publicMetadata?.role !== 'GOD_MODE' && user?.publicMetadata?.role !== 'ADMIN') {
+        // Check both Clerk Metadata (Fast) OR Database User (Accurate)
+        const role = user?.publicMetadata?.role as string;
+        const dbRole = dbUser?.role;
+
+        const isAuthorized = role === 'GOD_MODE' || role === 'ADMIN' || dbRole === 'GOD_MODE' || dbRole === 'ADMIN';
+
+        if (!isAuthorized) {
             return;
         }
 
@@ -103,7 +109,32 @@ export default function Navbar() {
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.shiftKey && e.altKey && e.key === 'Z') {
-                if (user?.publicMetadata?.role === 'GOD_MODE' || user?.publicMetadata?.role === 'ADMIN') {
+                const role = user?.publicMetadata?.role as string;
+                // We need to access dbUser from state, but useEffect closure might capture old state.
+                // However, since we depend on [pathname, user], it might not trigger often enough to capture dbUser updates if not added to deps.
+                // Let's rely on the refetch or checking localStorage if we were persistent, 
+                // but checking the publicMetadata is the safest sync way usually. 
+                // Since this is a specialized tool, we can try to assume if they are pressing this Combo they know what they are doing.
+                // But generally, let's keep it safe. 
+                // *Self-Correction*: The keyboard handler closure will have stale `dbUser` if not in dependency array.
+                // But adding dbUser to dependency array causes re-attaching listeners. That's fine.
+            }
+        };
+
+        // We will define the handler inside loosely or use a Ref for current dbUser. 
+        // For now, let's just use the logo click fix mostly, and for keydown let's try to be permissive 
+        // OR fix the dependency (added dbUser below).
+
+    }, [pathname, user]);
+
+    // Better Keyboard Handler
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.shiftKey && e.altKey && e.key === 'Z') {
+                const role = user?.publicMetadata?.role as string;
+                const dbRole = dbUser?.role;
+
+                if (role === 'GOD_MODE' || role === 'ADMIN' || dbRole === 'GOD_MODE' || dbRole === 'ADMIN') {
                     window.location.href = '/command-center-z';
                 }
             }
@@ -111,7 +142,7 @@ export default function Navbar() {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [pathname, user]);
+    }, [user, dbUser]); // Added dbUser dependency
 
     useEffect(() => {
         if (isDrawerOpen) {
@@ -156,7 +187,7 @@ export default function Navbar() {
                         </button>
 
                         {/* Logo */}
-                        {user?.publicMetadata?.role === 'GOD_MODE' || user?.publicMetadata?.role === 'ADMIN' ? (
+                        {user?.publicMetadata?.role === 'GOD_MODE' || user?.publicMetadata?.role === 'ADMIN' || dbUser?.role === 'GOD_MODE' || dbUser?.role === 'ADMIN' ? (
                             <div
                                 onClick={handleLogoClick}
                                 className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none"

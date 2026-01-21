@@ -17,7 +17,17 @@ interface FeedProduct {
     };
     category: {
         name: string;
-    }
+    };
+    // New Fields for Enhanced UI
+    averageRating?: number;
+    totalReviews?: number;
+    isInStock?: boolean;
+    flashSale?: {
+        salePrice: number;
+        originalPrice: number;
+        discountPercent: number;
+        isActive: boolean;
+    } | null;
 }
 
 interface DiscoveryFeedData {

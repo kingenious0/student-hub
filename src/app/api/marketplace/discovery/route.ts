@@ -11,7 +11,8 @@ const getDiscoveryFeed = unstable_cache(
             orderBy: { createdAt: 'desc' },
             include: {
                 vendor: { select: { id: true, name: true, currentHotspot: true, shopName: true } },
-                category: true
+                category: true,
+                flashSale: true
             }
         });
 
@@ -24,7 +25,8 @@ const getDiscoveryFeed = unstable_cache(
             },
             include: {
                 vendor: { select: { id: true, name: true, currentHotspot: true, shopName: true } },
-                category: true
+                category: true,
+                flashSale: true
             }
         });
 
@@ -46,7 +48,8 @@ const getDiscoveryFeed = unstable_cache(
             },
             include: {
                 vendor: { select: { id: true, name: true, currentHotspot: true, shopName: true } },
-                category: true
+                category: true,
+                flashSale: true
             }
         });
 
@@ -57,7 +60,8 @@ const getDiscoveryFeed = unstable_cache(
                 orderBy: { createdAt: 'desc' }, // Just get latest
                 include: {
                     vendor: { select: { id: true, name: true, currentHotspot: true, shopName: true } },
-                    category: true
+                    category: true,
+                    flashSale: true
                 }
             });
         }

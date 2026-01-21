@@ -61,6 +61,8 @@ export async function GET(request: NextRequest) {
         const heldInEscrow = user.vendorOrders
             .filter((o: VendorOrder) => o.escrowStatus === 'HELD')
             .reduce((sum: number, o: VendorOrder) => sum + o.amount, 0);
+        console.log(`[VendorStats] User ${userId} fetched. Found ${user.products.length} products.`);
+
         const totalProducts = user.products.length;
 
         return NextResponse.json({

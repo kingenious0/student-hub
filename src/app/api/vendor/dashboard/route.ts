@@ -21,6 +21,9 @@ export async function GET(req: NextRequest) {
             }
         });
 
+        // Debug logging
+        console.log(`[VendorDashboard] Fetching for ClerkID: ${userId}, VendorID: ${vendor.id}`);
+
         if (!vendor || vendor.role !== 'VENDOR') {
             return NextResponse.json({ error: 'Not a vendor' }, { status: 403 });
         }

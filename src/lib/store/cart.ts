@@ -27,12 +27,13 @@ export const useCartStore = create<CartStore>()(
             items: [],
             addToCart: (product: any, quantity = 1) => {
                 set((state) => {
+                    const qty = Number(quantity); // Force number
                     const existing = state.items.find((item) => item.id === product.id);
                     if (existing) {
                         return {
                             items: state.items.map((item) =>
                                 item.id === product.id
-                                    ? { ...item, quantity: item.quantity + quantity }
+                                    ? { ...item, quantity: item.quantity + qty }
                                     : item
                             ),
                         };
@@ -43,11 +44,11 @@ export const useCartStore = create<CartStore>()(
                             {
                                 id: product.id,
                                 title: product.title,
-                                price: product.price,
+                                price: Number(product.price), // Force number
                                 imageUrl: product.imageUrl,
                                 vendorId: product.vendor?.id || product.vendorId,
                                 vendorName: product.vendor?.name || product.vendorName || 'Vendor',
-                                quantity: quantity,
+                                quantity: qty,
                             },
                         ],
                     };
@@ -59,13 +60,14 @@ export const useCartStore = create<CartStore>()(
                 }));
             },
             updateQuantity: (productId, quantity) => {
-                if (quantity < 1) {
+                const qty = Number(quantity); // Force number
+                if (qty < 1) {
                     get().removeFromCart(productId);
                     return;
                 }
                 set((state) => ({
                     items: state.items.map((item) =>
-                        item.id === productId ? { ...item, quantity } : item
+                        item.id === productId ? { ...item, quantity: qty } : item
                     ),
                 }));
             },
