@@ -223,7 +223,10 @@ export default function ProductDetailsPage() {
                                         exit={{ opacity: 0, y: -10 }}
                                         className="text-foreground/80 leading-relaxed text-lg"
                                     >
-                                        <p>{product.description}</p>
+                                        <div
+                                            className="prose prose-invert max-w-none prose-p:text-foreground/80 prose-headings:text-foreground prose-strong:text-foreground"
+                                            dangerouslySetInnerHTML={{ __html: product.description }}
+                                        />
 
                                         <div className="grid grid-cols-2 gap-4 mt-8">
                                             <div className="bg-surface p-4 rounded-xl border border-surface-border">

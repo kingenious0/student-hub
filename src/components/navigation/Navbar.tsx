@@ -45,11 +45,15 @@ export default function Navbar() {
     const [tapTimeout, setTapTimeout] = useState<NodeJS.Timeout | null>(null);
 
     // Handle logo click for triple-tap easter egg
-    const handleLogoClick = () => {
-        // Only work for GOD_MODE users
-        if (user?.publicMetadata?.role !== 'GOD_MODE') {
+    // Handle logo click for triple-tap easter egg
+    const handleLogoClick = (e: React.MouseEvent) => {
+        // Only work for GOD_MODE or ADMIN users
+        if (user?.publicMetadata?.role !== 'GOD_MODE' && user?.publicMetadata?.role !== 'ADMIN') {
             return;
         }
+
+        // Prevent navigation if we are counting taps
+        e.preventDefault();
 
         const newCount = tapCount + 1;
         setTapCount(newCount);
@@ -99,7 +103,7 @@ export default function Navbar() {
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.shiftKey && e.altKey && e.key === 'Z') {
-                if (user?.publicMetadata?.role === 'GOD_MODE') {
+                if (user?.publicMetadata?.role === 'GOD_MODE' || user?.publicMetadata?.role === 'ADMIN') {
                     window.location.href = '/command-center-z';
                 }
             }
@@ -152,7 +156,7 @@ export default function Navbar() {
                         </button>
 
                         {/* Logo */}
-                        {user?.publicMetadata?.role === 'GOD_MODE' ? (
+                        {user?.publicMetadata?.role === 'GOD_MODE' || user?.publicMetadata?.role === 'ADMIN' ? (
                             <div
                                 onClick={handleLogoClick}
                                 className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none"
