@@ -91,8 +91,7 @@ export async function POST(request: NextRequest) {
                 data: {
                     paystackRef,
                     totalAmount: 0, // Will update after summing
-                    studentId: student.id,
-                    status: 'PENDING'
+                    studentId: student.id
                 }
             });
 
