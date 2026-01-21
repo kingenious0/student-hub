@@ -20,9 +20,7 @@ const getDiscoveryFeed = unstable_cache(
         const trending = await prisma.product.findMany({
             take: 10,
             orderBy: {
-                orders: {
-                    _count: 'desc'
-                }
+                salesCount: 'desc'
             },
             include: {
                 vendor: { select: { id: true, name: true, currentHotspot: true, shopName: true } },

@@ -31,7 +31,20 @@ export default function SmartFeed() {
     const [feed, setFeed] = useState<DiscoveryFeedData | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // ... existing useEffect ...
+    // Fetch Feed Data
+    useEffect(() => {
+        fetch('/api/marketplace/discovery')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    setFeed(data.feed);
+                } else {
+                    console.error('Failed to load feed:', data.error);
+                }
+            })
+            .catch(err => console.error('Feed fetch error:', err))
+            .finally(() => setLoading(false));
+    }, []);
 
     // NEW: Premium Empty State
     const isEmpty = !feed || (feed.newArrivals.length === 0 && feed.trending.length === 0 && feed.recommended.length === 0);
