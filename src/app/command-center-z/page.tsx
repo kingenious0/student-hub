@@ -796,7 +796,7 @@ export default function CommandCenterPage() {
                                                 <span className={`text-[9px] px-2 py-1 rounded font-bold ${u.role === 'ADMIN' ? 'bg-red-500 text-white' : 'bg-gray-800 text-gray-300'}`}>
                                                     {u.role}
                                                 </span>
-                                                <span className="text-xs font-black text-green-500">₵{u.balance.toFixed(2)}</span>
+                                                <span className="text-xs font-black text-green-500">₵{(u.balance || 0).toFixed(2)}</span>
                                                 <span className="text-gray-500 text-lg">→</span>
                                             </div>
                                         </div>

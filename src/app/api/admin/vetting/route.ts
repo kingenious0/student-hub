@@ -4,17 +4,10 @@ import { cookies } from 'next/headers';
 import { auth } from '@clerk/nextjs/server';
 import { logAdminAction } from '@/lib/admin/audit';
 
-async function checkAuth() {
-    const { sessionClaims } = await auth();
-    if (sessionClaims?.metadata?.role === 'GOD_MODE') return true;
-
-    const cookieStore = await cookies();
-    const bossToken = cookieStore.get('OMNI_BOSS_TOKEN');
-    return bossToken?.value === 'AUTHORIZED_ADMIN';
-}
+import { isAuthorizedAdmin } from '@/lib/auth/admin';
 
 export async function GET(request: NextRequest) {
-    if (!await checkAuth()) {
+    if (!await isAuthorizedAdmin()) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -33,7 +26,7 @@ export async function GET(request: NextRequest) {
 // Update vendor status
 
 export async function POST(request: NextRequest) {
-    if (!await checkAuth()) {
+    if (!await isAuthorizedAdmin()) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

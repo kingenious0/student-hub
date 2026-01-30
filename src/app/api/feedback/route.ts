@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
+import { isAuthorizedAdmin } from '@/lib/auth/admin';
 
 export async function POST(request: NextRequest) {
     try {
@@ -32,14 +33,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
     try {
-        const { userId } = await auth();
-        if (!userId) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        // Check if admin
-        const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-        if (user?.role !== 'ADMIN' && user?.role !== 'GOD_MODE') {
+        if (!await isAuthorizedAdmin()) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -57,11 +51,7 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
     try {
-        const { userId } = await auth();
-        if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-        const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-        if (user?.role !== 'ADMIN' && user?.role !== 'GOD_MODE') {
+        if (!await isAuthorizedAdmin()) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 

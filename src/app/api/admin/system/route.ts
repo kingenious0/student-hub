@@ -3,20 +3,11 @@ import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 import { cookies } from 'next/headers';
 
-async function checkAuth() {
-    const { sessionClaims } = await auth();
-    // Allow GOD_MODE users
-    if (sessionClaims?.metadata?.role === 'GOD_MODE') return true;
-
-    // Check for BOSS TOKEN (middleware already validated it, so just trust it)
-    const cookieStore = await cookies();
-    const bossToken = cookieStore.get('OMNI_BOSS_TOKEN');
-    return bossToken?.value === 'AUTHORIZED_ADMIN';
-}
+import { isAuthorizedAdmin } from '@/lib/auth/admin';
 
 export async function GET(request: NextRequest) {
     try {
-        if (!await checkAuth()) {
+        if (!await isAuthorizedAdmin()) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
@@ -44,7 +35,7 @@ export async function POST(request: NextRequest) {
         const { userId } = await auth();
 
         // Check Admin Authorization
-        if (!await checkAuth()) {
+        if (!await isAuthorizedAdmin()) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 

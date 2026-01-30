@@ -3,9 +3,9 @@
 
 import Link from 'next/link';
 import { UNIVERSITY_REGISTRY } from '@/lib/geo/distance';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/nextjs';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
 import GlobalSearch from './GlobalSearch';
@@ -27,6 +27,7 @@ import {
 
 export default function Navbar() {
     const pathname = usePathname();
+    const router = useRouter();
     const { user, isLoaded: clerkLoaded } = useUser();
     const itemCount = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
     const [mounted, setMounted] = useState(false);
@@ -41,43 +42,43 @@ export default function Navbar() {
     const [globalNotice, setGlobalNotice] = useState<string | null>(null);
 
     // Triple-tap easter egg for Command Center
-    const [tapCount, setTapCount] = useState(0);
-    const [tapTimeout, setTapTimeout] = useState<NodeJS.Timeout | null>(null);
+    const tapCountRef = useRef(0);
+    const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Handle logo click for triple-tap easter egg
-    // Handle logo click for triple-tap easter egg
     const handleLogoClick = (e: React.MouseEvent) => {
-        // Only work for GOD_MODE or ADMIN users
-        // Check both Clerk Metadata (Fast) OR Database User (Accurate)
-        const role = user?.publicMetadata?.role as string;
-        const dbRole = dbUser?.role;
+        const role = (user?.publicMetadata?.role as string)?.toUpperCase();
+        const dbRole = dbUser?.role?.toUpperCase();
 
         const isAuthorized = role === 'GOD_MODE' || role === 'ADMIN' || dbRole === 'GOD_MODE' || dbRole === 'ADMIN';
 
-        if (!isAuthorized) {
-            return;
-        }
+        console.log('[LOGO_CLICK]', { isAuthorized, role, dbRole, tapCount: tapCountRef.current + 1 });
 
-        // Prevent navigation if we are counting taps
+        if (!isAuthorized) return;
+
+        // Prevent default only to handle it manually
         e.preventDefault();
 
-        const newCount = tapCount + 1;
-        setTapCount(newCount);
+        tapCountRef.current += 1;
 
-        if (tapTimeout) {
-            clearTimeout(tapTimeout);
+        if (tapTimeoutRef.current) {
+            clearTimeout(tapTimeoutRef.current);
         }
 
-        if (newCount === 3) {
-            setTapCount(0);
-            window.location.href = '/command-center-z';
+        if (tapCountRef.current === 3) {
+            tapCountRef.current = 0;
+            router.push('/command-center-z');
             return;
         }
 
-        const timeout = setTimeout(() => {
-            setTapCount(0);
-        }, 1000);
-        setTapTimeout(timeout);
+        // Reset count after 500ms of inactivity
+        tapTimeoutRef.current = setTimeout(() => {
+            if (tapCountRef.current === 1) {
+                // If only one tap was recorded, navigate home normally
+                if (pathname !== '/') router.push('/');
+            }
+            tapCountRef.current = 0;
+        }, 500);
     };
 
     useEffect(() => {
@@ -187,7 +188,10 @@ export default function Navbar() {
                         </button>
 
                         {/* Logo */}
-                        {user?.publicMetadata?.role === 'GOD_MODE' || user?.publicMetadata?.role === 'ADMIN' || dbUser?.role === 'GOD_MODE' || dbUser?.role === 'ADMIN' ? (
+                        {((user?.publicMetadata?.role as string)?.toUpperCase() === 'GOD_MODE' ||
+                            (user?.publicMetadata?.role as string)?.toUpperCase() === 'ADMIN' ||
+                            dbUser?.role?.toUpperCase() === 'GOD_MODE' ||
+                            dbUser?.role?.toUpperCase() === 'ADMIN') ? (
                             <div
                                 onClick={handleLogoClick}
                                 className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none"

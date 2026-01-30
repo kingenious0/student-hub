@@ -3,19 +3,12 @@ import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 import { cookies } from 'next/headers';
 
-async function checkAuth() {
-    const { sessionClaims } = await auth();
-    if (sessionClaims?.metadata?.role === 'GOD_MODE') return true;
-
-    const cookieStore = await cookies();
-    const bossToken = cookieStore.get('OMNI_BOSS_TOKEN');
-    return bossToken?.value === 'AUTHORIZED_ADMIN';
-}
+import { isAuthorizedAdmin } from '@/lib/auth/admin';
 
 export async function GET(request: NextRequest) {
     try {
         // Security Check
-        if (!await checkAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        if (!await isAuthorizedAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 
         // Fetch all conflicts or active escrows
         // Prioritize 'HELD' status which means money is with us
@@ -41,7 +34,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const { userId } = await auth();
-        if (!await checkAuth()) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        if (!await isAuthorizedAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
 
         const { orderId, action } = await request.json(); // action: 'FORCE_RELEASE' | 'FORCE_REFUND'
 

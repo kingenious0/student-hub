@@ -11,24 +11,21 @@ import { cookies } from 'next/headers';
  */
 export async function isAuthorizedAdmin() {
     try {
-        const { userId } = await auth();
+        const { sessionClaims, userId } = await auth();
         if (!userId) return false;
 
-        // 1. Check Cookie (Uplink Token) - Optional/Deprecated for now
-        // const cookieStore = await cookies();
-        // const bossToken = cookieStore.get('OMNI_BOSS_TOKEN');
-        // if (!bossToken || bossToken.value !== 'AUTHORIZED_ADMIN') {
-        //     console.warn(`[SECURITY] Potential Admin bypass attempt by: ${userId}`);
-        //     return false;
-        // }
+        // 1. Check Claims (Fastest)
+        const roleFromClaims = (sessionClaims?.metadata as any)?.role?.toUpperCase();
+        if (roleFromClaims === 'ADMIN' || roleFromClaims === 'GOD_MODE') return true;
 
-        // 2. Check Database Role
+        // 2. Check Database Role (Fallback)
         const user = await prisma.user.findUnique({
             where: { clerkId: userId },
             select: { role: true }
         });
 
-        return user?.role === 'ADMIN' || user?.role === 'GOD_MODE';
+        const dbRole = user?.role?.toUpperCase();
+        return dbRole === 'ADMIN' || dbRole === 'GOD_MODE';
     } catch (error) {
         console.error('[SECURITY] Admin authorization check failed:', error);
         return false;

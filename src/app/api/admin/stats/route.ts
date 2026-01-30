@@ -3,18 +3,11 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 
-// export const runtime = 'edge';
+import { isAuthorizedAdmin } from '@/lib/auth/admin';
 
 export async function GET() {
     try {
-        const { userId } = await auth();
-        if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-        const admin = await prisma.user.findUnique({
-            where: { clerkId: userId }
-        });
-
-        if (!admin || admin.role !== 'ADMIN') {
+        if (!await isAuthorizedAdmin()) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
