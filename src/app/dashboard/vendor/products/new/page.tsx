@@ -24,7 +24,11 @@ export default function NewProductPage() {
             </div>
 
             <div className="px-4">
-                <ProductForm />
+                <ProductForm showTitle={false} />
+            </div>
+
+            <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
+                <p>Designed by PraiseTech • github/praisetechzw</p>
             </div>
         </div>
     );

@@ -167,6 +167,10 @@ export default function VendorDashboard() {
                     </div>
                 </div>
             </div>
+
+            <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
+                <p>Designed by PraiseTech • github/praisetechzw</p>
+            </div>
         </div>
     );
 }

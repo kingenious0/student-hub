@@ -1,213 +1,222 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, MessageCircle, ChefHat, Bike, CheckCircle, Clock } from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
-import BackButton from '@/components/BackButton';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { 
+    CheckCircle2, 
+    Circle, 
+    Package, 
+    ChefHat, 
+    Truck, 
+    Home, 
+    ArrowLeft,
+    Clock,
+    MapPin
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
-// Dynamically import Map to avoid SSR issues
-const TrackingMap = dynamic(() => import('@/components/tracking/TrackingMap'), {
-    ssr: false,
-    loading: () => <div className="w-full h-[70vh] bg-zinc-100 flex items-center justify-center text-zinc-400 font-mono text-xs">INITIALIZING SATELLITE LINK...</div>
-});
+interface Order {
+    id: string;
+    status: string;
+    createdAt: string;
+    pickupCode: string | null;
+    items: Array<{
+        product: {
+            title: string;
+            imageUrl: string | null;
+            price: number;
+        };
+        quantity: number;
+    }>;
+    vendor: {
+        name: string;
+    };
+    runner?: {
+        name: string;
+    };
+    total: number;
+}
 
-// Mock Coordinates for Demo (AAMUSTED Area approx)
-const VENDOR_LOC: [number, number] = [6.673175, -1.565423]; // Example Kumasi coords
-const STUDENT_LOC: [number, number] = [6.674500, -1.564000];
+const STEPS = [
+    { id: 'PAID', label: 'Order Confirmed', icon: Package, description: 'We have received your order.' },
+    { id: 'PREPARING', label: 'Preparing', icon: ChefHat, description: 'Vendor is preparing your items.' },
+    { id: 'READY', label: 'Ready for Pickup', icon: MapPin, description: 'Your order is ready for pickup.' },
+    { id: 'PICKED_UP', label: 'On the Way', icon: Truck, description: 'Runner has picked up your order.' },
+    { id: 'COMPLETED', label: 'Delivered', icon: Home, description: 'Enjoy your purchase!' },
+];
+
+const STATUS_ORDER = ['PENDING', 'PAID', 'PREPARING', 'READY', 'PICKED_UP', 'COMPLETED'];
 
 export default function OrderTrackingPage({ params }: { params: { id: string } }) {
-    const { user } = useUser();
+    const router = useRouter();
+    const [order, setOrder] = useState<Order | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // State
-    const [status, setStatus] = useState<'PREPARING' | 'ON_THE_WAY' | 'ARRIVED'>('PREPARING');
-    const [runnerPos, setRunnerPos] = useState<[number, number] | null>(null);
-    const [runnerHeading, setRunnerHeading] = useState(0);
-    const [eta, setEta] = useState(15); // minutes
-
-    // Simulation Logic
     useEffect(() => {
-        // Start simulation sequence
-        const timers: NodeJS.Timeout[] = [];
-
-        // 1. Preparing (0-5s)
-        timers.push(setTimeout(() => {
-            setStatus('PREPARING');
-            setRunnerPos(VENDOR_LOC);
-        }, 100));
-
-        // 2. On the Way (5s - 25s) - Moving
-        timers.push(setTimeout(() => {
-            setStatus('ON_THE_WAY');
-        }, 5000));
-
-        // Movement Loop
-        let progress = 0;
-        const interval = setInterval(() => {
-            if (status === 'ON_THE_WAY' && progress < 1) {
-                progress += 0.005; // speed
-                const lat = VENDOR_LOC[0] + (STUDENT_LOC[0] - VENDOR_LOC[0]) * progress;
-                const lng = VENDOR_LOC[1] + (STUDENT_LOC[1] - VENDOR_LOC[1]) * progress;
-                setRunnerPos([lat, lng]);
-
-                // Calculate Heading (Simple approximation)
-                const angle = Math.atan2(STUDENT_LOC[1] - VENDOR_LOC[1], STUDENT_LOC[0] - VENDOR_LOC[0]) * 180 / Math.PI;
-                setRunnerHeading(angle);
-
-                // ETA decay
-                setEta(Math.max(1, Math.ceil(15 * (1 - progress))));
-
-                if (progress >= 0.99) {
-                    setStatus('ARRIVED');
-                }
+        const fetchOrder = async () => {
+            try {
+                // Unwrap params (Next.js 15 requirement, though usually sync in client components but good practice)
+                const { id } = await params; // Just to be safe if it's a promise in future
+                const res = await fetch(`/api/orders/${id}`);
+                if (!res.ok) throw new Error('Failed to load order');
+                const data = await res.json();
+                setOrder(data.order);
+            } catch (err) {
+                setError('Could not load tracking information');
+            } finally {
+                setLoading(false);
             }
-        }, 100);
-
-        return () => {
-            timers.forEach(clearTimeout);
-            clearInterval(interval);
         };
-    }, [status]);
+        fetchOrder();
+    }, [params]);
 
+    if (loading) return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+    );
 
-    // Bottom Sheet Content variants
-    const renderBottomSheet = () => {
-        if (status === 'PREPARING') {
-            return (
-                <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 animate-pulse">
-                        <ChefHat size={32} />
-                    </div>
-                    <div>
-                        <h2 className="text-lg font-black uppercase text-gray-800 tracking-tight">Preparing Order</h2>
-                        <p className="text-xs text-gray-500 font-medium">Chef is working on your meal...</p>
-                        <div className="mt-2 text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded inline-block">
-                            Est. Pickup: 5 mins
-                        </div>
-                    </div>
-                </div>
-            );
-        }
+    if (error || !order) return (
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+            <p className="text-destructive mb-4">{error || 'Order not found'}</p>
+            <Button onClick={() => router.back()}>Go Back</Button>
+        </div>
+    );
 
-        if (status === 'ARRIVED') {
-            return (
-                <div className="bg-green-50 p-6 -m-6 rounded-t-3xl h-full flex flex-col justify-center items-center text-center">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-4 shadow-lg animate-bounce">
-                        <CheckCircle size={40} />
-                    </div>
-                    <h2 className="text-2xl font-black uppercase text-green-800 tracking-tighter mb-1">Runner Arrived!</h2>
-                    <p className="text-sm text-green-700 font-medium">Meet at <b>Autonomy Hall Gate</b></p>
-                    <p className="text-xs text-green-600/60 mt-4 uppercase tracking-widest font-bold">Enjoy your meal</p>
-                </div>
-            );
-        }
+    const currentStepIndex = STATUS_ORDER.indexOf(order.status);
+    const isCancelled = order.status === 'CANCELLED';
 
-        // ON THE WAY (Default)
-        return (
-            <div className="space-y-6">
-                {/* Header Info */}
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h2 className="text-xl font-black uppercase text-gray-800 tracking-tighter">On the Way</h2>
-                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">
-                            Arriving in <span className="text-blue-600 text-lg">{eta} min</span>
-                        </p>
-                    </div>
-                    <div className="text-right">
-                        <div className="flex items-center gap-1 text-xs font-bold text-gray-400 uppercase">
-                            <Clock size={12} />
-                            <span>{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Runner Card */}
-                <div className="bg-gray-50 rounded-2xl p-4 flex items-center gap-4 border border-gray-100">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 border-2 border-white shadow-sm">
-                        <Bike size={24} />
-                    </div>
-                    <div className="flex-1">
-                        <h3 className="text-sm font-black text-gray-800">Kofi Frimpong</h3>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Yamaha • GT-22-404</p>
-                    </div>
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                        <button className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-green-500 hover:bg-green-50 transition-colors shadow-sm">
-                            <Phone size={18} />
-                        </button>
-                        <button className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-blue-500 hover:bg-blue-50 transition-colors shadow-sm">
-                            <MessageCircle size={18} />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                    <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        <span>Restaurant</span>
-                        <span>You</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <motion.div
-                            className="h-full bg-blue-500 rounded-full"
-                            initial={{ width: '0%' }}
-                            animate={{ width: `${(15 - eta) / 15 * 100}%` }}
-                            transition={{ duration: 1 }}
-                        />
-                    </div>
-                </div>
-            </div>
-        );
+    const getStepStatus = (stepId: string) => {
+        if (isCancelled) return 'cancelled';
+        const stepIndex = STATUS_ORDER.indexOf(stepId);
+        if (currentStepIndex > stepIndex) return 'completed';
+        if (currentStepIndex === stepIndex) return 'current';
+        return 'pending';
     };
 
     return (
-        <div className="relative h-screen bg-gray-50 overflow-hidden font-sans">
-            {/* Top 70% Map */}
-            <div className="absolute top-0 left-0 w-full h-[75%] bg-zinc-200">
-                <TrackingMap
-                    orderId={params.id}
-                    studentLocation={STUDENT_LOC}
-                    vendorLocation={VENDOR_LOC}
-                    runnerLocation={runnerPos}
-                    runnerHeading={runnerHeading}
-                    orderStatus={status}
-                />
-
-                {/* Back Button Overlay */}
-                <div className="absolute top-6 left-6 z-[400]">
-                    <BackButton />
+        <div className="min-h-screen bg-background pb-20">
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border p-4">
+                <div className="max-w-3xl mx-auto flex items-center gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                        <ArrowLeft className="w-5 h-5" />
+                    </Button>
+                    <div>
+                        <h1 className="text-lg font-bold">Track Order</h1>
+                        <p className="text-xs text-muted-foreground">#{order.id.slice(0, 8)}</p>
+                    </div>
+                    <div className="ml-auto">
+                        <Badge variant={isCancelled ? "destructive" : "outline"}>
+                            {order.status.replace('_', ' ')}
+                        </Badge>
+                    </div>
                 </div>
             </div>
 
-            {/* Bottom 30% Action Card (Sticky Bottom Sheet) */}
-            <motion.div
-                className="absolute bottom-0 left-0 w-full bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-[500] overflow-hidden"
-                initial={{ y: 200 }}
-                animate={{ y: 0 }}
-                transition={{ type: "spring", damping: 20 }}
-                style={{ height: '35%' }} // Fixed height for 70/30 split approx
-            >
-                {/* Drag Handle */}
-                <div className="w-full flex justify-center pt-3 pb-1">
-                    <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
-                </div>
+            <div className="max-w-3xl mx-auto p-4 space-y-6">
+                {/* Timeline Card */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Order Status</CardTitle>
+                        <CardDescription>Estimated delivery time depends on runner availability.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {isCancelled ? (
+                            <div className="text-center py-8 text-destructive">
+                                <p className="font-bold text-lg">Order Cancelled</p>
+                                <p className="text-sm opacity-80">This order has been cancelled.</p>
+                            </div>
+                        ) : (
+                            <div className="relative space-y-8 pl-2">
+                                {/* Vertical Line */}
+                                <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-border -z-10" />
 
-                <div className="p-6 h-full pb-10">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={status}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2 }}
-                            className="h-full"
-                        >
-                            {renderBottomSheet()}
-                        </motion.div>
-                    </AnimatePresence>
+                                {STEPS.map((step) => {
+                                    const status = getStepStatus(step.id);
+                                    const Icon = step.icon;
+                                    
+                                    return (
+                                        <div key={step.id} className="flex items-start gap-4 bg-background">
+                                            <div className={`
+                                                relative z-10 flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors
+                                                ${status === 'completed' ? 'bg-primary border-primary text-primary-foreground' : 
+                                                  status === 'current' ? 'bg-background border-primary text-primary ring-4 ring-primary/20' : 
+                                                  'bg-background border-muted text-muted-foreground'}
+                                            `}>
+                                                {status === 'completed' ? <CheckCircle2 className="w-6 h-6" /> : <Icon className="w-5 h-5" />}
+                                            </div>
+                                            <div className={`flex-1 pt-1 ${status === 'pending' ? 'opacity-50' : ''}`}>
+                                                <h3 className="font-semibold leading-none">{step.label}</h3>
+                                                <p className="text-sm text-muted-foreground mt-1">{step.description}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Info Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Order Details */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Order Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                {order.items.map((item, i) => (
+                                    <div key={i} className="flex justify-between text-sm">
+                                        <span>{item.quantity}x {item.product.title}</span>
+                                        <span className="font-medium">₵{(item.product.price * item.quantity).toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <Separator />
+                            <div className="flex justify-between font-bold">
+                                <span>Total</span>
+                                <span>₵{order.items.reduce((acc, item) => acc + (item.product.price * item.quantity), 0).toFixed(2)}</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Delivery Info */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Delivery Info</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Vendor</span>
+                                <span className="font-medium">{order.vendor.name}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">Runner</span>
+                                <span className="font-medium">{order.runner ? order.runner.name : 'Searching...'}</span>
+                            </div>
+                            {order.pickupCode && (
+                                <div className="mt-4 p-4 bg-muted rounded-lg text-center">
+                                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Pickup Code</p>
+                                    <p className="text-2xl font-mono font-black tracking-widest">{order.pickupCode}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Show this to the runner upon delivery.</p>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
-            </motion.div>
+            </div>
+
+            {/* PraiseTech Signature */}
+            <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
+                <p>Designed by PraiseTech • github/praisetechzw</p>
+            </div>
         </div>
     );
 }
