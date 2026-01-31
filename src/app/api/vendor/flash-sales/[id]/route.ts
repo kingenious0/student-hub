@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db/prisma';
 // PATCH - Toggle active status
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { userId } = await auth();
@@ -13,6 +13,8 @@ export async function PATCH(
         if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+
+        const { id } = await params;
 
         const vendor = await prisma.user.findUnique({
             where: { clerkId: userId },
@@ -28,7 +30,7 @@ export async function PATCH(
 
         const flashSale = await prisma.flashSale.findFirst({
             where: {
-                id: params.id,
+                id,
                 product: {
                     vendorId: vendor.id
                 }
@@ -40,7 +42,7 @@ export async function PATCH(
         }
 
         await prisma.flashSale.update({
-            where: { id: params.id },
+            where: { id },
             data: { isActive: !!isActive }
         });
 

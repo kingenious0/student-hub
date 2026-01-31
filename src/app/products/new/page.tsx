@@ -32,7 +32,7 @@ export default function NewProductPage() {
         details: {} as Record<string, any>,
     });
 
-    const hotspots = Object.values(getHotspotsForUniversity(userUniversity));
+    const hotspots = Object.values(getHotspotsForUniversity(userUniversity)) as string[];
 
     useEffect(() => {
         // Fetch Categories

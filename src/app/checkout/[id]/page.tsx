@@ -24,19 +24,19 @@ export default async function CheckoutPage({
     const rawEmail = clerkUser?.emailAddresses?.[0]?.emailAddress || `${clerkUser?.username || clerkUser?.id || 'guest'}@omni-marketplace.com`;
     const studentEmail = rawEmail.trim().toLowerCase();
 
-    const [product, systemConfig] = await Promise.all([
+    const [product, systemSettings] = await Promise.all([
         prisma.product.findUnique({
             where: { id },
             include: {
                 vendor: true,
             },
         }),
-        prisma.systemConfig.findUnique({
+        prisma.systemSettings.findUnique({
             where: { id: 'GLOBAL_CONFIG' }
         })
     ]);
 
-    if (systemConfig?.maintenanceMode) {
+    if (systemSettings?.maintenanceMode) {
         redirect('/');
     }
 
@@ -44,7 +44,7 @@ export default async function CheckoutPage({
         redirect('/');
     }
 
-    const deliveryFee = systemConfig?.deliveryFee ?? 5.0;
+    const deliveryFee = 5.0;
 
     return (
         <div className="min-h-screen bg-background pt-24 pb-12 relative overflow-hidden transition-colors duration-300">

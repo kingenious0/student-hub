@@ -16,6 +16,7 @@ interface Category {
     id: string;
     name: string;
     slug: string;
+    icon?: string | null;
 }
 
 // --- SCHEMA ---
@@ -28,7 +29,7 @@ const productSchema = z.object({
     images: z.array(z.any()).min(1, "At least 1 image required"),
     details: z.record(z.any()).optional(), // For dynamic fields
     // Inventory
-    stockQuantity: z.coerce.number().min(0).default(1),
+    stockQuantity: z.coerce.number().min(0),
 });
 
 export default function ProductForm() {

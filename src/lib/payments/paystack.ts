@@ -1,7 +1,19 @@
 // src/lib/payments/paystack.ts
+/**
+ * SECURITY: PAYSTACK_SECRET_KEY should NEVER be exposed to client
+ * Only use process.env.PAYSTACK_SECRET_KEY (server-only)
+ */
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY!;
+if (typeof window !== 'undefined') {
+  throw new Error('Paystack integration should only run on server side');
+}
+
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const PAYSTACK_BASE_URL = 'https://api.paystack.co';
+
+if (!PAYSTACK_SECRET_KEY) {
+  throw new Error('PAYSTACK_SECRET_KEY environment variable is not set');
+}
 
 export interface PaystackCustomer {
     email: string;

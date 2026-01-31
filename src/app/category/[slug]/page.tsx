@@ -66,7 +66,7 @@ export default function CategoryHubPage({ params }: { params: Promise<{ slug: st
 
     // Filter states
     const [sortBy, setSortBy] = useState<SortOption>('newest');
-    const [selectedHotspot, setSelectedHotspot] = useState<string>('');
+    const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
     const [showActiveOnly, setShowActiveOnly] = useState(false);
     const [showFiltersMobile, setShowFiltersMobile] = useState(false);

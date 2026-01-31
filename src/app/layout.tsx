@@ -15,6 +15,8 @@ import BanOverlay from "@/components/admin/BanOverlay";
 import Script from "next/script";
 import LocationProvider from "@/components/location/DynamicLocationProvider";
 import CampusGuard from "@/components/layout/CampusGuard";
+import { CartProvider } from "@/context/CartContext";
+import { SecurityProvider } from "@/context/SecurityContext";
 import "./globals.css";
 import WelcomeModal from "@/components/alpha/WelcomeModal";
 import InsightUplink from "@/components/alpha/InsightUplink";
@@ -50,21 +52,25 @@ export default function RootLayout({
             <AdminProvider>
               <LocationProvider>
                 <QueryProvider>
-                  <ModalProvider>
-                    <OnboardingCheck />
-                    <Navbar />
-                    <ImpersonationBanner />
-                    <BanOverlay />
-                    <CampusGuard>
-                      {children}
-                    </CampusGuard>
-                    <Footer />
-                    <GhostEditToggle />
-                    <WelcomeModal />
+                  <CartProvider>
+                    <SecurityProvider>
+                      <ModalProvider>
+                        <OnboardingCheck />
+                        <Navbar />
+                        <ImpersonationBanner />
+                        <BanOverlay />
+                        <CampusGuard>
+                          {children}
+                        </CampusGuard>
+                        <Footer />
+                        <GhostEditToggle />
+                        <WelcomeModal />
 
-                    <InsightUplink />
-                    <Toaster richColors position="top-center" theme="dark" />
-                  </ModalProvider>
+                        <InsightUplink />
+                        <Toaster richColors position="top-center" theme="dark" />
+                      </ModalProvider>
+                    </SecurityProvider>
+                  </CartProvider>
                 </QueryProvider>
               </LocationProvider>
             </AdminProvider>

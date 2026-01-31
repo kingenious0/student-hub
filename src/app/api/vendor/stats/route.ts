@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getHybridUser } from '@/lib/auth/hybrid-auth';
 import { prisma } from '@/lib/db/prisma';
+import { Prisma } from '@prisma/client';
 
 // export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,23 @@ export async function GET(request: NextRequest) {
                 { status: 401 }
             );
         }
+
+        type VendorUser = Prisma.UserGetPayload<{
+            include: {
+                products: true;
+                vendorOrders: {
+                    include: {
+                        product: {
+                            select: { title: true };
+                        };
+                        student: {
+                            select: { name: true };
+                        };
+                    };
+                    orderBy: { createdAt: 'desc' };
+                };
+            };
+        }>;
 
         const user = await prisma.user.findUnique({
             where: { clerkId: userId },
@@ -39,7 +57,7 @@ export async function GET(request: NextRequest) {
                     },
                 },
             },
-        });
+        }) as VendorUser | null;
 
         if (!user) {
             return NextResponse.json(
@@ -81,7 +99,6 @@ export async function GET(request: NextRequest) {
                 completedOrders,
                 totalRevenue,
                 heldInEscrow,
-                totalProducts,
                 totalProducts,
             },
             analytics: {

@@ -57,7 +57,7 @@ export function SalesChart({ data }: { data?: { name: string; total: number }[] 
                         <Tooltip
                             contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '12px' }}
                             itemStyle={{ color: '#EAB308' }}
-                            formatter={(value: number) => [`₵${value}`, 'Revenue']}
+                            formatter={(value: number | string | undefined) => [`₵${Number(value || 0)}`, 'Revenue']}
                         />
                         <Area
                             type="monotone"

@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { SearchIcon, XIcon, StoreIcon, PackageIcon, ChevronRightIcon, TrendingUpIcon } from 'lucide-react';
-import { useDebounce } from '@/hooks/useDebounce'; // Assuming we have this, or I'll implement debounce manually
 
 // Manual debounce if hook missing
 function useDebounceValue<T>(value: T, delay: number): T {
@@ -192,16 +191,6 @@ export default function GlobalSearch({ className = "", variant = "navbar", dropd
                                     {results.vendors.map(vendor => (
                                         <Link
                                             key={vendor.id}
-                                            href={`/shop/${vendor.id}`} // Assuming /shop/[id] exists, or /vendor/[id]? Actually usually displayed via product filter? Or dedicated page?
-                                            // Wait, do we have a vendor shop page? user usually browses via filter? 
-                                            // Let's assume /marketplace?vendor=ID or similar.
-                                            // Or /vendor/[id] profile card? 
-                                            // I will link to /marketplace?vendorId={id} for now, or just /products?vendor={id}
-                                            // Actually, I updated `products/[id]/page.tsx` which has vendor profile.
-                                            // I'll link to `/vendors/${vendor.id}` if it exists, or just log.
-                                            // Let's link to `/search?q=${vendor.shopName}` for safety if no dedicated shop page.
-                                            // OR: `search?vendorId=${vendor.id}`
-                                            // I'll stick to search page for vendor for now:
                                             href={`/search?vendorId=${vendor.id}`}
                                             onClick={() => setIsOpen(false)}
                                             className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-surface-hover transition-colors group"

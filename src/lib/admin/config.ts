@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db/prisma';
  */
 export async function isMaintenanceMode() {
     try {
-        const config = await prisma.systemConfig.findUnique({
+        const config = await prisma.systemSettings.findUnique({
             where: { id: 'GLOBAL_CONFIG' }
         });
         return config?.maintenanceMode ?? false;

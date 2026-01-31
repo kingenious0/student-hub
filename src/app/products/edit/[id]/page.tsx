@@ -33,7 +33,7 @@ export default function EditProductPage() {
         imageUrl: '',
     });
 
-    const hotspots = Object.values(getHotspotsForUniversity(userUniversity));
+    const hotspots = Object.values(getHotspotsForUniversity(userUniversity)) as string[];
 
     useEffect(() => {
         const init = async () => {

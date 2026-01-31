@@ -18,7 +18,7 @@ export const columns: ColumnDef<RecentOrder>[] = [
     {
         accessorKey: "id",
         header: "Order ID",
-        cell: ({ row }) => <span className="font-mono text-xs">{row.getValue("id").slice(0, 8)}</span>
+        cell: ({ row }) => <span className="font-mono text-xs">{String(row.getValue("id")).slice(0, 8)}</span>
     },
     {
         accessorKey: "product.title",

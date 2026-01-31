@@ -1,15 +1,18 @@
 'use client';
 
 import { useState, useEffect, createElement } from 'react';
+import type { JSX } from 'react';
 import EditModal from './EditModal';
 import { useAdmin } from '@/context/AdminContext';
 
 interface SimpleEditProps {
     id: string;
     text: string;
-    tag?: keyof JSX.IntrinsicElements;
+    tag?: HtmlTag;
     className?: string;
 }
+
+type HtmlTag = keyof JSX.IntrinsicElements & string;
 
 export default function SimpleEdit({ id, text, tag = 'div', className = '' }: SimpleEditProps) {
     const { contentOverrides, refreshConfig, superAccess } = useAdmin();

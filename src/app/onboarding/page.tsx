@@ -87,7 +87,7 @@ export default function OnboardingPage() {
                 >
                     {/* Logo */}
                     <div className="flex justify-center mb-6">
-                        <img src="/OMNI-LOGO.ico" alt="OMNI" className="h-16 w-auto invert-on-light" />
+                        <img src="/OMNI-LOGO.ico" alt="OMNI" className="h-24 md:h-28 w-auto invert-on-light" />
                     </div>
 
                     {/* Header */}
@@ -128,8 +128,21 @@ export default function OnboardingPage() {
                                 <option value="KNUST">KNUST</option>
                                 <option value="UG">University of Ghana</option>
                                 <option value="UCC">University of Cape Coast</option>
+                                <option value="UENR">University of Energy and Natural Resources</option>
+                                <option value="UDS">University for Development Studies</option>
+                                <option value="UEW">University of Education, Winneba</option>
+                                <option value="AAMUSTED">Akenten Appiah-Menka University of Skills Training and Entrepreneurial Development (AAMUSTED)</option>
+                                <option value="UMAT">University of Mines and Technology</option>
+                                <option value="UHAS">University of Health and Allied Sciences</option>
+                                <option value="UNIMAC">University of Media, Arts and Communication</option>
                                 <option value="UPSA">UPSA</option>
                                 <option value="GIMPA">GIMPA</option>
+                                <option value="GTUC">Ghana Technology University College</option>
+                                <option value="ACCRA_TECH">Accra Technical University</option>
+                                <option value="KUMASI_TECH">Kumasi Technical University</option>
+                                <option value="HO_TECH">Ho Technical University</option>
+                                <option value="TAKORADI_TECH">Takoradi Technical University</option>
+                                <option value="CAPE_COAST_TECH">Cape Coast Technical University</option>
                                 <option value="OTHER">Other</option>
                             </select>
                         </div>

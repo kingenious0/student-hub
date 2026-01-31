@@ -1,87 +1,148 @@
 
-// src/app/api/products/route.ts
+/**
+ * Products API
+ * GET /api/products?q=search&category=cat&minPrice=0&maxPrice=1000&sort=relevance&page=1
+ * POST /api/products - Create new product (vendor only)
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 import { ensureUserExists } from '@/lib/auth/sync';
-import { getCachedProductsByCategory } from '@/lib/db/cached-queries';
+import { validateData, productCreateSchema } from '@/lib/security/validation';
+import { searchProducts, type SearchQuery } from '@/lib/utils/search';
 import { revalidateTag } from 'next/cache';
-
-// GET - List all products or vendor's products
+import { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
-        const vendorOnly = searchParams.get('vendorOnly') === 'true';
-        const query = searchParams.get('q');
-        const categoryId = searchParams.get('categoryId');
 
-        const { userId } = await auth();
+        const q = searchParams.get('q')?.trim() || undefined;
+        const category = searchParams.get('category')?.trim() || undefined;
 
-        let where: any = {};
+        const minPrice = searchParams.get('minPrice');
+        const maxPrice = searchParams.get('maxPrice');
+        const inStock = searchParams.get('inStock') === 'true';
 
-        if (vendorOnly && userId) {
-            const user = await prisma.user.findUnique({
-                where: { clerkId: userId },
+        const sortBy = (searchParams.get('sort') as SearchQuery['sortBy']) || 'relevance';
+        const page = Math.max(1, Number(searchParams.get('page') || 1));
+        const pageSize = Math.min(100, Math.max(1, Number(searchParams.get('pageSize') || 20)));
+
+        const query: SearchQuery = {
+            q,
+            category,
+            minPrice: minPrice ? Number(minPrice) : undefined,
+            maxPrice: maxPrice ? Number(maxPrice) : undefined,
+            sortBy,
+            page,
+            pageSize,
+        };
+
+        const andFilters: any[] = [];
+
+        if (q) {
+            andFilters.push({
+                OR: [
+                    { title: { contains: q, mode: Prisma.QueryMode.insensitive } },
+                    { description: { contains: q, mode: Prisma.QueryMode.insensitive } },
+                    { category: { name: { contains: q, mode: Prisma.QueryMode.insensitive } } },
+                ],
             });
-
-            if (!user) {
-                return NextResponse.json({ error: 'User not found' }, { status: 404 });
-            }
-
-            where.vendorId = user.id;
         }
 
-        if (query) {
-            // Tokenize query for "Google-like" AND logic
-            const terms = query.split(/\s+/).filter(t => t.length > 0);
-
-            const searchConditions = terms.map(term => ({
+        if (category) {
+            andFilters.push({
                 OR: [
-                    { title: { contains: term, mode: 'insensitive' } },
-                    { description: { contains: term, mode: 'insensitive' } },
-                ]
+                    { categoryId: category },
+                    { category: { slug: category } },
+                    { category: { name: { equals: category, mode: Prisma.QueryMode.insensitive } } },
+                ],
+            });
+        }
+
+        if (minPrice || maxPrice) {
+            andFilters.push({
+                price: {
+                    gte: minPrice ? Number(minPrice) : undefined,
+                    lte: maxPrice ? Number(maxPrice) : undefined,
+                },
+            });
+        }
+
+        if (inStock) {
+            andFilters.push({ isInStock: true });
+        }
+
+        const where = andFilters.length ? { AND: andFilters } : {};
+
+        const include = {
+            vendor: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    currentHotspot: true,
+                    lastActive: true,
+                    isAcceptingOrders: true,
+                    shopName: true,
+                },
+            },
+            category: true,
+        };
+
+        if (sortBy === 'relevance' && q) {
+            const products = await prisma.product.findMany({ where, include });
+            const mapped = products.map(product => ({
+                ...product,
+                rating: product.averageRating ?? 0,
             }));
 
-            where.AND = searchConditions;
-        }
-
-        if (categoryId) {
-            where.categoryId = categoryId;
-        }
-
-        const university = searchParams.get('university');
-        if (university) {
-            where.vendor = {
-                university: university
-            };
-        }
-
-        if (categoryId && !query && !vendorOnly) {
-            const products = await getCachedProductsByCategory(categoryId);
-            return NextResponse.json({ success: true, products });
-        }
-
-        const products = await prisma.product.findMany({
-            where,
-            include: {
-                vendor: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        currentHotspot: true,
-                        lastActive: true,
-                    },
+            const result = searchProducts(mapped, query);
+            return NextResponse.json({
+                success: true,
+                products: result.items,
+                pagination: {
+                    page: result.page,
+                    pageSize: result.pageSize,
+                    total: result.total,
+                    hasMore: result.hasMore,
                 },
-                category: true, // Include category info
-            },
-            orderBy: { createdAt: 'desc' },
-        });
+            });
+        }
 
-        return NextResponse.json({ success: true, products });
+        const orderByMap: Record<string, Prisma.ProductOrderByWithRelationInput> = {
+            'price-asc': { price: 'asc' },
+            'price-desc': { price: 'desc' },
+            'popular': { salesCount: 'desc' },
+            'rating': { averageRating: 'desc' },
+            'newest': { createdAt: 'desc' },
+        };
+
+        const orderBy = orderByMap[sortBy] || { createdAt: 'desc' };
+
+        const [total, products] = await prisma.$transaction([
+            prisma.product.count({ where }),
+            prisma.product.findMany({
+                where,
+                include,
+                orderBy,
+                skip: (page - 1) * pageSize,
+                take: pageSize,
+            }),
+        ]);
+
+        return NextResponse.json({
+            success: true,
+            products,
+            pagination: {
+                page,
+                pageSize,
+                total,
+                hasMore: page * pageSize < total,
+            },
+        });
     } catch (error) {
-        console.error('Get products error:', error);
+        console.error('Products fetch error:', error);
         return NextResponse.json(
             { error: 'Failed to fetch products' },
             { status: 500 }
@@ -91,61 +152,85 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const { userId } = await auth();
-
-        if (!userId) {
+        const user = await ensureUserExists();
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const user = await ensureUserExists();
+        const dbUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: {
+                id: true,
+                role: true,
+                vendorStatus: true,
+                shopLandmark: true,
+                banned: true,
+                walletFrozen: true,
+            },
+        });
 
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized or User not found' }, { status: 401 });
+        if (!dbUser || dbUser.banned || dbUser.walletFrozen) {
+            return NextResponse.json({ error: 'Account restricted' }, { status: 403 });
+        }
+
+        const isVendor = dbUser.role === 'VENDOR' || dbUser.role === 'ADMIN' || dbUser.role === 'GOD_MODE';
+        if (!isVendor) {
+            return NextResponse.json({ error: 'Vendor access required' }, { status: 403 });
+        }
+
+        if (dbUser.role === 'VENDOR' && dbUser.vendorStatus !== 'ACTIVE') {
+            return NextResponse.json({ error: 'Vendor not approved' }, { status: 403 });
         }
 
         const body = await request.json();
-        const { title, description, price, categoryId, imageUrl, hotspot, details } = body;
+        const normalized = {
+            ...body,
+            price: Number(body.price),
+            stockQuantity: body.stockQuantity !== undefined ? Number(body.stockQuantity) : undefined,
+            images: Array.isArray(body.images)
+                ? body.images
+                : body.imageUrl
+                    ? [body.imageUrl]
+                    : [],
+        };
 
-        // Validation
-        if (!title || !description || !price || !categoryId) {
-            return NextResponse.json(
-                { error: 'Missing required fields' },
-                { status: 400 }
-            );
+        const validation = validateData(productCreateSchema, normalized);
+        if (!validation.success || !validation.data) {
+            return NextResponse.json({ error: validation.error || 'Invalid input' }, { status: 400 });
         }
 
-        const validUser = await prisma.user.findUnique({
-            where: { id: user.id },
-            select: { id: true, shopLandmark: true }
-        });
-
-        const finalHotspot = hotspot || validUser?.shopLandmark || 'Campus Canteen';
+        const { title, description, price, categoryId, hotspot, stockQuantity, images, details } = validation.data;
+        const imageUrl = images?.[0] || body.imageUrl || null;
 
         const product = await prisma.product.create({
             data: {
                 title,
                 description,
-                price: parseFloat(price),
+                price,
                 categoryId,
+                hotspot: hotspot || dbUser.shopLandmark || null,
+                stockQuantity: stockQuantity ?? 0,
+                isInStock: (stockQuantity ?? 0) > 0,
+                images,
                 imageUrl,
-                hotspot: finalHotspot,
-                details,
-                vendorId: user.id,
+                details: details ? (details as Prisma.InputJsonValue) : undefined,
+                vendorId: dbUser.id,
             },
             include: {
                 vendor: {
                     select: {
                         name: true,
                         email: true,
+                        shopName: true,
                     },
                 },
+                category: true,
             },
         });
 
-        // Cache Invalidation
         revalidateTag('products');
 
-        return NextResponse.json({ success: true, product });
+        return NextResponse.json({ success: true, product }, { status: 201 });
     } catch (error) {
         console.error('Create product error:', error);
         return NextResponse.json(

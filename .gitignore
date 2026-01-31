@@ -50,3 +50,5 @@ next-env.d.ts
 
 wrangler.toml
 .dev.vars
+# clerk configuration (can include secrets)
+/.clerk/

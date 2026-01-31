@@ -41,24 +41,29 @@ export async function POST(req: NextRequest) {
             console.log(`[Paystack Webhook] Processing Success for Ref: ${reference}, Order: ${orderId}`);
 
             if (orderId) {
-                // Update Order
                 await prisma.order.update({
                     where: { id: orderId },
                     data: {
-                        status: 'PAID', // Or 'AGREEMENT_PENDING' if Escrow?
-                        // If we use Escrow, maybe 'PAID' triggers Escrow?
-                        // Let's assume PAID is correct for now.
-                        paymentRef: reference,
-                        updatedAt: new Date()
-                    }
+                        status: 'PAID',
+                        paidAt: new Date(),
+                    },
                 });
                 console.log(`[Paystack Webhook] Order ${orderId} marked as PAID`);
-
-                // Optional: Trigger Notification?
             } else {
-                // Try looking up by reference directly if we stored it initially?
-                // But usually we don't have the reference until initiated.
-                console.warn(`[Paystack Webhook] No orderId found in metadata for ref ${reference}`);
+                const orderGroup = await prisma.orderGroup.findUnique({
+                    where: { paystackRef: reference },
+                    select: { id: true },
+                });
+
+                if (!orderGroup) {
+                    console.warn(`[Paystack Webhook] No order group found for ref ${reference}`);
+                } else {
+                    await prisma.order.updateMany({
+                        where: { orderGroupId: orderGroup.id },
+                        data: { status: 'PAID', paidAt: new Date() },
+                    });
+                    console.log(`[Paystack Webhook] OrderGroup ${orderGroup.id} marked as PAID`);
+                }
             }
         }
 

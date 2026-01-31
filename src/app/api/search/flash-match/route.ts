@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         }
 
         if (category) {
-            where.category = category;
+            where.categoryId = category;
         }
 
         // Fetch products with vendor info
@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
                         role: true,
                     },
                 },
+                category: true,
             },
             take: Math.min(parseInt(searchParams.get('take') || '50'), 200), // Dynamic limit with safety cap
         });

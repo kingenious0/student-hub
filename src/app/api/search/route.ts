@@ -1,6 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { Prisma } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,8 +21,8 @@ export async function GET(req: NextRequest) {
 
         const searchConditions = terms.map(term => ({
             OR: [
-                { title: { contains: term, mode: 'insensitive' } },
-                { description: { contains: term, mode: 'insensitive' } },
+                { title: { contains: term, mode: Prisma.QueryMode.insensitive } },
+                { description: { contains: term, mode: Prisma.QueryMode.insensitive } },
             ]
         }));
 
@@ -32,7 +33,6 @@ export async function GET(req: NextRequest) {
                 where: {
                     AND: [
                         ...searchConditions,
-                        { isArchived: false }
                     ]
                 },
                 take: 6,
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
             // 2. Search Vendors
             prisma.user.findMany({
                 where: {
-                    shopName: { contains: query, mode: 'insensitive' },
+                    shopName: { contains: query, mode: Prisma.QueryMode.insensitive },
                     vendorStatus: { not: 'NOT_APPLICABLE' }
                 },
                 take: 3,
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
             // 3. Search Categories
             prisma.category.findMany({
                 where: {
-                    name: { contains: query, mode: 'insensitive' }
+                    name: { contains: query, mode: Prisma.QueryMode.insensitive }
                 },
                 take: 3,
                 select: {

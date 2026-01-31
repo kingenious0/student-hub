@@ -60,6 +60,15 @@ model User {
   banned       Boolean   @default(false)
   banReason    String?   // Why user was banned
   
+  // Security & Authentication
+  has2FA               Boolean   @default(false)
+  twoFactorSecret      String?   // Encrypted TOTP secret
+  hasBiometric         Boolean   @default(false)
+  faceDescriptor       Json?     // Stores face recognition data
+  lastSecurityCheck    DateTime  @default(now())
+  securitySetupComplete Boolean  @default(false)
+  mfaBackupCodes       String[]  @default([]) // Encrypted backup codes
+  
   application  VendorApplication?
 }
 

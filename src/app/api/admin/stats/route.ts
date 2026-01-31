@@ -40,7 +40,13 @@ export async function GET() {
                 take: 10,
                 orderBy: { createdAt: 'desc' },
                 include: {
-                    product: true,
+                    items: {
+                        include: {
+                            product: {
+                                select: { title: true }
+                            }
+                        }
+                    },
                     student: true,
                     vendor: true
                 }

@@ -15,9 +15,11 @@ interface OrderItem {
     id: string;
     amount: number;
     status: string;
-    product: {
-        title: string;
-    };
+    items?: Array<{
+        product?: {
+            title?: string;
+        };
+    }>;
     student?: {
         name: string;
     };

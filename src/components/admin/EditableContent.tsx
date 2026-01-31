@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, createElement, useEffect } from 'react';
+import type { JSX } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { XIcon, CheckIcon } from 'lucide-react'; // Assuming lucide-react or similar icons exist, or usage generic text
 
+type HtmlTag = keyof JSX.IntrinsicElements & string;
+
 interface EditableContentProps {
     id: string;
     initialContent: string;
-    tag?: keyof JSX.IntrinsicElements;
+    tag?: HtmlTag;
     className?: string;
     multiline?: boolean;
 }
