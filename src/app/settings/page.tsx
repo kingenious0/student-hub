@@ -171,7 +171,6 @@ export default function SettingsPage() {
                   </button>
                 );
               })}
-              }
             </nav>
           </div>
 
@@ -468,7 +467,6 @@ export default function SettingsPage() {
                         </div>
                       );
                     })}
-                    }
                   </div>
 
                   <div className="flex justify-end">
@@ -529,7 +527,6 @@ export default function SettingsPage() {
                             </div>
                           </button>
                         ))}
-                        }
                       </div>
                     </div>
 
@@ -564,7 +561,6 @@ export default function SettingsPage() {
                             </span>
                           </button>
                         ))}
-                        }
                       </div>
                     </div>
 

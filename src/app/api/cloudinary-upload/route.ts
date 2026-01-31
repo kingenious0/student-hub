@@ -5,14 +5,6 @@ import { v2 as cloudinary } from 'cloudinary';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Increase body size limit for video uploads
-export const config = {
-    api: {
-        bodyParser: {
-            sizeLimit: '100mb',
-        },
-    },
-};
 
 // Configure Cloudinary
 cloudinary.config({
