@@ -52,3 +52,5 @@ wrangler.toml
 .dev.vars
 # clerk configuration (can include secrets)
 /.clerk/
+
+certificates

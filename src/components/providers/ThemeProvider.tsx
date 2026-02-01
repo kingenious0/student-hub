@@ -23,6 +23,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         } else {
             document.documentElement.setAttribute('data-theme', 'omni');
         }
+
+        // Apply custom accent color
+        const savedColor = localStorage.getItem('omni-theme-color');
+        if (savedColor) {
+            document.documentElement.style.setProperty('--primary', savedColor);
+            const glow = savedColor.replace('rgb', 'rgba').replace(')', ', 0.4)');
+            document.documentElement.style.setProperty('--primary-glow', glow);
+        }
     }, []);
 
     const toggleTheme = () => {

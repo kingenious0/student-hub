@@ -19,8 +19,7 @@ export async function PATCH(request: NextRequest) {
         name,
         university,
         phoneNumber,
-        // If notifications are stored in DB, update them too
-        // For now, we'll just update the core profile fields
+        notificationSettings: notifications || {},
       },
     });
 

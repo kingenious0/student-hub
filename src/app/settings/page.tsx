@@ -46,16 +46,17 @@ export default function SettingsPage() {
       if (response.ok) {
         const data = await response.json();
         setUserData(data);
+        const notifs = data.notificationSettings || {};
         setFormData({
           name: data.name || user?.fullName || '',
           university: data.university || 'KNUST',
           phoneNumber: data.phoneNumber || '',
           notifications: {
-            emailNotifications: true,
-            orderUpdates: true,
-            newReleases: true,
-            marketingEmails: false,
-            securityAlerts: true
+            emailNotifications: notifs.emailNotifications ?? true,
+            orderUpdates: notifs.orderUpdates ?? true,
+            newReleases: notifs.newReleases ?? true,
+            marketingEmails: notifs.marketingEmails ?? false,
+            securityAlerts: notifs.securityAlerts ?? true
           }
         });
       }
@@ -89,7 +90,10 @@ export default function SettingsPage() {
 
       if (response.ok) {
         toast.success('Settings synchronized with OMNI Cloud');
-        await fetchUserData();
+        // No need to fetch immediately if we want to avoid flicker/reset
+        // But updating cached data is good
+        const data = await response.json();
+        if (data.user) setUserData(data.user);
       } else {
         toast.error('Failed to synchronize settings');
       }
@@ -100,6 +104,24 @@ export default function SettingsPage() {
       setIsSaving(false);
     }
   };
+
+  const handleColorChange = (color: string) => {
+    document.documentElement.style.setProperty('--primary', color);
+    // Generate a glow color (approximate)
+    const glow = color.replace('rgb', 'rgba').replace(')', ', 0.4)');
+    document.documentElement.style.setProperty('--primary-glow', glow);
+    localStorage.setItem('omni-theme-color', color);
+    toast.success(`Visual Matrix Updated to ${color}`);
+  };
+
+  useEffect(() => {
+    const savedColor = localStorage.getItem('omni-theme-color');
+    if (savedColor) {
+      document.documentElement.style.setProperty('--primary', savedColor);
+      const glow = savedColor.replace('rgb', 'rgba').replace(')', ', 0.4)');
+      document.documentElement.style.setProperty('--primary-glow', glow);
+    }
+  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -235,13 +257,14 @@ export default function SettingsPage() {
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-               {['#FF4B2B', '#7928CA', '#0070F3', '#00DFD8'].map(color => (
+               {['#39FF14', '#FF4B2B', '#7928CA', '#0070F3', '#00DFD8', '#FFD700', '#FF00FF'].map(color => (
                  <button 
                     key={color}
+                    onClick={() => handleColorChange(color)}
                     className="aspect-square rounded-3xl border-2 border-white/5 hover:border-primary transition-all flex items-center justify-center p-2 relative group"
                     style={{ background: `${color}10` }}
                  >
-                    <div className="w-full h-full rounded-2xl" style={{ background: color }} />
+                    <div className="w-full h-full rounded-2xl" style={{ border: `2px solid ${color}`, background: color }} />
                     <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                  </button>
                ))}

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbo --experimental-https",
     "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
@@ -14,6 +14,9 @@
   "dependencies": {
     "@clerk/nextjs": "^6.36.4",
     "@hookform/resolvers": "^5.2.2",
+    "@mediapipe/drawing_utils": "^0.3.1675466124",
+    "@mediapipe/face_detection": "^0.4.1646425229",
+    "@mediapipe/tasks-vision": "^0.10.32",
     "@prisma/client": "5.10.2",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.4",

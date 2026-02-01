@@ -68,6 +68,7 @@ model User {
   lastSecurityCheck    DateTime  @default(now())
   securitySetupComplete Boolean  @default(false)
   mfaBackupCodes       String[]  @default([]) // Encrypted backup codes
+  notificationSettings Json?     // User preferences for alerts
   
   application  VendorApplication?
 }

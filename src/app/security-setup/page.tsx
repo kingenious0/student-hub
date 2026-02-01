@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 import "@tensorflow/tfjs"
 import * as faceapi from "face-api.js"
+import { FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision"
 import QRCode from "qrcode"
 import { motion, AnimatePresence } from "framer-motion"
 import { Shield, Camera, Lock, Key, CheckCircle2, AlertCircle, Fingerprint, Smartphone, Scan } from "lucide-react"
@@ -15,6 +16,7 @@ import { toast } from "sonner"
 export default function SecuritySetupPage() {
   const { user, isLoaded } = useUser()
   const modal = useModal()
+  const router = useRouter()
   
   // State Management
   const [step, setStep] = useState<"intro" | "biometric" | "2fa" | "complete">("intro")
@@ -30,6 +32,9 @@ export default function SecuritySetupPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   
+  // MediaPipe State
+  const [faceDetector, setFaceDetector] = useState<FaceDetector | null>(null)
+  
   // 2FA State
   const [qrCodeUrl, setQrCodeUrl] = useState("")
   const [secret, setSecret] = useState("")
@@ -39,15 +44,28 @@ export default function SecuritySetupPage() {
 
   // Load Face-API models
   useEffect(() => {
-    const loadModels = async () => {
-      const MODEL_URL = "/models" // We'll need to add these to public/models
+    async function loadModels() {
+      const MODEL_URL = "/models"
       try {
+        // Init FaceAPI (for descriptor generation only)
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL)
         await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
         await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-        await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL)
+        
+        // Init MediaPipe (for fast real-time loop)
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+        );
+        const detector = await FaceDetector.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: "/models/face_detector.tflite",
+            delegate: "GPU"
+          },
+          runningMode: "VIDEO"
+        });
+        setFaceDetector(detector);
       } catch (err) {
-        console.error("Error loading face-api models:", err)
+        console.error("Model loading failed:", err)
       }
     }
     loadModels()
@@ -74,9 +92,6 @@ export default function SecuritySetupPage() {
         videoRef.current.srcObject = stream
         streamRef.current = stream
         setCameraActive(true)
-        
-        // Start face detection
-        videoRef.current.addEventListener("play", detectFace)
       }
     } catch (err) {
       setError("Camera access denied. Please allow camera permissions to continue.")
@@ -84,40 +99,50 @@ export default function SecuritySetupPage() {
     }
   }
 
-  // Detect face in real-time
-  const detectFace = async () => {
-    if (!videoRef.current || !canvasRef.current) return
+  // Tracking loop with MediaPipe
+  useEffect(() => {
+    let animationId: number;
     
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    
-    const displaySize = { width: video.videoWidth, height: video.videoHeight }
-    faceapi.matchDimensions(canvas, displaySize)
-    
-    setInterval(async () => {
-      if (!video.paused && !video.ended) {
-        const detections = await faceapi
-          .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.5 }))
-          .withFaceLandmarks()
-          .withFaceDescriptors()
-        
-        if (detections.length > 0) {
-          setFaceDetected(true)
-          
-          // Draw detection overlay
-          const resizedDetections = faceapi.resizeResults(detections, displaySize)
-          const ctx = canvas.getContext("2d")
-          if (ctx) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
-            faceapi.draw.drawDetections(canvas, resizedDetections)
-            faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
+    async function track() {
+      const video = videoRef.current;
+      if (faceDetector && video && cameraActive && !loading && step === "biometric") {
+        if (video.readyState >= 3 && video.videoWidth > 0 && video.videoHeight > 0 && !video.paused && !video.ended) {
+          try {
+            const detections = faceDetector.detectForVideo(video, performance.now());
+            if (detections.detections.length > 0) {
+              setFaceDetected(true);
+              const canvas = canvasRef.current;
+              if (canvas) {
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                  canvas.width = video.videoWidth;
+                  canvas.height = video.videoHeight;
+                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  ctx.strokeStyle = "#39FF14";
+                  ctx.lineWidth = 4;
+                  ctx.lineJoin = "round";
+                  for (const det of detections.detections) {
+                    const box = det.boundingBox;
+                    if (box) ctx.strokeRect(box.originX, box.originY, box.width, box.height);
+                  }
+                }
+              }
+            } else {
+              setFaceDetected(false);
+              const ctx = canvasRef.current?.getContext("2d");
+              if (ctx) ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
+            }
+          } catch (err) {
+             console.error("MediaPipe Detection Error:", err);
           }
-        } else {
-          setFaceDetected(false)
         }
       }
-    }, 100)
-  }
+      animationId = requestAnimationFrame(track);
+    }
+
+    if (cameraActive) track();
+    return () => cancelAnimationFrame(animationId);
+  }, [faceDetector, cameraActive, loading, step]);
 
   // Capture face biometric data
   const captureBiometric = async () => {
@@ -128,7 +153,7 @@ export default function SecuritySetupPage() {
     
     try {
       const detections = await faceapi
-        .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.5 }))
+        .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 }))
         .withFaceLandmarks()
         .withFaceDescriptors()
       

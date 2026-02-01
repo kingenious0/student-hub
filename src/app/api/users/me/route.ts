@@ -57,7 +57,9 @@ export async function GET(request: NextRequest) {
                         banReason: true,
                         shopName: true,
                         shopLandmark: true,
-                        university: true
+                        university: true,
+                        phoneNumber: true,
+                        notificationSettings: true
                     }
                 });
 
@@ -93,7 +95,9 @@ export async function GET(request: NextRequest) {
                 banReason: true,
                 shopName: true,
                 shopLandmark: true,
-                university: true
+                university: true,
+                phoneNumber: true,
+                notificationSettings: true
             }
         });
 

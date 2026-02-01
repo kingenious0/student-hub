@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect } from "react"
 import "@tensorflow/tfjs"
 import * as faceapi from "face-api.js"
+import { FaceDetector, FilesetResolver, Detection } from "@mediapipe/tasks-vision"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Camera, Key, AlertCircle, CheckCircle2, Shield } from "lucide-react"
+import { X, Camera, Key, AlertCircle, CheckCircle2, Shield, Scan } from "lucide-react"
 
 interface SecurityVerificationModalProps {
   isOpen: boolean
@@ -37,6 +38,80 @@ export default function SecurityVerificationModal({
   // 2FA verification state
   const [verificationCode, setVerificationCode] = useState("")
   const [code2FAVerified, setCode2FAVerified] = useState(false)
+
+  // MediaPipe State
+  const [faceDetector, setFaceDetector] = useState<FaceDetector | null>(null)
+  const [isFaceDetected, setIsFaceDetected] = useState(false)
+
+  // Initialize MediaPipe
+  useEffect(() => {
+    async function initMediaPipe() {
+      try {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
+        );
+        const detector = await FaceDetector.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: "/models/face_detector.tflite",
+            delegate: "GPU"
+          },
+          runningMode: "VIDEO"
+        });
+        setFaceDetector(detector);
+      } catch (err) {
+        console.error("MediaPipe Init Failed:", err);
+      }
+    }
+    initMediaPipe();
+  }, []);
+
+  // Tracking loop with MediaPipe
+  useEffect(() => {
+    let animationId: number;
+    
+    async function track() {
+      const video = videoRef.current;
+      if (faceDetector && video && cameraActive && !loading && !faceVerified) {
+        if (video.readyState >= 3 && video.videoWidth > 0 && video.videoHeight > 0 && !video.paused && !video.ended) {
+          try {
+            const detections = faceDetector.detectForVideo(video, performance.now());
+            if (detections.detections.length > 0) {
+              setIsFaceDetected(true);
+              const canvas = canvasRef.current;
+              if (canvas) {
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                  canvas.width = video.videoWidth;
+                  canvas.height = video.videoHeight;
+                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  ctx.strokeStyle = "#39FF14";
+                  ctx.lineWidth = 4;
+                  ctx.lineJoin = "round";
+                  
+                  for (const det of detections.detections) {
+                    const box = det.boundingBox;
+                    if (box) {
+                      ctx.strokeRect(box.originX, box.originY, box.width, box.height);
+                    }
+                  }
+                }
+              }
+            } else {
+              setIsFaceDetected(false);
+              const ctx = canvasRef.current?.getContext("2d");
+              if (ctx) ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
+            }
+          } catch (err) {
+            console.error("MediaPipe Track Error:", err);
+          }
+        }
+      }
+      animationId = requestAnimationFrame(track);
+    }
+
+    if (cameraActive) track();
+    return () => cancelAnimationFrame(animationId);
+  }, [faceDetector, cameraActive, loading, faceVerified]);
 
   // Start camera for face verification
   const startCamera = async () => {
@@ -71,7 +146,7 @@ export default function SecurityVerificationModal({
     
     try {
       const detections = await faceapi
-        .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.5 }))
+        .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 }))
         .withFaceLandmarks()
         .withFaceDescriptors()
       
@@ -242,10 +317,23 @@ export default function SecurityVerificationModal({
                 {cameraActive && (
                   <button
                     onClick={verifyFace}
-                    disabled={loading}
-                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50"
+                    disabled={loading || !isFaceDetected}
+                    className={`w-full px-6 py-3 rounded-xl font-black uppercase tracking-widest transition-all ${
+                      isFaceDetected 
+                        ? "bg-primary text-primary-foreground omni-glow scale-100" 
+                        : "bg-gray-100 text-gray-400 scale-95"
+                    }`}
                   >
-                    {loading ? "Verifying..." : "Verify Face"}
+                    <div className="flex items-center justify-center gap-2">
+                       {loading ? (
+                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                       ) : isFaceDetected ? (
+                         <Scan className="w-5 h-5" />
+                       ) : (
+                         <Camera className="w-5 h-5" />
+                       )}
+                       <span>{loading ? "Decrypting Face Data..." : isFaceDetected ? "Authorize Identity" : "Align Face to Scan"}</span>
+                    </div>
                   </button>
                 )}
               </div>
