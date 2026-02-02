@@ -8,24 +8,33 @@ export async function GET() {
     }
 
     try {
-        // Fetch Critical Data
-        const [users, products, orders, config] = await Promise.all([
-            prisma.user.findMany(),
-            prisma.product.findMany(),
-            prisma.order.findMany(),
-            prisma.systemConfig.findUnique({ where: { id: 'GLOBAL_CONFIG' } })
+        // Fetch Critical Data with Individual Error Handling
+        const fetchData = async (fn: () => Promise<any>, label: string) => {
+            try {
+                return await fn();
+            } catch (err) {
+                console.error(`[BACKUP] Failed to fetch ${label}:`, err);
+                return []; // Return empty array on failure for data tables
+            }
+        };
+
+        const [users, products, orders, settings] = await Promise.all([
+            fetchData(() => prisma.user.findMany(), 'users'),
+            fetchData(() => prisma.product.findMany(), 'products'),
+            fetchData(() => prisma.order.findMany(), 'orders'),
+            fetchData(() => prisma.systemSettings.findUnique({ where: { id: 'GLOBAL_CONFIG' } }), 'settings')
         ]);
 
         const backupData = {
             timestamp: new Date().toISOString(),
             system: "OMNI StudentHub",
             stats: {
-                users: users.length,
-                products: products.length,
-                orders: orders.length
+                users: users?.length || 0,
+                products: products?.length || 0,
+                orders: orders?.length || 0
             },
             data: {
-                config,
+                config: settings,
                 users,
                 products,
                 orders
@@ -40,6 +49,10 @@ export async function GET() {
         });
 
     } catch (error) {
-        return NextResponse.json({ error: 'Backup Generation Failed' }, { status: 500 });
+        console.error('CRITICAL BACKUP FAILURE:', error);
+        return NextResponse.json({ 
+            error: 'Backup Generation Failed', 
+            details: error instanceof Error ? error.message : 'Unknown Error' 
+        }, { status: 500 });
     }
 }

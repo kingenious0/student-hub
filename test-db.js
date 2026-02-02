@@ -1,22 +1,16 @@
 
-require('dotenv').config();
-const { Client } = require('pg');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-});
-
-async function test() {
-    try {
-        console.log('Connecting to:', process.env.DATABASE_URL.split('@')[1]); // Log host only
-        await client.connect();
-        console.log('✅ Connected successfully!');
-        const res = await client.query('SELECT NOW()');
-        console.log('SERVER TIME:', res.rows[0]);
-        await client.end();
-    } catch (err) {
-        console.error('❌ Connection failed:', err);
-    }
+async function main() {
+  try {
+    const users = await prisma.user.findMany({ take: 1 });
+    console.log('SUCCESS: Connected to DB. Found', users.length, 'users.');
+  } catch (err) {
+    console.error('FAILURE: Could not connect to DB:', err.message);
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
-test();
+main();

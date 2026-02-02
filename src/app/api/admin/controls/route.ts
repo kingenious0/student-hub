@@ -14,12 +14,12 @@ export async function GET() {
     }
 
     try {
-        let config = await prisma.systemConfig.findUnique({
+        let config = await prisma.systemSettings.findUnique({
             where: { id: 'GLOBAL_CONFIG' }
         });
 
         if (!config) {
-            config = await prisma.systemConfig.create({
+            config = await prisma.systemSettings.create({
                 data: { id: 'GLOBAL_CONFIG' }
             });
         }
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { deliveryFee, platformFee, maintenanceMode } = body;
 
-        const config = await prisma.systemConfig.update({
+        const config = await prisma.systemSettings.update({
             where: { id: 'GLOBAL_CONFIG' },
             data: {
                 deliveryFee: parseFloat(deliveryFee),

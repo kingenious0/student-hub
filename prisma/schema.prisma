@@ -385,6 +385,8 @@ model StoryFavorite {
 model SystemSettings {
   id              String   @id @default("GLOBAL_CONFIG")
   maintenanceMode Boolean  @default(false)
+  deliveryFee     Float    @default(5.0)
+  platformFee     Float    @default(2.0)
   activeFeatures  String[] // ["MARKET", "PULSE", "RUNNER", "ESCROW"]
   globalNotice    String?  // "Maintenance until 2:00 PM"
   contentOverride Json?    // Stores live-edited UI text

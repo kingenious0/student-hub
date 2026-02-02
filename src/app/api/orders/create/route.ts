@@ -142,10 +142,10 @@ export async function POST(request: NextRequest) {
                     vendorSubtotal += (item.finalPrice * item.quantity);
                 }
 
-                // Add Delivery Fee (Per Vendor Shipment)
-                // Logic: If fulfillmentType is DELIVERY, add fee. 
-                // Future: Check if specific vendor supports delivery.
-                const deliveryFee = fulfillmentType === 'DELIVERY' ? 10.00 : 0.00;
+                // Add Dynamic Fees from System Settings
+                const settings = await tx.systemSettings.findUnique({ where: { id: 'GLOBAL_CONFIG' } });
+                const deliveryFee = (fulfillmentType === 'DELIVERY') ? (settings?.deliveryFee ?? 5.00) : 0.00;
+                
                 const vendorTotal = vendorSubtotal + deliveryFee;
                 calculatedGrandTotal += vendorTotal;
 
