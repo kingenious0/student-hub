@@ -9,6 +9,7 @@ interface AdminContextType {
     activeFeatures: string[];
     contentOverrides: Record<string, any>;
     isFeatureEnabled: (feature: string) => boolean;
+    maintenanceMode: boolean;
     ghostEditMode: boolean;
     toggleGhostEdit: () => void;
     setGhostAdmin: (value: boolean) => void;
@@ -23,6 +24,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const [superAccess, setSuperAccess] = useState(false);
     const [ghostEditMode, setGhostEditMode] = useState(false);
     const [activeFeatures, setActiveFeatures] = useState<string[]>(['MARKET', 'PULSE', 'RUNNER', 'ESCROW', 'VENDOR']);
+    const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [contentOverrides, setContentOverrides] = useState<Record<string, any>>({});
 
     useEffect(() => {
@@ -100,6 +102,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
             if (data.success) {
                 if (Array.isArray(data.activeFeatures)) setActiveFeatures(data.activeFeatures);
                 if (data.contentOverride) setContentOverrides(data.contentOverride);
+                setMaintenanceMode(!!data.maintenanceMode);
             }
         } catch (e) {
             console.warn("Config sync failed (likely network/server issue):", e);
@@ -125,7 +128,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const toggleGhostEdit = () => setGhostEditMode(prev => !prev);
 
     return (
-        <AdminContext.Provider value={{ isGhostAdmin, superAccess, activeFeatures, contentOverrides, isFeatureEnabled, ghostEditMode, toggleGhostEdit, setGhostAdmin, refreshConfig }}>
+        <AdminContext.Provider value={{ isGhostAdmin, superAccess, activeFeatures, maintenanceMode, contentOverrides, isFeatureEnabled, ghostEditMode, toggleGhostEdit, setGhostAdmin, refreshConfig }}>
             {children}
         </AdminContext.Provider>
     );

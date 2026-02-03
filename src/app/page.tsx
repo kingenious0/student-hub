@@ -61,8 +61,8 @@ export default function Home() {
             <QuickCategoryCard href="/category/books" icon="📚" label="Books" />
             <QuickCategoryCard href="/category/services" icon="✂️" label="Services" />
             <QuickCategoryCard href="/category/beauty" icon="💄" label="Beauty" />
-            <QuickCategoryCard href="/category/sports" icon="⚽" label="Sports" />
-            <QuickCategoryCard href="/category/more" icon="➕" label="More" />
+            <QuickCategoryCard href="/category/lifestyle" icon="🧘" label="Vibe" />
+            <QuickCategoryCard href="/category/more" icon="+" label="More" />
           </div>
         </div>
       </div>

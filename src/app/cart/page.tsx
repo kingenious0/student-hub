@@ -24,7 +24,24 @@ export default function CartPage() {
     const [isHybridAuth, setIsHybridAuth] = useState(false);
     const [hybridClerkId, setHybridClerkId] = useState<string | null>(null);
 
-    useState(() => {
+    const [deliveryFeeConfig, setDeliveryFeeConfig] = useState(10);
+    const [platformFeeConfig, setPlatformFeeConfig] = useState(2);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('/api/system/config');
+                const data = await res.json();
+                if (data.success) {
+                    setDeliveryFeeConfig(data.deliveryFee ?? 10.00);
+                    setPlatformFeeConfig(data.platformFee ?? 2.00);
+                }
+            } catch (e) {
+                console.error('Failed to fetch fees', e);
+            }
+        };
+        fetchSettings();
+
         if (typeof window !== 'undefined') {
             const isVerified = document.cookie.split('; ').some(c => c.startsWith('OMNI_IDENTITY_VERIFIED=TRUE'));
             const syncId = document.cookie.split('; ').find(c => c.trim().startsWith('OMNI_HYBRID_SYNCED='))?.split('=')[1];
@@ -33,7 +50,7 @@ export default function CartPage() {
                 if (syncId) setHybridClerkId(syncId);
             }
         }
-    });
+    }, []);
 
     const itemsByVendor = items.reduce((acc, item) => {
         const vId = item.vendorId || 'unknown';
@@ -48,7 +65,7 @@ export default function CartPage() {
     }, {} as Record<string, { vendorName: string; items: typeof items }>);
 
     const subtotal = getCartTotal();
-    const deliveryFee = items.length > 0 ? (fulfillmentMethod === 'delivery' ? 15 : 0.00) : 0;
+    const deliveryFee = items.length > 0 ? (fulfillmentMethod === 'delivery' ? deliveryFeeConfig : 0.00) : 0;
     const total = subtotal + deliveryFee;
 
     const handleCheckout = async () => {
@@ -113,14 +130,11 @@ export default function CartPage() {
         // Actually, let's try to send simple checkout.
 
         try {
-            const item = items[0];
-
             const res = await fetch('/api/orders/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    productId: item.id,
-                    quantity: item.quantity,
+                    items: items.map(i => ({ id: i.id, quantity: i.quantity })),
                     fulfillmentType: fulfillmentMethod === 'delivery' ? 'DELIVERY' : 'PICKUP'
                 })
             });
@@ -358,7 +372,7 @@ export default function CartPage() {
                                                 {fulfillmentMethod === 'delivery' ? 'Delivery Fee' : 'Pickup Handling'}
                                             </span>
                                             <span className={`font-bold ${fulfillmentMethod === 'pickup' ? 'text-green-600' : 'text-gray-900 dark:text-foreground'}`}>
-                                                {items.length > 0 ? (fulfillmentMethod === 'delivery' ? `₵15.00` : `Free`) : '₵0.00'}
+                                                {items.length > 0 ? (fulfillmentMethod === 'delivery' ? `₵${deliveryFeeConfig.toFixed(2)}` : `Free`) : '₵0.00'}
                                             </span>
                                         </div>
 

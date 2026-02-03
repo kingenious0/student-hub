@@ -20,6 +20,7 @@ import { SecurityProvider } from "@/context/SecurityContext";
 import "./globals.css";
 import WelcomeModal from "@/components/alpha/WelcomeModal";
 import InsightUplink from "@/components/alpha/InsightUplink";
+import GlobalMaintenanceGuard from "@/components/admin/GlobalMaintenanceGuard";
 
 
 const geistSans = Geist({
@@ -55,18 +56,19 @@ export default function RootLayout({
                   <CartProvider>
                     <SecurityProvider>
                       <ModalProvider>
-                        <OnboardingCheck />
-                        <Navbar />
-                        <ImpersonationBanner />
-                        <BanOverlay />
-                        <CampusGuard>
-                          {children}
-                        </CampusGuard>
-                        <Footer />
-                        <GhostEditToggle />
-                        <WelcomeModal />
-
-                        <InsightUplink />
+                        <GlobalMaintenanceGuard>
+                          <OnboardingCheck />
+                          <Navbar />
+                          <ImpersonationBanner />
+                          <BanOverlay />
+                          <CampusGuard>
+                            {children}
+                          </CampusGuard>
+                          <Footer />
+                          <GhostEditToggle />
+                          <WelcomeModal />
+                          <InsightUplink />
+                        </GlobalMaintenanceGuard>
                         <Toaster richColors position="top-center" theme="dark" />
                       </ModalProvider>
                     </SecurityProvider>

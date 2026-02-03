@@ -87,8 +87,8 @@ export default function SystemControlsPage() {
                                 <input
                                     type="number"
                                     step="0.5"
-                                    value={config.deliveryFee}
-                                    onChange={(e) => setConfig({ ...config, deliveryFee: parseFloat(e.target.value) })}
+                                    value={isNaN(config.deliveryFee) ? '' : config.deliveryFee}
+                                    onChange={(e) => setConfig({ ...config, deliveryFee: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                                     className="bg-transparent text-foreground font-black text-2xl w-24 outline-none tracking-tighter"
                                 />
                             </div>
@@ -105,8 +105,8 @@ export default function SystemControlsPage() {
                                 <input
                                     type="number"
                                     step="0.5"
-                                    value={config.platformFee}
-                                    onChange={(e) => setConfig({ ...config, platformFee: parseFloat(e.target.value) })}
+                                    value={isNaN(config.platformFee) ? '' : config.platformFee}
+                                    onChange={(e) => setConfig({ ...config, platformFee: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
                                     className="bg-transparent text-foreground font-black text-2xl w-24 outline-none tracking-tighter"
                                 />
                             </div>
@@ -152,16 +152,37 @@ export default function SystemControlsPage() {
                             </div>
                         </div>
 
-                        {/* Backup */}
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <div>
-                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Data Snapshot</h3>
-                                <p className="text-foreground/30 text-[10px] font-black uppercase tracking-widest mt-1">Export full JSON dump of current ecosystem state.</p>
+                        {/* Backup / Export Section */}
+                        <div className="space-y-6">
+                            <div className="border-b border-surface-border pb-4">
+                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Intelligence Export (CSV)</h3>
+                                <p className="text-foreground/30 text-[10px] font-black uppercase tracking-widest mt-1">Select sector to generate spreadsheet-ready data snapshot.</p>
                             </div>
-                            <Link href="/api/admin/backup" target="_blank">
-                                <button type="button" className="px-8 py-4 bg-foreground/5 border border-surface-border rounded-xl font-black text-xs uppercase tracking-widest hover:bg-foreground hover:text-background transition-all">
-                                    Download Backup ↓
-                                </button>
+                            
+                            <div className="flex flex-wrap gap-4">
+                                <Link href="/api/admin/backup?table=users&format=csv" target="_blank" className="flex-1 min-w-[150px]">
+                                    <button type="button" className="w-full px-6 py-4 bg-foreground/5 border border-surface-border rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all group">
+                                        Users <span className="opacity-40 group-hover:opacity-100 ml-1">↓</span>
+                                    </button>
+                                </Link>
+                                
+                                <Link href="/api/admin/backup?table=products&format=csv" target="_blank" className="flex-1 min-w-[150px]">
+                                    <button type="button" className="w-full px-6 py-4 bg-foreground/5 border border-surface-border rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all group">
+                                        Products <span className="opacity-40 group-hover:opacity-100 ml-1">↓</span>
+                                    </button>
+                                </Link>
+                                
+                                <Link href="/api/admin/backup?table=orders&format=csv" target="_blank" className="flex-1 min-w-[150px]">
+                                    <button type="button" className="w-full px-6 py-4 bg-foreground/5 border border-surface-border rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all group">
+                                        Orders <span className="opacity-40 group-hover:opacity-100 ml-1">↓</span>
+                                    </button>
+                                </Link>
+                            </div>
+
+                            <Link href="/api/admin/backup?table=all&format=json" target="_blank" className="block text-center mt-4">
+                                <span className="text-[9px] font-black text-foreground/20 uppercase tracking-[0.3em] hover:text-primary cursor-pointer transition-all">
+                                    [ DEV MODE: Download Full JSON Core Archive ]
+                                </span>
                             </Link>
                         </div>
                     </div>
