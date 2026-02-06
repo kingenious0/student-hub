@@ -1,6 +1,24 @@
 {
   "commits": [
     {
+      "hash": "ea5fa82dc757950323541f2918d399f5ae7441b6",
+      "message": "[autopilot] feat(security): Implement passkey and PIN",
+      "files": [
+        "risma/schema.prisma",
+        "src/app/api/security/status/route.ts",
+        "src/app/cart/page.tsx",
+        "src/app/page.tsx",
+        "src/app/security-setup/page.tsx",
+        "src/app/verify/page.tsx",
+        "src/components/navigation/Navbar.tsx",
+        "src/app/api/security/passkey/authenticate-options/",
+        "src/app/api/security/passkey/authenticate-verify/",
+        "src/app/api/security/verify-pin/",
+        "src/app/api/test-auth/"
+      ],
+      "timestamp": "2026-02-06T20:02:57.269Z"
+    },
+    {
       "hash": "ac69db563be07da8d80b8d0e52bad21897bb7106",
       "message": "[autopilot] refactor(sign-up): Simplify page layout",
       "files": [

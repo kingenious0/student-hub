@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import QRCode from "qrcode"
 
 import { Shield, Lock, Key, CheckCircle2, AlertCircle, Fingerprint, Smartphone, Scan, MousePointer2 } from "lucide-react"
-import GoBack from "@/components/navigation/GoBack"
 import { useModal } from "@/context/ModalContext"
 import { toast } from "sonner"
 import { startRegistration } from "@simplewebauthn/browser"
@@ -519,12 +518,9 @@ export default function SecuritySetupPage() {
       <div className="absolute top-0 inset-x-0 h-[40vh] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
       
       <div className="max-w-4xl mx-auto px-4 py-8 relative z-10">
-        <div className="flex items-center justify-between mb-12">
-          <GoBack />
-          <div className="text-right">
-            <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Protocol</span>
-            <h1 className="text-xl font-black text-foreground uppercase tracking-tighter">Security Setup</h1>
-          </div>
+        <div className="text-center mb-12">
+          <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">Protocol</span>
+          <h1 className="text-3xl font-black text-foreground uppercase tracking-tighter">Security Setup</h1>
         </div>
 
         {/* Progress System - Premium Desktop & Stacked Mobile */}
