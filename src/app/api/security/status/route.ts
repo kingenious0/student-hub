@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server"
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth()
+    console.log('[DEBUG] Security Status Check - UserId:', userId)
     
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -15,6 +16,8 @@ export async function GET(req: NextRequest) {
       select: {
         has2FA: true,
         hasBiometric: true,
+        hasPasskey: true,
+        securityPin: true,
         securitySetupComplete: true,
         lastSecurityCheck: true
       }

@@ -135,7 +135,7 @@ export default function Home() {
                   scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
                   initial: { type: "spring", delay: 1 }
                 }}
-                className="absolute -top-10 -right-10 md:top-0 md:right-0 bg-primary text-black px-6 py-3 rounded-2xl font-black text-2xl md:text-4xl shadow-[0_0_50px_var(--primary-glow)] border-4 border-black z-20 cursor-default hover:scale-125 transition-transform"
+                className="absolute -top-10 -right-10 md:top-0 md:right-0 bg-[#39FF14] text-black px-6 py-3 rounded-2xl font-black text-2xl md:text-4xl shadow-[0_0_50px_rgba(57,255,20,0.5)] border-4 border-black z-20 cursor-default hover:scale-125 transition-transform"
               >
                 60% OFF
               </motion.div>

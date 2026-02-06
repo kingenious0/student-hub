@@ -171,7 +171,14 @@ export default function Navbar() {
         }
     }
 
-    if (pathname?.startsWith('/command-center-z') || pathname?.startsWith('/sign-in') || pathname?.startsWith('/sign-up') || pathname?.startsWith('/onboarding')) {
+    if (
+        pathname?.startsWith('/command-center-z') || 
+        pathname?.startsWith('/sign-in') || 
+        pathname?.startsWith('/sign-up') || 
+        pathname?.startsWith('/onboarding') ||
+        pathname?.startsWith('/verify') ||
+        pathname?.startsWith('/security-setup')
+    ) {
         return null;
     }
 

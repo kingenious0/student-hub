@@ -3,61 +3,9 @@
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
-import * as tf from '@tensorflow/tfjs-core';
-import '@tensorflow/tfjs-backend-webgl';
-import '@tensorflow/tfjs-backend-cpu';
-import * as faceapi from "face-api.js"
-import { FaceDetector, FilesetResolver } from "@mediapipe/tasks-vision"
 import { motion, AnimatePresence } from "framer-motion"
 import QRCode from "qrcode"
 
-// Comprehensive Monkey Patch for face-api.js compatibility with modern TFJS (v4+)
-if (typeof window !== 'undefined' && tf.Tensor) {
-    const proto = tf.Tensor.prototype as any;
-    
-    // Core utility mappings
-    const patch = (name: string, fn: Function) => {
-        if (!proto[name]) proto[name] = fn;
-    };
-
-    // basic ops
-    patch('toFloat', function() { return this.cast('float32'); });
-    patch('cast', function(dtype: any) { return tf.cast(this, dtype); });
-    
-    // shape ops
-    patch('as4D', function(a:number, b:number, c:number, d:number) { return tf.reshape(this, [a, b, c, d]); });
-    patch('as3D', function(a:number, b:number, c:number) { return tf.reshape(this, [a, b, c]); });
-    patch('as2D', function(a:number, b:number) { return tf.reshape(this, [a, b]); });
-    patch('as1D', function() { return tf.reshape(this, [this.size]); });
-    patch('reshape', function(shape: number[]) { return tf.reshape(this, shape); });
-    patch('expandDims', function(axis: number) { return tf.expandDims(this, axis); });
-    patch('squeeze', function(axis?: number[]) { return tf.squeeze(this, axis); });
-    patch('broadcastTo', function(shape: number[]) { return tf.broadcastTo(this, shape); });
-    patch('transpose', function(perm?: number[]) { return tf.transpose(this, perm); });
-
-    // math ops
-    patch('div', function(x: any) { return tf.div(this, x); });
-    patch('mul', function(x: any) { return tf.mul(this, x); });
-    patch('add', function(x: any) { return tf.add(this, x); });
-    patch('sub', function(x: any) { return tf.sub(this, x); });
-    patch('pow', function(x: any) { return tf.pow(this, x); });
-    patch('sqrt', function() { return tf.sqrt(this); });
-    patch('square', function() { return tf.square(this); });
-    patch('abs', function() { return tf.abs(this); });
-    
-    // reduction ops
-    patch('mean', function(axis?: any, keep?: boolean) { return tf.mean(this, axis, keep); });
-    patch('sum', function(axis?: any, keep?: boolean) { return tf.sum(this, axis, keep); });
-    patch('max', function(axis?: any, keep?: boolean) { return tf.max(this, axis, keep); });
-    patch('min', function(axis?: any, keep?: boolean) { return tf.min(this, axis, keep); });
-    
-    // activation/other ops
-    patch('relu', function() { return tf.relu(this); });
-    patch('sigmoid', function() { return tf.sigmoid(this); });
-    patch('softmax', function(axis?: number) { return tf.softmax(this, axis); });
-    patch('slice', function(begin: any, size: any) { return tf.slice(this, begin, size); });
-    patch('concat', function(others: any, axis: number) { return tf.concat([this, ...others], axis); });
-}
 import { Shield, Lock, Key, CheckCircle2, AlertCircle, Fingerprint, Smartphone, Scan, MousePointer2 } from "lucide-react"
 import GoBack from "@/components/navigation/GoBack"
 import { useModal } from "@/context/ModalContext"
