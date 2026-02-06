@@ -37,7 +37,7 @@ export default function Footer() {
                     {/* Brand Column */}
                     <div className="col-span-2 md:col-span-1">
                         <div className="flex items-center gap-2 mb-6">
-                            <img src="/OMNI-LOGO.ico" alt="OMNI" className="h-8 w-auto invert-on-light" />
+                            <img src="/OMNI-LOGO.ico" alt="OMNI" className="h-12 w-auto invert-on-light" />
                             <span className="text-xl font-black tracking-tighter uppercase italic">OMNI</span>
                         </div>
                         <p className="text-foreground/40 text-xs font-bold leading-relaxed mb-6 uppercase tracking-widest">

@@ -203,7 +203,7 @@ export default function Navbar() {
                                 <img
                                     src="/OMNI-LOGO.ico"
                                     alt="OMNI"
-                                    className="h-10 lg:h-8 w-auto transition-transform group-hover:scale-110 invert-on-light"
+                                    className="h-14 w-auto transition-transform group-hover:scale-110 invert-on-light"
                                     style={{ filter: 'var(--invert-filter)' }}
                                 />
                                 <span className="hidden lg:block font-black tracking-tighter text-lg">OMNI</span>
@@ -213,7 +213,7 @@ export default function Navbar() {
                                 <img
                                     src="/OMNI-LOGO.ico"
                                     alt="OMNI"
-                                    className="h-10 lg:h-8 w-auto transition-transform group-hover:scale-110 invert-on-light"
+                                    className="h-14 w-auto transition-transform group-hover:scale-110 invert-on-light"
                                     style={{ filter: 'var(--invert-filter)' }}
                                 />
                                 <span className="hidden lg:block font-black tracking-tighter text-lg">OMNI</span>
