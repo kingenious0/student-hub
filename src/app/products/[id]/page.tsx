@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { SignedIn, SignedOut, SignInButton, useUser, useClerk } from '@clerk/nextjs';
+import { SignedIn, SignedOut, useUser, useClerk } from '@clerk/nextjs';
 import { useCartStore } from '@/lib/store/cart';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -93,7 +93,7 @@ export default function ProductDetailsPage() {
 
     const handleAddToCart = () => {
         if (!user) {
-            openSignIn();
+            router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
             return;
         }
 

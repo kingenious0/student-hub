@@ -18,6 +18,10 @@ export default function Footer() {
         '/runner',                      // Runner dashboard
         '/onboarding',                  // Onboarding flow
         '/stories/theater',             // Theater mode
+        '/sign-in',                     // Sign In
+        '/sign-up',                     // Sign Up
+        '/security-setup',              // Security Setup
+        '/verify',                      // Identity Verification
     ];
 
     // Check if current page should hide footer

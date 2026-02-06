@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { UNIVERSITY_REGISTRY } from '@/lib/geo/distance';
 import { usePathname, useRouter } from 'next/navigation';
-import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/nextjs';
+import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
@@ -221,26 +221,11 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    {/* CENTER: Global Search (Desktop) */}
-                    {/* CENTER: Global Search (Desktop) - Hidden on Home */
-                        pathname !== '/' && (
-                            <div className="hidden lg:block flex-1 max-w-2xl px-8">
-                                <GlobalSearch />
-                            </div>
-                        )}
+
 
                     {/* RIGHT: Actions */}
                     <div className="flex items-center gap-3 md:gap-6 flex-shrink-0">
-                        {/* Mobile Search Toggle */}
-                        {/* Mobile Search Toggle - Hidden on Home */}
-                        {pathname !== '/' && (
-                            <button
-                                className="lg:hidden p-2 text-foreground/60 hover:text-foreground"
-                                onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-                            >
-                                {isMobileSearchOpen ? <XIcon className="w-5 h-5" /> : <SearchIcon className="w-5 h-5" />}
-                            </button>
-                        )}
+
 
                         <ThemeToggle />
 
@@ -281,35 +266,17 @@ export default function Navbar() {
                         </SignedIn>
 
                         <SignedOut>
-                            <SignInButton mode="modal">
-                                <button id="omni-nav-signin" className="hidden md:block px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest transition-all omni-glow active:scale-95">
-                                    Sign In
-                                </button>
-                            </SignInButton>
-                            <SignInButton mode="modal">
-                                <button className="md:hidden p-2 bg-primary/10 text-primary rounded-lg">
-                                    <UserCircleIcon className="w-5 h-5" />
-                                </button>
-                            </SignInButton>
+                            <Link href="/sign-in" id="omni-nav-signin" className="hidden md:block px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest transition-all omni-glow active:scale-95">
+                                Sign In
+                            </Link>
+                            <Link href="/sign-in" className="md:hidden p-2 bg-primary/10 text-primary rounded-lg">
+                                <UserCircleIcon className="w-5 h-5" />
+                            </Link>
                         </SignedOut>
                     </div>
                 </div>
 
-                {/* Mobile Search Overlay */}
-                <AnimatePresence>
-                    {isMobileSearchOpen && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="lg:hidden border-t border-surface-border bg-background/95 backdrop-blur-md overflow-hidden"
-                        >
-                            <div className="p-4">
-                                <GlobalSearch dropdownMode="static" />
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+
 
                 {/* GLOBAL TICKER */}
                 {tickerMessage && (
@@ -382,11 +349,9 @@ export default function Navbar() {
                                         Hello, Guest
                                     </h2>
                                     <div className="mt-4">
-                                        <SignInButton mode="modal">
-                                            <button className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest shadow-lg">
-                                                Sign In / Sign Up
-                                            </button>
-                                        </SignInButton>
+                                        <Link href="/sign-in" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest shadow-lg block text-center" onClick={() => setIsDrawerOpen(false)}>
+                                            Sign In / Sign Up
+                                        </Link>
                                     </div>
                                 </SignedOut>
                             </div>

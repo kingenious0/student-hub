@@ -36,7 +36,10 @@ export default function SignInPage() {
             </div>
 
             {/* Right: Clerk Component */}
-            <div className="flex items-center justify-center p-8 pt-32 md:p-8 bg-background relative">
+            <div className="flex items-center justify-center p-8 pt-32 md:p-8 bg-gray-50 dark:bg-background relative">
+                {/* Light Mode Premium Grid Pattern */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] dark:hidden"></div>
+                
                 {/* Mobile Background Blob */}
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-purple-500 to-primary md:hidden"></div>
 
@@ -45,16 +48,16 @@ export default function SignInPage() {
                         elements: {
                             formButtonPrimary:
                                 'bg-primary hover:bg-primary/90 text-primary-foreground normal-case text-sm font-bold rounded-xl py-3 shadow-lg hover:shadow-primary/20 transition-all',
-                            card: 'bg-surface border border-surface-border shadow-none rounded-3xl p-8',
+                            card: 'bg-white dark:bg-surface border border-gray-200 dark:border-surface-border shadow-2xl dark:shadow-none rounded-3xl p-8 z-10',
                             headerTitle: 'text-2xl font-black uppercase tracking-tight text-foreground',
                             headerSubtitle: 'text-foreground/60 font-medium',
                             socialButtonsBlockButton:
-                                'bg-surface hover:bg-surface-hover border border-surface-border text-foreground rounded-xl py-2.5 font-bold transition-all',
-                            dividerLine: 'bg-surface-border',
+                                'bg-gray-50 dark:bg-surface hover:bg-gray-100 dark:hover:bg-surface-hover border border-gray-200 dark:border-surface-border text-foreground rounded-xl py-2.5 font-bold transition-all',
+                            dividerLine: 'bg-gray-200 dark:bg-surface-border',
                             dividerText: 'text-foreground/40 font-bold uppercase text-[10px] tracking-widest',
                             formFieldLabel: 'text-foreground/60 font-bold uppercase text-[10px] tracking-widest mb-1.5',
                             formFieldInput:
-                                'bg-background border border-surface-border rounded-xl px-4 py-3 text-foreground font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm',
+                                'bg-white dark:bg-background border border-gray-200 dark:border-surface-border rounded-xl px-4 py-3 text-foreground font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm',
                             footerActionLink: 'text-primary font-bold hover:text-primary/80',
                             footerActionText: 'text-foreground/60 font-medium'
                         },
@@ -66,6 +69,7 @@ export default function SignInPage() {
                             borderRadius: '0.75rem',
                         }
                     }}
+                    forceRedirectUrl="/verify"
                 />
             </div>
         </div>

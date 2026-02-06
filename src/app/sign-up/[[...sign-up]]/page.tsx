@@ -144,7 +144,10 @@ export default function SignUpPage() {
                 </div>
             </div>
 
-            <div className="flex items-center justify-center p-8 pt-32 lg:p-12 bg-background relative overflow-y-auto">
+            <div className="flex items-center justify-center p-8 pt-32 lg:p-12 bg-gray-50 dark:bg-background relative overflow-y-auto">
+                {/* Light Mode Premium Grid Pattern */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] dark:hidden"></div>
+
                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#39FF14] via-blue-500 to-[#39FF14] lg:hidden"></div>
 
                 <div className="absolute top-8 left-8 lg:hidden">
@@ -154,14 +157,14 @@ export default function SignUpPage() {
                     </div>
                 </div>
 
-                <div className="w-full max-w-md space-y-8">
+                <div className="w-full max-w-md space-y-8 relative z-10">
                     <div className="lg:hidden space-y-4">
                         <h2 className="text-3xl font-black uppercase tracking-tight">
                             Buy or Sell on <span className="text-[#39FF14]">OMNI</span>
                         </h2>
                         <div className="grid grid-cols-2 gap-3">
                             {features.slice(0, 2).map((feature, idx) => (
-                                <div key={idx} className="bg-surface border border-surface-border rounded-2xl p-4 space-y-2">
+                                <div key={idx} className="bg-white dark:bg-surface border border-gray-200 dark:border-surface-border rounded-2xl p-4 space-y-2 shadow-sm dark:shadow-none">
                                     <div className="text-2xl">{feature.icon}</div>
                                     <div className="font-black text-xs">{feature.title}</div>
                                 </div>
@@ -174,17 +177,17 @@ export default function SignUpPage() {
                             elements: {
                                 formButtonPrimary:
                                     'bg-[#39FF14] hover:bg-[#32e612] text-black normal-case text-sm font-bold rounded-xl py-3 shadow-lg hover:shadow-[#39FF14]/20 transition-all active:scale-95',
-                                card: 'bg-surface border border-surface-border shadow-2xl rounded-3xl p-8',
+                                card: 'bg-white dark:bg-surface border border-gray-200 dark:border-surface-border shadow-2xl rounded-3xl p-8',
                                 headerTitle: 'text-2xl font-black uppercase tracking-tight text-foreground',
                                 headerSubtitle: 'text-foreground/60 font-medium mt-2',
                                 socialButtonsBlockButton:
-                                    'bg-surface hover:bg-surface-hover border border-surface-border text-foreground rounded-xl py-2.5 font-bold transition-all hover:border-[#39FF14]/50',
+                                    'bg-gray-50 dark:bg-surface hover:bg-gray-100 dark:hover:bg-surface-hover border border-gray-200 dark:border-surface-border text-foreground rounded-xl py-2.5 font-bold transition-all hover:border-[#39FF14]/50',
                                 socialButtonsBlockButtonText: 'font-bold',
-                                dividerLine: 'bg-surface-border',
+                                dividerLine: 'bg-gray-200 dark:bg-surface-border',
                                 dividerText: 'text-foreground/40 font-bold uppercase text-[10px] tracking-widest',
                                 formFieldLabel: 'text-foreground/60 font-bold uppercase text-[10px] tracking-widest mb-1.5',
                                 formFieldInput:
-                                    'bg-background border border-surface-border rounded-xl px-4 py-3 text-foreground font-medium focus:border-[#39FF14] focus:ring-2 focus:ring-[#39FF14]/20 transition-all shadow-sm',
+                                    'bg-white dark:bg-background border border-gray-200 dark:border-surface-border rounded-xl px-4 py-3 text-foreground font-medium focus:border-[#39FF14] focus:ring-2 focus:ring-[#39FF14]/20 transition-all shadow-sm',
                                 footerActionLink: 'text-[#39FF14] font-bold hover:text-[#32e612] transition-colors',
                                 footerActionText: 'text-foreground/60 font-medium',
                                 formFieldErrorText: 'text-red-500 text-xs font-bold mt-1',
@@ -203,6 +206,7 @@ export default function SignUpPage() {
                         routing="path"
                         path="/sign-up"
                         signInUrl="/sign-in"
+                        forceRedirectUrl="/verify"
                     />
 
                     <div className="flex items-center justify-center gap-6 pt-4">

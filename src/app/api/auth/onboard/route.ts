@@ -62,16 +62,10 @@ export async function POST(request: NextRequest) {
             }
         });
 
-        // Create response and set the Identity Cookie
+        // Create response - We DO NOT set the identity cookie here anymore.
+        // User must complete security setup to get the cookie.
         const response = NextResponse.json({ success: true });
-        response.cookies.set('OMNI_IDENTITY_VERIFIED', 'TRUE', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 60 * 60 * 24 * 30, // 30 days
-            path: '/',
-        });
-
+        
         return response;
     } catch (error) {
         console.error('Onboarding API error:', error);
