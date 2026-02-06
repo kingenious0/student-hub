@@ -65,12 +65,31 @@ model User {
   twoFactorSecret      String?   // Encrypted TOTP secret
   hasBiometric         Boolean   @default(false)
   faceDescriptor       Json?     // Stores face recognition data
+  hasPasskey           Boolean   @default(false)
+  passkeys             Authenticator[]
   lastSecurityCheck    DateTime  @default(now())
   securitySetupComplete Boolean  @default(false)
   mfaBackupCodes       String[]  @default([]) // Encrypted backup codes
   notificationSettings Json?     // User preferences for alerts
   
   application  VendorApplication?
+}
+
+model Authenticator {
+  id                   String   @id @default(cuid())
+  credentialID         String   @unique
+  credentialPublicKey  String
+  counter              BigInt
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+  
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt            DateTime @default(now())
+  
+  @@index([userId])
 }
 
 model PayoutRequest {
