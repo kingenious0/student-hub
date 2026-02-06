@@ -4,7 +4,6 @@
       "hash": "ac69db563be07da8d80b8d0e52bad21897bb7106",
       "message": "[autopilot] refactor(sign-up): Simplify page layout",
       "files": [
-        "autopilot/history.json",
         "src/app/sign-up/[[...sign-up]]/page.tsx"
       ],
       "timestamp": "2026-02-06T16:20:42.487Z"
@@ -13,7 +12,7 @@
       "hash": "47007cca62d389abe2eaad17f390dbf81483ffe1",
       "message": "[autopilot] feat(navbar): Hide navbar on auth and onboarding",
       "files": [
-        "rc/components/navigation/Navbar.tsx"
+        "src/components/navigation/Navbar.tsx"
       ],
       "timestamp": "2026-02-06T16:14:37.755Z"
     },
@@ -21,22 +20,26 @@
       "hash": "46d0322143622313060e316cdc73bdf5e732e300",
       "message": "[autopilot] build(config): Update tsconfig.json",
       "files": [
-        "sconfig.json"
+        "tsconfig.json"
       ],
       "timestamp": "2026-02-06T16:08:31.592Z"
+    },
+    {
+      "hash": "2648737917afaaa895579786fa083b7b3da84101",
+      "message": "[autopilot] feat(auth): Add passkey support and Authenticator",
+      "files": [
+        "prisma/schema.prisma"
+      ],
+      "timestamp": "2026-02-06T16:10:01.376Z"
     },
     {
       "hash": "d1fb6a80576e004709b1089d2a758b8fa687c38b",
       "message": "[autopilot] feat(ui): Enhance become vendor page with animations and",
       "files": [
-        "gitignore",
         "src/app/become-vendor/page.tsx",
         "src/app/page.tsx",
         "src/app/security-setup/page.tsx",
-        "src/app/verify/page.tsx",
-        ".autopilot/",
-        ".autopilotignore",
-        ".autopilotrc.json"
+        "src/app/verify/page.tsx"
       ],
       "timestamp": "2026-02-06T15:38:00.855Z"
     }

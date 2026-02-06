@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@/lib/db/prisma';
 
 export async function POST() {
     try {
@@ -8,6 +9,12 @@ export async function POST() {
         if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+
+        // Update database
+        await prisma.user.update({
+            where: { clerkId: userId },
+            data: { securitySetupComplete: true }
+        });
 
         // Create response and set the Identity Verified Cookie
         const response = NextResponse.json({ success: true });

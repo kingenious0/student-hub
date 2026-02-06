@@ -58,10 +58,11 @@ if (typeof window !== 'undefined' && tf.Tensor) {
     patch('slice', function(begin: any, size: any) { return tf.slice(this, begin, size); });
     patch('concat', function(others: any, axis: number) { return tf.concat([this, ...others], axis); });
 }
-import { Shield, Camera, Lock, Key, CheckCircle2, AlertCircle, Fingerprint, Smartphone, Scan } from "lucide-react"
+import { Shield, Lock, Key, CheckCircle2, AlertCircle, Fingerprint, Smartphone, Scan, MousePointer2 } from "lucide-react"
 import GoBack from "@/components/navigation/GoBack"
 import { useModal } from "@/context/ModalContext"
 import { toast } from "sonner"
+import { startRegistration } from "@simplewebauthn/browser"
 
 export default function SecuritySetupPage() {
   const { user, isLoaded } = useUser()
@@ -69,21 +70,18 @@ export default function SecuritySetupPage() {
   const router = useRouter()
   
   // State Management
-  const [step, setStep] = useState<"intro" | "biometric" | "2fa" | "complete">("intro")
+  const [step, setStep] = useState<"intro" | "select-method" | "passkey" | "pin" | "2fa" | "complete">("intro")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   
-  // Biometric State
-  const [cameraActive, setCameraActive] = useState(false)
-  const [faceDetected, setFaceDetected] = useState(false)
-  const [biometricSetup, setBiometricSetup] = useState(false)
-  const [faceDescriptors, setFaceDescriptors] = useState<Float32Array[]>([])
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const streamRef = useRef<MediaStream | null>(null)
+  // Passkey State
+  const [passkeySupported, setPasskeySupported] = useState(true)
+  const [passkeyComplete, setPasskeyComplete] = useState(false)
   
-  // MediaPipe State
-  const [faceDetector, setFaceDetector] = useState<FaceDetector | null>(null)
+  // PIN State
+  const [pin, setPin] = useState("")
+  const [confirmPin, setConfirmPin] = useState("")
+  const [pinComplete, setPinComplete] = useState(false)
   
   // 2FA State
   const [qrCodeUrl, setQrCodeUrl] = useState("")
@@ -92,173 +90,83 @@ export default function SecuritySetupPage() {
   const [twoFASetup, setTwoFASetup] = useState(false)
   const [backupCodes, setBackupCodes] = useState<string[]>([])
 
-  // Load Face-API models
+  // Check for WebAuthn support
   useEffect(() => {
-    async function loadModels() {
-      const MODEL_URL = "/models"
-      try {
-        // Init FaceAPI (for descriptor generation only)
-        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL)
-        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
-        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
-        
-        // Init MediaPipe (for fast real-time loop)
-        const vision = await FilesetResolver.forVisionTasks(
-          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
-        );
-        const detector = await FaceDetector.createFromOptions(vision, {
-          baseOptions: {
-            modelAssetPath: "/models/face_detector.tflite",
-            delegate: "GPU"
-          },
-          runningMode: "VIDEO"
-        });
-        setFaceDetector(detector);
-      } catch (err) {
-        console.error("Model loading failed:", err)
-      }
+    if (typeof window !== "undefined") {
+      setPasskeySupported(!!window.PublicKeyCredential)
     }
-    loadModels()
   }, [])
 
-  // Request camera permission and start face detection
-  const startCamera = async () => {
-    try {
-      setError("")
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setError("Camera access is restricted. Please ensure you are using a secure connection (HTTPS) or localhost.")
-        return
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: "user"
-        },
-        audio: false
-      })
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        streamRef.current = stream
-        setCameraActive(true)
-      }
-    } catch (err) {
-      setError("Camera access denied. Please allow camera permissions to continue.")
-      console.error("Camera error:", err)
-    }
-  }
-
-  // Tracking loop with MediaPipe
-  useEffect(() => {
-    let animationId: number;
-    
-    async function track() {
-      const video = videoRef.current;
-      if (faceDetector && video && cameraActive && !loading && step === "biometric") {
-        if (video.readyState >= 3 && video.videoWidth > 0 && video.videoHeight > 0 && !video.paused && !video.ended) {
-          try {
-            const detections = faceDetector.detectForVideo(video, performance.now());
-            if (detections.detections.length > 0) {
-              setFaceDetected(true);
-              const canvas = canvasRef.current;
-              if (canvas) {
-                const ctx = canvas.getContext("2d");
-                if (ctx) {
-                  canvas.width = video.videoWidth;
-                  canvas.height = video.videoHeight;
-                  ctx.clearRect(0, 0, canvas.width, canvas.height);
-                  ctx.strokeStyle = "#39FF14";
-                  ctx.lineWidth = 4;
-                  ctx.lineJoin = "round";
-                  for (const det of detections.detections) {
-                    const box = det.boundingBox;
-                    if (box) ctx.strokeRect(box.originX, box.originY, box.width, box.height);
-                  }
-                }
-              }
-            } else {
-              setFaceDetected(false);
-              const ctx = canvasRef.current?.getContext("2d");
-              if (ctx) ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
-            }
-          } catch (err) {
-             console.error("MediaPipe Detection Error:", err);
-          }
-        }
-      }
-      animationId = requestAnimationFrame(track);
-    }
-
-    if (cameraActive) track();
-    return () => cancelAnimationFrame(animationId);
-  }, [faceDetector, cameraActive, loading, step]);
-
-  // Capture face biometric data
-  const captureBiometric = async () => {
-    if (!videoRef.current) return
-    
+  // Passkey Registration Flow
+  const setupPasskey = async () => {
     setLoading(true)
     setError("")
     
     try {
-      const detections = await faceapi
-        .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 }))
-        .withFaceLandmarks()
-        .withFaceDescriptors()
+      // 1. Get options from server
+      const optionsRes = await fetch("/api/security/passkey/register-options")
+      const options = await optionsRes.json()
       
-      if (detections.length === 0) {
-        setError("No face detected. Please ensure your face is clearly visible.")
-        setLoading(false)
-        return
-      }
+      if (options.error) throw new Error(options.error)
       
-      if (detections.length > 1) {
-        setError("Multiple faces detected. Please ensure only your face is visible.")
-        setLoading(false)
-        return
-      }
+      // 2. Start biometric registration on device
+      const regResponse = await startRegistration(options)
       
-      // Collect multiple descriptors for better accuracy
-      const descriptors = [...faceDescriptors, detections[0].descriptor]
-      setFaceDescriptors(descriptors)
+      // 3. Verify with server
+      const verifyRes = await fetch("/api/security/passkey/register-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(regResponse),
+      })
       
-      if (descriptors.length >= 3) {
-        // Save biometric data to database
-        const response = await fetch("/api/security/save-biometric", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            faceDescriptor: Array.from(descriptors[0]), // Use the first one as reference
-            clerkId: user?.id
-          })
-        })
-        
-        if (response.ok) {
-          setBiometricSetup(true)
-          stopCamera()
-          setStep("2fa")
-        } else {
-          setError("Failed to save biometric data. Please try again.")
-        }
+      const verification = await verifyRes.json()
+      
+      if (verification.verified) {
+        setPasskeyComplete(true)
+        toast.success("Biometric enrollment successful")
+        setStep("2fa")
       } else {
-        setError(`Face captured ${descriptors.length}/3. Please capture from different angles.`)
+        throw new Error(verification.error || "Verification failed")
       }
-    } catch (err) {
-      setError("Failed to capture biometric data. Please try again.")
-      console.error(err)
+    } catch (err: any) {
+      console.error("Passkey Error:", err)
+      setError(err.message || "Credential registration failed. Please try again.")
+    } finally {
+      setLoading(false)
     }
-    
-    setLoading(false)
   }
 
-  // Stop camera
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
-      streamRef.current = null
+  // Master PIN Flow
+  const setupPin = async () => {
+    if (pin.length < 4) {
+      setError("PIN must be at least 4 digits")
+      return
     }
-    setCameraActive(false)
+    if (pin !== confirmPin) {
+      setError("PINs do not match")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch("/api/security/save-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, clerkId: user?.id }),
+      })
+      
+      if (res.ok) {
+        setPinComplete(true)
+        toast.success("Security PIN synchronized")
+        setStep("2fa")
+      } else {
+        setError("Failed to save PIN protocol")
+      }
+    } catch (err) {
+      setError("Network protocol failure")
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Setup 2FA
@@ -357,176 +265,180 @@ export default function SecuritySetupPage() {
               <Shield className="w-10 h-10 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold mb-2">Security First</h2>
+              <h2 className="text-3xl font-bold mb-2">Omni Vault Protection</h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Protect your account with multi-layer security
+                Replace passwords with secure device biometrics
               </p>
             </div>
             <div className="grid gap-4 max-w-md mx-auto text-left">
-              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-surface-border">
                 <Fingerprint className="w-6 h-6 text-blue-600 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold mb-1">Biometric Face Recognition</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Scan your face for secure login verification
+                  <h3 className="font-semibold mb-1 italic">Biometric Identity</h3>
+                  <p className="text-[11px] text-gray-600 dark:text-gray-400 uppercase tracking-tight">
+                    Use your phone's fingerprint or FaceID. Biometric data never leaves your device.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <Key className="w-6 h-6 text-blue-600 mt-0.5" />
-                <div>
-                  <h3 className="font-semibold mb-1">Two-Factor Authentication</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Add an extra layer with time-based codes
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-surface-border">
                 <Lock className="w-6 h-6 text-blue-600 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold mb-1">Continuous Verification</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Required for all sensitive actions
+                  <h3 className="font-semibold mb-1 italic">90-Strong Encryption</h3>
+                  <p className="text-[11px] text-gray-600 dark:text-gray-400 uppercase tracking-tight">
+                    Endpoints are secured using hardware-level cryptographic keys.
                   </p>
                 </div>
               </div>
             </div>
             <button
-              onClick={() => setStep("biometric")}
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
+              onClick={() => setStep("select-method")}
+              className="px-12 py-4 bg-primary text-black rounded-2xl hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-[0.2em] text-xs shadow-xl"
             >
-              Begin Security Setup
+              Initialize Setup →
             </button>
           </motion.div>
         )
       
-      case "biometric":
+      case "select-method":
         return (
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-6"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center space-y-8"
           >
-            <div className="text-center">
-              <Camera className="w-16 h-16 mx-auto mb-4 text-blue-600" />
-              <h2 className="text-2xl font-bold mb-2">Face Recognition Setup</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Position your face in the frame. We'll capture 3 angles for accuracy.
+            <h2 className="text-2xl font-black uppercase tracking-tighter">Select Verification Protocol</h2>
+            {!passkeySupported && (
+               <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl text-orange-500 text-[10px] font-bold uppercase tracking-widest mb-4">
+                  ⚠️ This browser does not support Biometric APIs
+               </div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
+              <button
+                disabled={!passkeySupported}
+                onClick={() => setStep("passkey")}
+                className={`p-8 rounded-3xl border-2 transition-all flex flex-col items-center gap-4 group ${
+                  passkeySupported ? 'border-surface-border bg-surface hover:border-primary/50' : 'opacity-50 grayscale border-dashed'
+                }`}
+              >
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Fingerprint className="w-8 h-8 text-primary" />
+                </div>
+                <div className="text-center">
+                  <span className="block font-black uppercase italic text-sm">Fingerprint</span>
+                  <span className="text-[9px] text-foreground/40 font-bold uppercase tracking-widest">Recommended for Mobile</span>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setStep("pin")}
+                className="p-8 rounded-3xl border-2 border-surface-border bg-surface hover:border-blue-500/50 transition-all flex flex-col items-center gap-4 group"
+              >
+                <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Lock className="w-8 h-8 text-blue-500" />
+                </div>
+                <div className="text-center">
+                  <span className="block font-black uppercase italic text-sm">Master PIN</span>
+                  <span className="text-[9px] text-foreground/40 font-bold uppercase tracking-widest">Recommended for Desktop</span>
+                </div>
+              </button>
+            </div>
+          </motion.div>
+        )
+
+      case "passkey":
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center space-y-8"
+          >
+            <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mx-auto animate-pulse">
+              <Scan className="w-12 h-12 text-primary" />
+            </div>
+            <div className="max-w-xs mx-auto">
+              <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">Biometric Enrollment</h2>
+              <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest leading-loose">
+                Prepare your device fingerprint or face scanner. You will be prompted by your browser to create a secure credential.
               </p>
             </div>
             
-            <div className="relative max-w-2xl mx-auto">
-              <div className="aspect-video bg-black rounded-[2rem] overflow-hidden relative group border-2 border-surface-border">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-700 transform scale-x-[-1]"
-                />
-                <canvas
-                  ref={canvasRef}
-                  className="absolute top-0 left-0 w-full h-full transform scale-x-[-1] z-20"
-                />
-                
-                {cameraActive && (
-                  <div className="absolute inset-0 pointer-events-none">
-                    {/* Corner Crosshairs */}
-                    <div className="absolute top-6 left-6 w-10 h-10 border-t-2 border-l-2 border-primary/40" />
-                    <div className="absolute top-6 right-6 w-10 h-10 border-t-2 border-r-2 border-primary/40" />
-                    <div className="absolute bottom-6 left-6 w-10 h-10 border-b-2 border-l-2 border-primary/40" />
-                    <div className="absolute bottom-6 right-6 w-10 h-10 border-b-2 border-r-2 border-primary/40" />
-                    
-                    {/* Scanning Line */}
-                    <AnimatePresence>
-                      {faceDetected && !loading && (
-                        <motion.div 
-                          initial={{ top: '0%' }}
-                          animate={{ top: '100%' }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                          className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_15px_var(--primary-glow)] z-10"
-                        />
-                      )}
-                    </AnimatePresence>
-
-                    {/* Hacker HUD Info */}
-                    <div className="absolute bottom-8 left-8 text-left font-mono text-[10px] text-primary/60 space-y-1.5 z-30">
-                        <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${faceDetected ? 'bg-primary' : 'bg-red-500'} animate-pulse`} />
-                            <span>STATUS: {faceDetected ? 'ENROLLMENT_LOCKED' : 'WAITING_FOR_TARGET'}</span>
-                        </div>
-                        <div>CRYPTO_TOKEN: {user?.id?.slice(0, 12)}...</div>
-                        <div>SAMPLING_RATE: 60FPS</div>
-                    </div>
-                  </div>
-                )}
-
-                {!cameraActive && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm z-30">
-                    <button
-                      onClick={startCamera}
-                      className="px-8 py-4 bg-primary text-black rounded-2xl hover:bg-primary/90 transition-all font-black uppercase tracking-widest text-xs shadow-xl active:scale-95"
-                    >
-                      <Camera className="w-5 h-5 inline mr-2" />
-                      Initialize Optic Feed
-                    </button>
-                  </div>
-                )}
-                
-                <div className="absolute inset-0 pointer-events-none border-[30px] border-black/40 rounded-[2rem]"></div>
-              </div>
-              
-              <AnimatePresence>
-                {faceDetected && (
-                  <motion.div 
-                    initial={{ scale: 0, x: 20 }}
-                    animate={{ scale: 1, x: 0 }}
-                    exit={{ scale: 0, x: 20 }}
-                    className="absolute top-6 right-6 bg-[#39FF14] text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-[0_0_20px_rgba(57,255,20,0.4)] z-40"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    Face Acquired
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              
-              <AnimatePresence>
-                {faceDescriptors.length > 0 && (
-                  <motion.div 
-                    initial={{ scale: 0, x: -20 }}
-                    animate={{ scale: 1, x: 0 }}
-                    className="absolute top-6 left-6 bg-white text-black px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest z-40 shadow-xl"
-                  >
-                    Samples: {faceDescriptors.length}/3
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            
             {error && (
-              <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg">
-                <AlertCircle className="w-5 h-5" />
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-[10px] font-bold uppercase tracking-widest">
                 {error}
               </div>
             )}
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={setupPasskey}
+                disabled={loading}
+                className="px-12 py-4 bg-primary text-black rounded-2xl transition-all font-black uppercase tracking-[0.2em] text-xs shadow-[0_0_30px_var(--primary-glow)] disabled:opacity-50"
+              >
+                {loading ? "Waiting for Device..." : "Activate Biometrics →"}
+              </button>
+              <button onClick={() => setStep("select-method")} className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/20 hover:text-foreground transition-colors">
+                Back to Protocol Selection
+              </button>
+            </div>
+          </motion.div>
+        )
+
+      case "pin":
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center space-y-8"
+          >
+            <div className="w-24 h-24 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto">
+              <Key className="w-12 h-12 text-blue-500" />
+            </div>
+            <div className="max-w-xs mx-auto">
+              <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">Master PIN Protocol</h2>
+              <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest">
+                Set a secure PIN for secondary verification on desktop devices.
+              </p>
+            </div>
+
+            <div className="space-y-4 max-w-sm mx-auto">
+              <div>
+                <input
+                  type="password"
+                  placeholder="ENTER NEW PIN"
+                  className="w-full bg-surface border-2 border-surface-border rounded-xl px-4 py-4 text-center text-3xl font-black tracking-[1em] focus:border-blue-500 outline-none"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                />
+              </div>
+              <div>
+                <input
+                  type="password"
+                  placeholder="CONFIRM PIN"
+                  className="w-full bg-surface border-2 border-surface-border rounded-xl px-4 py-4 text-center text-3xl font-black tracking-[1em] focus:border-blue-500 outline-none"
+                  value={confirmPin}
+                  onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                />
+              </div>
+            </div>
             
-            {cameraActive && (
-              <div className="flex gap-4 justify-center">
-                <button
-                  onClick={captureBiometric}
-                  disabled={!faceDetected || loading}
-                  className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? "Capturing..." : `Capture Face ${faceDescriptors.length > 0 ? `(${faceDescriptors.length}/3)` : ""}`}
-                </button>
-                <button
-                  onClick={stopCamera}
-                  className="px-8 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-semibold"
-                >
-                  Cancel
-                </button>
+            {error && (
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-[10px] font-bold uppercase tracking-widest">
+                {error}
               </div>
             )}
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={setupPin}
+                disabled={loading || pin.length < 4}
+                className="px-12 py-4 bg-blue-600 text-white rounded-2xl transition-all font-black uppercase tracking-[0.2em] text-xs shadow-xl disabled:opacity-50"
+              >
+                {loading ? "Encrypting..." : "Lock In PIN →"}
+              </button>
+              <button onClick={() => setStep("select-method")} className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground/20 hover:text-foreground transition-colors">
+                Back to Selection
+              </button>
+            </div>
           </motion.div>
         )
       
@@ -538,10 +450,10 @@ export default function SecuritySetupPage() {
             className="space-y-6 max-w-lg mx-auto"
           >
             <div className="text-center">
-              <Key className="w-16 h-16 mx-auto mb-4 text-blue-600" />
-              <h2 className="text-2xl font-bold mb-2">Two-Factor Authentication</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Add an authenticator app for additional security
+              <Smartphone className="w-16 h-16 mx-auto mb-4 text-primary" />
+              <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">Authenticator App</h2>
+              <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest leading-loose">
+                Scan this code with Google Authenticator or Authy.
               </p>
             </div>
             
@@ -549,47 +461,40 @@ export default function SecuritySetupPage() {
               <button
                 onClick={setup2FA}
                 disabled={loading}
-                className="w-full px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50"
+                className="w-full px-8 py-4 bg-surface border-2 border-surface-border text-foreground rounded-2xl hover:border-primary transition-all font-black uppercase tracking-widest text-xs disabled:opacity-50"
               >
-                {loading ? "Generating..." : "Generate 2FA Setup"}
+                {loading ? "Generating Payload..." : "Request 2FA Key"}
               </button>
             ) : (
               <div className="space-y-6">
-                <div className="bg-white p-6 rounded-lg border-2 border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                    Scan this QR code with Google Authenticator, Authy, or similar app:
-                  </p>
-                  <img src={qrCodeUrl} alt="2FA QR Code" className="mx-auto w-64 h-64" />
-                  <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-900 rounded font-mono text-sm text-center break-all">
-                    {secret}
+                <div className="bg-white p-6 rounded-[2rem] border-2 border-surface-border dark:bg-black">
+                  <img src={qrCodeUrl} alt="2FA QR Code" className="mx-auto w-64 h-64 mix-blend-multiply dark:mix-blend-normal" />
+                  <div className="mt-4 p-3 bg-surface rounded-xl font-mono text-[10px] text-center break-all text-foreground/40 uppercase tracking-tighter">
+                    BACKUP KEY: {secret}
                   </div>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-semibold mb-2">
-                    Enter 6-digit code from your authenticator app:
-                  </label>
+                <div className="relative">
                   <input
                     type="text"
                     maxLength={6}
                     value={verificationCode}
                     onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
-                    placeholder="000000"
-                    className="w-full px-4 py-3 border rounded-lg text-center text-2xl font-mono tracking-widest"
+                    placeholder="000 000"
+                    className="w-full px-4 py-6 bg-surface border-2 border-surface-border rounded-2xl text-center text-4xl font-black tracking-[0.5em] focus:border-primary outline-none"
                   />
+                  {!verificationCode && <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-foreground/10 text-xs font-black uppercase tracking-[0.4em]">Verification Code</div>}
                 </div>
                 
                 {backupCodes.length > 0 && (
-                  <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                    <h3 className="font-semibold mb-2 text-yellow-900 dark:text-yellow-200">
-                      ⚠️ Save These Backup Codes
+                  <div className="bg-orange-500/5 p-6 rounded-2xl border border-orange-500/20">
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-4 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4" />
+                      Protocol Recovery Keys
                     </h3>
-                    <p className="text-sm text-yellow-800 dark:text-yellow-300 mb-3">
-                      Store these codes securely. You can use them if you lose access to your authenticator.
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 font-mono text-sm">
+                    <div className="grid grid-cols-2 gap-2 font-mono text-[10px]">
                       {backupCodes.map((code, i) => (
-                        <div key={i} className="bg-white dark:bg-gray-800 p-2 rounded text-center">
+                        <div key={i} className="bg-surface p-2 rounded-lg text-center font-black text-foreground/60 border border-surface-border">
                           {code}
                         </div>
                       ))}
@@ -598,8 +503,7 @@ export default function SecuritySetupPage() {
                 )}
                 
                 {error && (
-                  <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg">
-                    <AlertCircle className="w-5 h-5" />
+                  <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-[10px] font-bold uppercase tracking-widest">
                     {error}
                   </div>
                 )}
@@ -607,9 +511,9 @@ export default function SecuritySetupPage() {
                 <button
                   onClick={verify2FA}
                   disabled={verificationCode.length !== 6 || loading}
-                  className="w-full px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-8 py-5 bg-primary text-black rounded-2xl transition-all font-black uppercase tracking-[0.2em] text-xs shadow-xl disabled:opacity-50"
                 >
-                  {loading ? "Verifying..." : "Verify & Complete"}
+                  {loading ? "Authenticating..." : "Authorize Identity →"}
                 </button>
               </div>
             )}
@@ -621,44 +525,37 @@ export default function SecuritySetupPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center space-y-6"
+            className="text-center space-y-8"
           >
-            <div className="w-24 h-24 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-12 h-12 text-green-600 dark:text-green-400" />
+            <div className="w-24 h-24 bg-[#39FF14]/20 rounded-full flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(57,255,20,0.2)]">
+              <CheckCircle2 className="w-12 h-12 text-[#39FF14]" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold mb-2">Security Setup Complete!</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Your account is now protected with multi-layer security
+              <h2 className="text-4xl font-black uppercase tracking-tighter mb-2 italic">Vault Locked</h2>
+              <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest italic">
+                Your campus identity is now cryptographically secured.
               </p>
             </div>
-            <div className="grid gap-3 max-w-md mx-auto">
-              <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/10 rounded-lg">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                <span className="font-semibold">Face Recognition Enabled</span>
+            <div className="grid gap-3 max-w-sm mx-auto">
+              <div className="flex items-center gap-3 p-4 bg-surface rounded-2xl border border-surface-border">
+                <CheckCircle2 className="w-5 h-5 text-[#39FF14]" />
+                <span className="text-[10px] font-black uppercase tracking-widest">{passkeyComplete ? 'Hardware Biometric Active' : 'Master PIN Active'}</span>
               </div>
-              <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/10 rounded-lg">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                <span className="font-semibold">Two-Factor Authentication Active</span>
+              <div className="flex items-center gap-3 p-4 bg-surface rounded-2xl border border-surface-border">
+                <CheckCircle2 className="w-5 h-5 text-[#39FF14]" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Two-Factor Encryption Active</span>
               </div>
             </div>
             <button
               onClick={completeSetup}
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
+              className="px-12 py-5 bg-primary text-black rounded-2xl transition-all font-black uppercase tracking-[0.2em] text-xs shadow-lg hover:scale-105 active:scale-95"
             >
-              Continue to Dashboard
+              Enter Marketplace →
             </button>
           </motion.div>
         )
     }
   }
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopCamera()
-    }
-  }, [])
 
   if (!isLoaded) {
     return (

@@ -67,6 +67,8 @@ model User {
   faceDescriptor       Json?     // Stores face recognition data
   hasPasskey           Boolean   @default(false)
   passkeys             Authenticator[]
+  currentChallenge     String?   // Temporary WebAuthn challenge
+  securityPin          String?   // Hashed Master PIN
   lastSecurityCheck    DateTime  @default(now())
   securitySetupComplete Boolean  @default(false)
   mfaBackupCodes       String[]  @default([]) // Encrypted backup codes
