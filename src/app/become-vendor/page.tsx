@@ -162,8 +162,6 @@ export default function BecomeVendorPage() {
                     </div>
                 </div>
             </div>
-                </div>
-            </div>
 
             {/* Benefits */}
             <div className="bg-surface py-20 px-4">
@@ -326,6 +324,10 @@ export default function BecomeVendorPage() {
                     </p>
                 </div>
             </div>
+        </div>
+    );
+}
+
 // Sub-components for Dynamic Experience
 function BenefitCard({ icon, title, description }: { icon: string; title: string; description: string }) {
   return (
