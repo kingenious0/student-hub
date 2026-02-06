@@ -1,6 +1,14 @@
 {
   "commits": [
     {
+      "hash": "47007cca62d389abe2eaad17f390dbf81483ffe1",
+      "message": "[autopilot] feat(navbar): Hide navbar on auth and onboarding",
+      "files": [
+        "rc/components/navigation/Navbar.tsx"
+      ],
+      "timestamp": "2026-02-06T16:14:37.755Z"
+    },
+    {
       "hash": "46d0322143622313060e316cdc73bdf5e732e300",
       "message": "[autopilot] build(config): Update tsconfig.json",
       "files": [
