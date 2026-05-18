@@ -13,7 +13,6 @@ import * as React from "react";
 import { useScroll, useTransform } from "framer-motion";
 
 export default function Home() {
-  const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
   const heroRef = React.useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
   
@@ -22,71 +21,49 @@ export default function Home() {
   const contentY = useTransform(scrollY, [0, 500], [0, 50]);
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
+  // High performance tracking using raw style mutation instead of forcing full-page React re-renders at 60fps
   const handleMouseMove = (e: React.MouseEvent) => {
     if (heroRef.current) {
       const rect = heroRef.current.getBoundingClientRect();
-      setMousePos({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      heroRef.current.style.setProperty('--mouse-x', `${x}px`);
+      heroRef.current.style.setProperty('--mouse-y', `${y}px`);
     }
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-500 overflow-x-hidden selection:bg-primary selection:text-primary-foreground relative">
       
-      {/* 0. GLOBAL BACKGROUND PARTICLES */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-         {[...Array(6)].map((_, i) => (
-           <motion.div
-             key={i}
-             animate={{
-               y: [0, -100, 0],
-               x: [0, 50, 0],
-               opacity: [0.03, 0.08, 0.03],
-               scale: [1, 1.2, 1]
-             }}
-             transition={{
-               duration: 10 + i * 2,
-               repeat: Infinity,
-               ease: "easeInOut"
-             }}
-             className="absolute w-64 h-64 bg-primary/10 rounded-full blur-[80px]"
-             style={{
-               top: `${Math.random() * 100}%`,
-               left: `${Math.random() * 100}%`,
-             }}
-           />
-         ))}
+      {/* 0. GLOBAL BACKGROUND PARTICLES - Optimized CSS animations to prevent CPU redraws & hydration mismatches */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30 md:opacity-100">
+        <div className="absolute w-[350px] h-[350px] bg-primary/5 rounded-full blur-[100px] top-[15%] left-[10%] animate-pulse" style={{ animationDuration: '10s' }} />
+        <div className="absolute w-[400px] h-[400px] bg-primary/5 rounded-full blur-[120px] top-[55%] right-[5%] animate-pulse" style={{ animationDuration: '14s' }} />
+        <div className="absolute w-[320px] h-[320px] bg-primary/5 rounded-full blur-[90px] bottom-[15%] left-[20%] animate-pulse" style={{ animationDuration: '12s' }} />
       </div>
 
       {/* 1. PREMIUM DYNAMIC HERO */}
       <motion.div 
         ref={heroRef}
         onMouseMove={handleMouseMove}
-        style={{ y: heroY }}
+        style={{ y: heroY, willChange: 'transform' }}
         className="relative pt-32 pb-24 px-4 overflow-hidden group/hero z-10"
       >
-        {/* Dynamic Animated Background - Optimized Surface */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-400 via-rose-600 to-[#0a0a0a]">
-           <motion.div 
-             animate={{ 
-               scale: [1, 1.5, 1],
-               rotate: [0, 180, 0],
-             }}
-             transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-             className="absolute -top-1/4 -left-1/4 w-[120%] h-[120%] bg-orange-600 rounded-full blur-[180px] opacity-30 mix-blend-screen"
-           />
-           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.15] mix-blend-overlay" />
+        {/* Premium Dark Minimalist Background - Apple/Stripe Aesthetic */}
+        <div className="absolute inset-0 bg-[#09090b]">
+           {/* Single Elegant Static Radial Glow - 0% CPU/GPU overhead, highly sophisticated */}
+           <div className="absolute top-[-20%] left-[15%] w-[70%] h-[80%] rounded-full bg-gradient-to-br from-orange-500/15 via-rose-600/10 to-transparent blur-[130px] pointer-events-none" />
+           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.08] mix-blend-overlay pointer-events-none" />
            
-           {/* Interactive Glow Follower */}
-           <motion.div 
-             className="absolute pointer-events-none w-[800px] h-[800px] bg-white opacity-0 group-hover/hero:opacity-[0.07] rounded-full blur-[150px] transition-opacity duration-700"
-             animate={{
-               x: mousePos.x - 400,
-               y: mousePos.y - 400,
+           {/* Interactive Glow Follower - High performance translation using direct CSS variables (0 React re-renders) */}
+           <div 
+             className="absolute pointer-events-none w-[350px] h-[350px] bg-white opacity-0 group-hover/hero:opacity-[0.05] rounded-full blur-[80px] transition-opacity duration-700 hidden md:block"
+             style={{
+               left: '0px',
+               top: '0px',
+               transform: 'translate3d(calc(var(--mouse-x, 0px) - 175px), calc(var(--mouse-y, 0px) - 175px), 0)',
+               willChange: 'transform',
              }}
-             transition={{ type: "spring", damping: 40, stiffness: 80 }}
            />
         </div>
 
@@ -111,31 +88,31 @@ export default function Home() {
 
             {/* Main Headline */}
             <motion.div
-              style={{ y: contentY, opacity }}
+              style={{ y: contentY, opacity, willChange: 'transform, opacity' }}
               className="mb-8 relative"
             >
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-[12vw] md:text-[14rem] font-black text-white tracking-tighter leading-[0.75] italic uppercase select-none drop-shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+                className="text-[12vw] md:text-[14rem] font-black text-white tracking-tighter leading-[0.75] italic uppercase select-none"
+                style={{ 
+                  textShadow: '0 8px 24px rgba(0,0,0,0.2)', 
+                  willChange: 'transform, opacity' 
+                }}
               >
                 Zero<br className="md:hidden" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-white/50 to-transparent">Limits</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">Limits</span>
               </motion.h1>
               
+              {/* Premium Static tilted badge - Animates smoothly only on hover, eliminating background CPU render overhead */}
               <motion.div 
-                initial={{ rotate: 15, scale: 0 }}
-                animate={{ 
-                  rotate: [-12, -8, -12],
-                  scale: [1, 1.1, 1]
-                }}
-                transition={{ 
-                  rotate: { duration: 4, repeat: Infinity, ease: "easeInOut" },
-                  scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                  initial: { type: "spring", delay: 1 }
-                }}
-                className="absolute -top-10 -right-10 md:top-0 md:right-0 bg-[#39FF14] text-black px-6 py-3 rounded-2xl font-black text-2xl md:text-4xl shadow-[0_0_50px_rgba(57,255,20,0.5)] border-4 border-black z-20 cursor-default hover:scale-125 transition-transform"
+                initial={{ opacity: 0, scale: 0, rotate: -6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", delay: 0.8 }}
+                whileHover={{ scale: 1.1, rotate: -2 }}
+                className="absolute -top-10 -right-10 md:top-0 md:right-0 bg-[#39FF14] text-black px-6 py-3 rounded-2xl font-black text-2xl md:text-4xl shadow-[0_8px_20px_rgba(57,255,20,0.25)] border-4 border-black z-20 cursor-default transition-all duration-300 -rotate-6"
+                style={{ willChange: 'transform' }}
               >
                 60% OFF
               </motion.div>
