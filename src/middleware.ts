@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isAdminRoute = createRouteMatcher(['/dashboard/admin(.*)', '/admin(.*)', '/api/admin(.*)']);
-const isPublicRoute = createRouteMatcher(['/', '/sign-in(.*)', '/sign-up(.*)', '/verify', '/api/system/config(.*)', '/omni-gate', '/command-center-z', '/marketplace(.*)', '/products(.*)', '/cart(.*)', '/stories(.*)', '/search(.*)', '/category(.*)', '/become-vendor']);
+const isPublicRoute = createRouteMatcher(['/', '/sign-in(.*)', '/sign-up(.*)', '/verify', '/api/system/config(.*)', '/omni-gate', '/command-center-z', '/marketplace(.*)', '/products(.*)', '/cart(.*)', '/stories(.*)', '/search(.*)', '/category(.*)', '/become-vendor', '/api/marketplace(.*)', '/api/products(.*)', '/api/category(.*)', '/security-setup', '/api/security(.*)']);
 const isIdentityRoute = createRouteMatcher(['/onboarding(.*)', '/api/auth/onboard(.*)', '/api/auth/sync(.*)', '/api/users/me(.*)', '/api/runner(.*)', '/api/orders(.*)', '/api/vendor(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
@@ -58,8 +58,8 @@ export default clerkMiddleware(async (auth, req) => {
         return new NextResponse(
           JSON.stringify({
             error: 'IDENTITY_VERIFICATION_REQUIRED',
-            message: 'Please complete onboarding first',
-            redirect: '/onboarding'
+            message: 'Please verify your identity',
+            redirect: '/verify'
           }),
           {
             status: 403,
@@ -68,8 +68,8 @@ export default clerkMiddleware(async (auth, req) => {
         );
       }
 
-      // For pages, redirect to onboarding
-      return NextResponse.redirect(new URL('/onboarding', req.url));
+      // For pages, redirect to verification
+      return NextResponse.redirect(new URL('/verify', req.url));
     }
   }
 

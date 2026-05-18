@@ -54,3 +54,6 @@ wrangler.toml
 /.clerk/
 
 certificates
+autopilot.log
+.autopilot.pid
+.vscode/

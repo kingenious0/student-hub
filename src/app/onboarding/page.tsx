@@ -46,8 +46,8 @@ export default function OnboardingPage() {
             }
 
             if (data.onboarded) {
-                // Already onboarded
-                window.location.href = '/';
+                // Already onboarded - Proceed to Security Check
+                window.location.href = '/security-setup';
             }
         } catch (error) {
             console.error('Status check failed');
@@ -66,7 +66,7 @@ export default function OnboardingPage() {
             });
 
             if (res.ok) {
-                window.location.href = '/';
+                window.location.href = '/security-setup';
             } else {
                 modal.alert('The onboarding protocol failed to initialize. Please verify your data and try again.', 'Handshake Failure', 'error');
             }

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useModal } from '@/context/ModalContext';
 import { toast } from 'sonner';
 import GoBack from '@/components/navigation/GoBack';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function BecomeVendorPage() {
     const { user, isLoaded } = useUser();
@@ -154,34 +155,10 @@ export default function BecomeVendorPage() {
                         How It Works
                     </h2>
                     <div className="grid md:grid-cols-4 gap-8">
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">
-                                1️⃣
-                            </div>
-                            <h3 className="font-black text-lg mb-2">Create Your Shop</h3>
-                            <p className="text-sm text-foreground/60">Fill out a simple application form</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">
-                                2️⃣
-                            </div>
-                            <h3 className="font-black text-lg mb-2">Get Approved</h3>
-                            <p className="text-sm text-foreground/60">We review within 24 hours</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">
-                                3️⃣
-                            </div>
-                            <h3 className="font-black text-lg mb-2">Add Products</h3>
-                            <p className="text-sm text-foreground/60">Upload your items with photos</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-4">
-                                4️⃣
-                            </div>
-                            <h3 className="font-black text-lg mb-2">Start Earning</h3>
-                            <p className="text-sm text-foreground/60">Get paid securely via escrow</p>
-                        </div>
+                        <StepItem num="1️⃣" title="Create Your Shop" description="Fill out a simple application form" delay={0.1} />
+                        <StepItem num="2️⃣" title="Get Approved" description="We review within 24 hours" delay={0.2} />
+                        <StepItem num="3️⃣" title="Add Products" description="Upload your items with photos" delay={0.3} />
+                        <StepItem num="4️⃣" title="Start Earning" description="Get paid securely via escrow" delay={0.4} />
                     </div>
                 </div>
             </div>
@@ -189,38 +166,34 @@ export default function BecomeVendorPage() {
             {/* Benefits */}
             <div className="bg-surface py-20 px-4">
                 <div className="max-w-6xl mx-auto">
-                    <h2 className="text-4xl font-black uppercase tracking-tighter text-center mb-16">
-                        Why Sell on Omni?
-                    </h2>
+                    <motion.h2 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        className="text-4xl font-black uppercase tracking-tighter text-center mb-16"
+                    >
+                        Why Sell on <span className="text-primary italic">Omni?</span>
+                    </motion.h2>
                     <div className="grid md:grid-cols-2 gap-8">
-                        <div className="bg-background border-2 border-surface-border rounded-3xl p-8">
-                            <div className="text-5xl mb-4">💰</div>
-                            <h3 className="text-2xl font-black mb-3">Zero Fees</h3>
-                            <p className="text-foreground/60">
-                                No listing fees, no commission. Keep 100% of your earnings after escrow release.
-                            </p>
-                        </div>
-                        <div className="bg-background border-2 border-surface-border rounded-3xl p-8">
-                            <div className="text-5xl mb-4">🔒</div>
-                            <h3 className="text-2xl font-black mb-3">Secure Payments</h3>
-                            <p className="text-foreground/60">
-                                All payments held in escrow until delivery is confirmed. Your money is safe.
-                            </p>
-                        </div>
-                        <div className="bg-background border-2 border-surface-border rounded-3xl p-8">
-                            <div className="text-5xl mb-4">🚀</div>
-                            <h3 className="text-2xl font-black mb-3">Fast Delivery</h3>
-                            <p className="text-foreground/60">
-                                Our campus runner network delivers within 15-30 minutes. Happy customers!
-                            </p>
-                        </div>
-                        <div className="bg-background border-2 border-surface-border rounded-3xl p-8">
-                            <div className="text-5xl mb-4">📊</div>
-                            <h3 className="text-2xl font-black mb-3">Vendor Dashboard</h3>
-                            <p className="text-foreground/60">
-                                Professional tools to manage products, orders, and track your earnings.
-                            </p>
-                        </div>
+                        <BenefitCard 
+                            icon="💰" 
+                            title="Zero Fees" 
+                            description="No listing fees, no commission. Keep 100% of your earnings after escrow release." 
+                        />
+                        <BenefitCard 
+                            icon="🔒" 
+                            title="Secure Payments" 
+                            description="All payments held in escrow until delivery is confirmed. Your money is safe." 
+                        />
+                        <BenefitCard 
+                            icon="🚀" 
+                            title="Fast Delivery" 
+                            description="Our campus runner network delivers within 15-30 minutes. Happy customers!" 
+                        />
+                        <BenefitCard 
+                            icon="📊" 
+                            title="Vendor Dashboard" 
+                            description="Professional tools to manage products, orders, and track your earnings." 
+                        />
                     </div>
                 </div>
             </div>
@@ -353,4 +326,37 @@ export default function BecomeVendorPage() {
             </div>
         </div>
     );
+}
+
+// Sub-components for Dynamic Experience
+function BenefitCard({ icon, title, description }: { icon: string; title: string; description: string }) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5, borderColor: 'var(--primary)' }}
+      className="bg-background border-2 border-surface-border rounded-3xl p-8 transition-colors group"
+    >
+      <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-500">{icon}</div>
+      <h3 className="text-2xl font-black mb-3 italic">{title}</h3>
+      <p className="text-foreground/50 font-medium leading-relaxed">{description}</p>
+    </motion.div>
+  )
+}
+
+function StepItem({ num, title, description, delay = 0 }: { num: string; title: string; description: string; delay?: number }) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.8 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      transition={{ delay }}
+      className="text-center group"
+    >
+      <div className="w-24 h-24 bg-gradient-to-br from-orange-500 to-red-500 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-6 shadow-xl group-hover:rotate-12 transition-transform duration-500">
+          {num}
+      </div>
+      <h3 className="font-black text-xl mb-2 tracking-tight uppercase">{title}</h3>
+      <p className="text-sm text-foreground/50 font-bold uppercase tracking-widest">{description}</p>
+    </motion.div>
+  )
 }

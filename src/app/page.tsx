@@ -3,93 +3,221 @@
 import Link from "next/link";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { SearchIcon, ShoppingCartIcon, ChevronRightIcon } from "@/components/ui/Icons";
+import { motion, AnimatePresence } from "framer-motion";
 
 import SmartFeed from "@/components/marketplace/SmartFeed";
 import GlobalSearch from "@/components/navigation/GlobalSearch";
 import { Suspense } from "react";
 import RefreshButton from "@/components/ui/RefreshButton";
 import * as React from "react";
+import { useScroll, useTransform } from "framer-motion";
 
 export default function Home() {
-  return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-500">
+  const heroRef = React.useRef<HTMLDivElement>(null);
+  const { scrollY } = useScroll();
+  
+  // Parallax values for hero elements
+  const heroY = useTransform(scrollY, [0, 500], [0, -100]);
+  const contentY = useTransform(scrollY, [0, 500], [0, 50]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
 
-      {/* 1. PROMO HERO BANNER - Jumia Style */}
-      <div className="relative bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 pt-32 pb-8 px-4">
-        {/* Animated Background - Isolated Overflow */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-300 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          </div>
+  // High performance tracking using raw style mutation instead of forcing full-page React re-renders at 60fps
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (heroRef.current) {
+      const rect = heroRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      heroRef.current.style.setProperty('--mouse-x', `${x}px`);
+      heroRef.current.style.setProperty('--mouse-y', `${y}px`);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-500 overflow-x-hidden selection:bg-primary selection:text-primary-foreground relative">
+      
+      {/* 0. GLOBAL BACKGROUND PARTICLES - Optimized CSS animations to prevent CPU redraws & hydration mismatches */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30 md:opacity-100">
+        <div className="absolute w-[350px] h-[350px] bg-primary/5 rounded-full blur-[100px] top-[15%] left-[10%] animate-pulse" style={{ animationDuration: '10s' }} />
+        <div className="absolute w-[400px] h-[400px] bg-primary/5 rounded-full blur-[120px] top-[55%] right-[5%] animate-pulse" style={{ animationDuration: '14s' }} />
+        <div className="absolute w-[320px] h-[320px] bg-primary/5 rounded-full blur-[90px] bottom-[15%] left-[20%] animate-pulse" style={{ animationDuration: '12s' }} />
+      </div>
+
+      {/* 1. PREMIUM DYNAMIC HERO */}
+      <motion.div 
+        ref={heroRef}
+        onMouseMove={handleMouseMove}
+        style={{ y: heroY, willChange: 'transform' }}
+        className="relative pt-32 pb-24 px-4 overflow-hidden group/hero z-10"
+      >
+        {/* Premium Dark Minimalist Background - Apple/Stripe Aesthetic */}
+        <div className="absolute inset-0 bg-[#09090b]">
+           {/* Single Elegant Static Radial Glow - 0% CPU/GPU overhead, highly sophisticated */}
+           <div className="absolute top-[-20%] left-[15%] w-[70%] h-[80%] rounded-full bg-gradient-to-br from-orange-500/15 via-rose-600/10 to-transparent blur-[130px] pointer-events-none" />
+           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.08] mix-blend-overlay pointer-events-none" />
+           
+           {/* Interactive Glow Follower - High performance translation using direct CSS variables (0 React re-renders) */}
+           <div 
+             className="absolute pointer-events-none w-[350px] h-[350px] bg-white opacity-0 group-hover/hero:opacity-[0.05] rounded-full blur-[80px] transition-opacity duration-700 hidden md:block"
+             style={{
+               left: '0px',
+               top: '0px',
+               transform: 'translate3d(calc(var(--mouse-x, 0px) - 175px), calc(var(--mouse-y, 0px) - 175px), 0)',
+               willChange: 'transform',
+             }}
+           />
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          {/* Main Promo */}
-          <div className="text-center mb-8">
-            <div className="inline-block bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full mb-4">
-              <span className="text-white font-black text-sm uppercase tracking-widest">🔥 Campus Flash Sale</span>
-            </div>
-            <h1 className="text-5xl md:text-7xl font-black text-white mb-3 tracking-tighter drop-shadow-lg">
-              Up to 60% OFF
-            </h1>
-            <p className="text-white/90 text-lg md:text-xl font-bold mb-6">
-              On Food, Tech & Fashion • Limited Time Only!
-            </p>
-            <Link href="/deals" className="inline-block bg-white text-orange-600 px-8 py-4 rounded-full font-black uppercase tracking-widest text-sm hover:scale-105 active:scale-95 transition-transform shadow-2xl">
-              Shop Deals Now →
-            </Link>
-          </div>
+          <div className="flex flex-col items-center text-center">
+            {/* Tagline */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-2xl px-6 py-2.5 rounded-full border border-white/10 mb-8"
+            >
+              <div className="flex -space-x-3">
+                {[1,2,3,4].map(i => (
+                  <div key={i} className="w-7 h-7 rounded-full border-2 border-[#0a0a0a] bg-gray-800 overflow-hidden shadow-xl">
+                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+50}`} alt="user" />
+                  </div>
+                ))}
+              </div>
+              <span className="text-white text-xs font-black uppercase tracking-[0.2em]">Verified Campus Vibes</span>
+            </motion.div>
 
-          {/* Quick Search Bar */}
-          <div className="max-w-2xl mx-auto">
-            {/* Quick Search Bar */}
-            <div className="max-w-2xl mx-auto">
-              <GlobalSearch variant="hero" />
-            </div>
+            {/* Main Headline */}
+            <motion.div
+              style={{ y: contentY, opacity, willChange: 'transform, opacity' }}
+              className="mb-8 relative"
+            >
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="text-[12vw] md:text-[14rem] font-black text-white tracking-tighter leading-[0.75] italic uppercase select-none"
+                style={{ 
+                  textShadow: '0 8px 24px rgba(0,0,0,0.2)', 
+                  willChange: 'transform, opacity' 
+                }}
+              >
+                Zero<br className="md:hidden" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">Limits</span>
+              </motion.h1>
+              
+              {/* Premium Static tilted badge - Animates smoothly only on hover, eliminating background CPU render overhead */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0, rotate: -6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", delay: 0.8 }}
+                whileHover={{ scale: 1.1, rotate: -2 }}
+                className="absolute -top-10 -right-10 md:top-0 md:right-0 bg-[#39FF14] text-black px-6 py-3 rounded-2xl font-black text-2xl md:text-4xl shadow-[0_8px_20px_rgba(57,255,20,0.25)] border-4 border-black z-20 cursor-default transition-all duration-300 -rotate-6"
+                style={{ willChange: 'transform' }}
+              >
+                60% OFF
+              </motion.div>
+            </motion.div>
+
+            {/* Description */}
+            <motion.p 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="text-white/40 text-xl md:text-3xl font-bold mb-14 max-w-2xl leading-none tracking-tight"
+            >
+              The digital hub for the <span className="text-white">AAMUSTED</span> underground economy.
+            </motion.p>
+
+            {/* CTA Button with Liquid Gradient */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1 }}
+            >
+               <Link href="/deals" className="relative group px-12 py-6 rounded-[2rem] bg-white text-black font-black uppercase tracking-[0.3em] text-xs transition-all overflow-hidden inline-block active:scale-95">
+                  <span className="relative z-10">Start Digging Deals →</span>
+                  <motion.div 
+                    animate={{ x: ['100%', '-100%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent skew-x-12"
+                  />
+               </Link>
+            </motion.div>
+
+            {/* Search Integration with 3D Physics */}
+            <motion.div 
+              whileHover={{ rotateX: 5, rotateY: -5 }}
+              style={{ perspective: 1200 }}
+              className="w-full max-w-4xl mt-20"
+            >
+              <motion.div 
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2, type: "spring" }}
+                className="glass-strong p-3 rounded-[3rem] shadow-[0_80px_160px_-40px_rgba(0,0,0,0.8)] border border-white/5"
+              >
+                <GlobalSearch variant="hero" />
+              </motion.div>
+            </motion.div>
           </div>
         </div>
-      </div>
 
-      {/* 2. QUICK CATEGORIES - Clean Grid */}
-      <div className="bg-background border-b border-surface-border">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
-            <QuickCategoryCard href="/category/food" icon="🍔" label="Food" />
-            <QuickCategoryCard href="/category/tech" icon="📱" label="Tech" />
-            <QuickCategoryCard href="/category/fashion" icon="👟" label="Fashion" />
-            <QuickCategoryCard href="/category/books" icon="📚" label="Books" />
-            <QuickCategoryCard href="/category/services" icon="✂️" label="Services" />
-            <QuickCategoryCard href="/category/beauty" icon="💄" label="Beauty" />
-            <QuickCategoryCard href="/category/lifestyle" icon="🧘" label="Vibe" />
-            <QuickCategoryCard href="/category/more" icon="+" label="More" />
+        {/* Dynamic Floating Elements with Parallax */}
+        <div className="absolute inset-0 pointer-events-none hidden lg:block overflow-hidden">
+           <FloatingIcon icon="👟" className="top-1/4 left-[5%]" delay={0.5} depth={0.2} />
+           <FloatingIcon icon="⚡" className="top-1/2 right-[5%]" delay={2.5} depth={-0.1} />
+           <FloatingIcon icon="🔥" className="bottom-1/4 left-[10%]" delay={1.8} depth={0.3} />
+           <FloatingIcon icon="🛸" className="bottom-1/2 right-[8%]" delay={3.2} depth={-0.2} />
+           <FloatingIcon icon="💎" className="top-1/3 right-[15%]" delay={4.1} depth={0.15} />
+        </div>
+      </motion.div>
+
+      {/* 2. LIVE TRENDING FEED */}
+      <FlashSalesSection />
+
+      {/* 3. DYNAMIC CATEGORY BAR */}
+      <motion.div 
+        initial={{ y: 50, opacity: 0 }}
+        whileInView={{ y: 0, opacity: 1 }}
+        viewport={{ margin: "-100px" }}
+        className="sticky top-[72px] z-30 bg-background/60 backdrop-blur-3xl border-b border-surface-border"
+      >
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center gap-6 overflow-x-auto pb-4 hide-scrollbar scroll-smooth snap-x">
+             <CategoryPill href="/category/food" icon="🍔" label="Cravings" active />
+             <CategoryPill href="/category/tech" icon="🔋" label="Gear" />
+             <CategoryPill href="/category/fashion" icon="💎" label="Drip" />
+             <CategoryPill href="/category/books" icon="🧠" label="Grind" />
+             <CategoryPill href="/category/services" icon="🛠️" label="Deeds" />
+             <CategoryPill href="/category/beauty" icon="✨" label="Glow" />
+             <CategoryPill href="/category/lifestyle" icon="🌊" label="Vibe" />
+             <CategoryPill href="/category/more" icon="+" label="Exploration" />
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* MAIN CONTENT */}
-      <main className="max-w-7xl mx-auto px-4 py-12 space-y-12">
-
-        {/* Flash Sales Section - Jumia Style with LIVE Countdown */}
-        <section>
-          <FlashSalesSection />
+      {/* MAIN FEED */}
+      <main className="max-w-7xl mx-auto px-4 py-24 z-10 relative">
+        <section className="space-y-12">
+           <motion.div 
+             initial={{ opacity: 0, x: -20 }}
+             whileInView={{ opacity: 1, x: 0 }}
+             className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-l-4 border-primary pl-6"
+           >
+              <div>
+                 <span className="text-primary text-[10px] font-black uppercase tracking-[0.5em]">Real-time Hub</span>
+                 <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">Fresh <span className="text-foreground/20">Supply</span></h2>
+              </div>
+              <RefreshButton />
+           </motion.div>
+           
+           <Suspense fallback={<div className="h-[600px] w-full glass rounded-[3rem] animate-pulse" />}>
+              <SmartFeed />
+           </Suspense>
         </section>
-
-        {/* Fresh Arrivals - Main Product Feed */}
-        <section>
-          <div className="flex justify-between items-center mb-6 px-2">
-            <h2 className="text-xl md:text-2xl font-black uppercase tracking-tight">
-              Fresh Arrivals
-            </h2>
-            <RefreshButton />
-          </div>
-
-          <Suspense fallback={<div className="h-96 w-full bg-surface/50 rounded-3xl animate-pulse"></div>}>
-            <SmartFeed />
-          </Suspense>
-        </section>
-
       </main>
+
+
 
       {/* Footer with Vendor/Runner CTAs */}
       <footer className="bg-surface border-t border-surface-border mt-20">
@@ -128,17 +256,77 @@ export default function Home() {
   );
 }
 
-
-// Quick Category Card (Simplified Jumia Style)
-function QuickCategoryCard({ href, icon, label }: { href: string; icon: string; label: string }) {
+// Quick Category Pill (New)
+function CategoryPill({ href, icon, label, active = false }: { href: string; icon: string; label: string; active?: boolean }) {
   return (
     <Link
       href={href}
-      className="flex flex-col items-center justify-center p-3 rounded-2xl bg-surface hover:bg-surface-hover border border-surface-border transition-all hover:scale-105 active:scale-95"
+      className={`flex-shrink-0 flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all snap-start
+        ${active 
+          ? 'bg-primary border-primary text-black shadow-[0_0_20px_var(--primary-glow)] font-black' 
+          : 'bg-surface border-surface-border text-foreground/40 hover:border-primary/30 hover:bg-white hover:text-foreground'
+        }
+      `}
     >
-      <span className="text-2xl mb-1">{icon}</span>
-      <span className="font-bold text-[10px] uppercase tracking-wide text-foreground/70">{label}</span>
+      <span className="text-xl">{icon}</span>
+      <span className="text-[10px] font-bold uppercase tracking-widest">{label}</span>
     </Link>
+  )
+}
+
+
+// Floating Icon Component for Hero with Scroll Parallax
+function FloatingIcon({ icon, className, delay, depth = 0.1 }: { icon: string; className: string; delay: number; depth?: number }) {
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 1000], [0, 1000 * depth]);
+  const rotate = useTransform(scrollY, [0, 1000], [0, 45]);
+
+  return (
+    <motion.div
+      style={{ y, rotate }}
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ 
+        opacity: [0, 0.2, 0.1], 
+        scale: 1,
+        y: [0, -20, 0] 
+      }}
+      transition={{ 
+        opacity: { duration: 1, delay },
+        scale: { duration: 0.5, delay },
+        y: { 
+          duration: 4 + Math.random() * 2,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: Math.random() * 2
+        }
+      }}
+      className={`absolute text-6xl select-none filter blur-[1px] hover:blur-0 transition-all duration-700 ${className}`}
+    >
+      {icon}
+    </motion.div>
+  )
+}
+
+// Quick Category Card (Animated)
+function QuickCategoryCard({ href, icon, label }: { href: string; icon: string; label: string }) {
+  return (
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+      }}
+    >
+      <Link
+        href={href}
+        className="group flex flex-col items-center justify-center p-4 rounded-2xl bg-surface hover:bg-white border border-surface-border transition-all hover:shadow-xl hover:shadow-primary/5 active:scale-95"
+      >
+        <div className="relative mb-2 transition-transform group-hover:scale-125 group-hover:-rotate-12 duration-300">
+           <span className="text-3xl relative z-10">{icon}</span>
+           <div className="absolute inset-0 bg-primary/10 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+        <span className="font-black text-[9px] uppercase tracking-widest text-foreground/50 group-hover:text-primary transition-colors">{label}</span>
+      </Link>
+    </motion.div>
   )
 }
 
@@ -154,48 +342,65 @@ function CategoryCard({ href, icon, label, color }: { href: string; icon: string
   )
 }
 
-// Flash Deal Card Component
+// Flash Deal Card Component (Animated)
 function FlashDealCard({
   title,
   price,
   originalPrice,
   discount,
-  stock
+  stock,
+  imageUrl
 }: {
   title: string;
   price: number;
   originalPrice: number;
   discount: number;
   stock: number;
+  imageUrl?: string;
 }) {
   const isLowStock = stock <= 5;
 
   return (
-    <div className="bg-white rounded-2xl p-4 hover:scale-105 transition-transform cursor-pointer">
+    <motion.div 
+      whileHover={{ y: -8 }}
+      className="bg-white dark:bg-surface rounded-3xl p-4 transition-all hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] cursor-pointer border border-surface-border group"
+    >
       {/* Discount Badge */}
-      <div className="relative aspect-square bg-gray-100 rounded-xl mb-3 flex items-center justify-center">
-        <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-lg text-xs font-black">
+      <div className="relative aspect-square bg-gray-100 dark:bg-black rounded-2xl mb-4 flex items-center justify-center overflow-hidden">
+        <div className="absolute top-2 left-2 bg-rose-600 text-white px-3 py-1 rounded-full text-[10px] font-black z-10 shadow-lg">
           -{discount}%
         </div>
-        <div className="text-5xl">📦</div>
+        
+        {imageUrl ? (
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+        ) : (
+          <div className="text-6xl group-hover:scale-125 transition-transform duration-500">📦</div>
+        )}
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
 
       {/* Product Info */}
-      <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2">{title}</h3>
+      <h3 className="text-sm font-black text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors">{title}</h3>
 
       {/* Price */}
-      <div className="flex flex-col lg:flex-row lg:items-baseline gap-1 lg:gap-2 mb-2">
-        <span className="text-lg lg:text-xl font-black text-orange-600">₵{price}</span>
-        <span className="text-xs text-gray-400 line-through">₵{originalPrice}</span>
+      <div className="flex items-baseline gap-2 mb-3">
+        <span className="text-xl font-black text-rose-600">₵{price}</span>
+        <span className="text-xs text-foreground/30 line-through font-bold">₵{originalPrice}</span>
       </div>
 
       {/* Stock Indicator */}
-      {isLowStock && (
-        <div className="text-xs font-bold text-orange-600 animate-pulse">
-          Only {stock} left!
-        </div>
-      )}
-    </div>
+      <div className="h-1.5 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden mb-2">
+         <motion.div 
+           initial={{ width: 0 }}
+           animate={{ width: `${(stock/20)*100}%` }}
+           className={`h-full ${isLowStock ? 'bg-orange-500' : 'bg-emerald-500'}`}
+         />
+      </div>
+      <p className={`text-[9px] font-black uppercase tracking-widest ${isLowStock ? 'text-orange-500' : 'text-foreground/40'}`}>
+        {isLowStock ? `Only ${stock} left` : 'In Stock'}
+      </p>
+    </motion.div>
   );
 }
 
@@ -205,6 +410,9 @@ function FlashSalesSection() {
   const [flashSales, setFlashSales] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [endTime, setEndTime] = React.useState<Date | null>(null);
+
+  // Trending Marquee Items
+  const trending = ["Iphone 16", "Fried Rice", "Macbook Air", "Sneakers", "T-Shirts", "Hostels", "Laptops"];
 
   // Fetch flash sales from API
   React.useEffect(() => {
@@ -226,7 +434,6 @@ function FlashSalesSection() {
   // Update countdown timer
   React.useEffect(() => {
     if (!endTime) {
-      // Fallback to tomorrow midnight if no flash sales
       const fallbackEndTime = new Date();
       fallbackEndTime.setDate(fallbackEndTime.getDate() + 1);
       fallbackEndTime.setHours(0, 0, 0, 0);
@@ -236,11 +443,7 @@ function FlashSalesSection() {
 
     const calculateTimeLeft = () => {
       const difference = endTime.getTime() - new Date().getTime();
-
-      if (difference <= 0) {
-        return { hours: 0, minutes: 0, seconds: 0 };
-      }
-
+      if (difference <= 0) return { hours: 0, minutes: 0, seconds: 0 };
       return {
         hours: Math.floor(difference / (1000 * 60 * 60)),
         minutes: Math.floor((difference / 1000 / 60) % 60),
@@ -249,62 +452,71 @@ function FlashSalesSection() {
     };
 
     setTimeLeft(calculateTimeLeft());
-
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
-
+    const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
     return () => clearInterval(timer);
   }, [endTime]);
 
-  // Don't show section if no flash sales
-  if (!loading && flashSales.length === 0) {
-    return null;
-  }
-
   return (
-    <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-3xl p-6 md:p-8 text-white">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="text-3xl">⚡</div>
-          <div>
-            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight">
-              Flash Sales
-            </h2>
-            <p className="text-white/80 text-sm font-bold">
-              Limited time offers • Hurry up!
-            </p>
-          </div>
-        </div>
-
-        {/* LIVE Countdown Timer */}
-        <div className="hidden md:flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-2xl px-4 py-3">
-          <span className="text-xs font-bold uppercase tracking-wide">Ends in</span>
-          <div className="flex items-center gap-1">
-            <div className="flex flex-col items-center bg-white/30 backdrop-blur-sm rounded-lg px-2 py-1 min-w-[3rem]">
-              <span className="text-2xl font-black leading-none tabular-nums">
-                {String(timeLeft.hours).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] font-bold uppercase opacity-80">h</span>
+    <div className="space-y-8">
+      {/* 1. Trending Marquee */}
+      <div className="bg-surface border-y border-surface-border py-4 overflow-hidden -mx-4">
+        <motion.div 
+          animate={{ x: [0, -1000] }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+          className="flex whitespace-nowrap gap-12"
+        >
+          {[...trending, ...trending, ...trending].map((item, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/30">Trending</span>
+              <span className="text-sm font-black italic">{item}</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
             </div>
-            <span className="text-xl font-black">:</span>
-            <div className="flex flex-col items-center bg-white/30 backdrop-blur-sm rounded-lg px-2 py-1 min-w-[3rem]">
-              <span className="text-2xl font-black leading-none tabular-nums">
-                {String(timeLeft.minutes).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] font-bold uppercase opacity-80">m</span>
-            </div>
-            <span className="text-xl font-black">:</span>
-            <div className="flex flex-col items-center bg-white/30 backdrop-blur-sm rounded-lg px-2 py-1 min-w-[3rem]">
-              <span className="text-2xl font-black leading-none tabular-nums">
-                {String(timeLeft.seconds).padStart(2, '0')}
-              </span>
-              <span className="text-[10px] font-bold uppercase opacity-80">s</span>
-            </div>
-          </div>
-        </div>
+          ))}
+        </motion.div>
       </div>
+
+      <div className="bg-[#0a0a0a] rounded-[3rem] p-8 md:p-12 text-white relative overflow-hidden">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12 relative z-10">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-rose-600 rounded-2xl flex items-center justify-center text-3xl animate-pulse shadow-[0_0_30px_rgba(225,29,72,0.4)]">
+              ⚡
+            </div>
+            <div>
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic leading-none mb-2">
+                Flash <span className="text-rose-600">Sales</span>
+              </h2>
+              <div className="flex items-center gap-2">
+                 <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                 </span>
+                 <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">Live Promotions</p>
+              </div>
+            </div>
+          </div>
+
+          {/* LIVE Countdown Timer */}
+          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl rounded-3xl p-4 border border-white/10">
+            <div className="flex items-center gap-3">
+              {[
+                { val: timeLeft.hours, label: 'h' },
+                { val: timeLeft.minutes, label: 'm' },
+                { val: timeLeft.seconds, label: 's' }
+              ].map((t, idx) => (
+                <React.Fragment key={idx}>
+                  <div className="flex flex-col items-center min-w-[3.5rem]">
+                    <span className="text-3xl font-black tabular-nums leading-none mb-1">
+                      {String(t.val).padStart(2, '0')}
+                    </span>
+                    <span className="text-[9px] font-black uppercase opacity-30 tracking-widest">{t.label}</span>
+                  </div>
+                  {idx < 2 && <span className="text-2xl font-black opacity-20">:</span>}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        </div>
 
       {/* Flash Sale Products */}
       {loading ? (
@@ -385,6 +597,7 @@ function FlashSalesSection() {
         >
           See All Flash Deals →
         </Link>
+      </div>
       </div>
     </div>
   );

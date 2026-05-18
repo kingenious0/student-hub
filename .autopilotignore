@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.next/
+.env
+.env.*
+coverage/
+*.log
+autopilot.log
+.autopilot.pid
+.DS_Store
+.git/
+.idea/
+.vscode/
