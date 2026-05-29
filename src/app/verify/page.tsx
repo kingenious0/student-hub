@@ -53,6 +53,14 @@ export default function VerifyIdentityPage() {
         setHasPasskey(data.hasPasskey)
         setHasPin(!!data.securityPin)
 
+        // If security onboarding was completed but they skipped setting up both PIN and Passkey,
+        // it means security protocols are optional and not enabled for this user.
+        // We auto-verify them immediately to prevent an authentication dead-lock.
+        if (data.securitySetupComplete && !data.hasPasskey && !data.securityPin) {
+          handleSuccess()
+          return
+        }
+
         if (!data.securitySetupComplete && !data.hasPasskey && !data.securityPin) {
           router.push('/security-setup')
           return

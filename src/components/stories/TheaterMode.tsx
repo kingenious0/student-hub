@@ -9,7 +9,7 @@ interface Story {
     title?: string;
     vendor: {
         name: string;
-        clerkId: string;
+        id: string;
     };
     likes: number;
     views: number;
@@ -97,7 +97,7 @@ export default function TheaterMode({ stories, initialIndex, onClose }: TheaterM
                                     caption={story.title}
                                     likes={story.likes}
                                     views={story.views || 0}
-                                    vendorClerkId={story.vendor?.clerkId}
+                                    vendorClerkId={story.vendor?.id}
                                 />
                             </div>
                         </div>

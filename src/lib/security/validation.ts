@@ -112,3 +112,42 @@ export function validateData<T>(schema: z.ZodSchema<T>, data: unknown): { succes
     return { success: false, error: 'Validation failed' };
   }
 }
+
+/**
+ * Robust HTML sanitizer to prevent Stored/Reflected XSS in rich text descriptions.
+ * Systematically strips:
+ * - script, iframe, object, embed, applet, form, meta, link, style tags
+ * - inline javascript: protocols in href attributes
+ * - inline HTML event handlers (e.g. onload, onerror, onclick)
+ */
+export function sanitizeHtml(html: string): string {
+  if (!html) return '';
+
+  let sanitized = html;
+
+  // 1. Remove script tags and their content
+  sanitized = sanitized.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, '');
+
+  // 2. Remove style/link/meta/form/iframe/object/embed/applet tags
+  sanitized = sanitized.replace(/<iframe[^>]*>([\s\S]*?)<\/iframe>/gi, '');
+  sanitized = sanitized.replace(/<object[^>]*>([\s\S]*?)<\/object>/gi, '');
+  sanitized = sanitized.replace(/<embed[^>]*>([\s\S]*?)<\/embed>/gi, '');
+  sanitized = sanitized.replace(/<applet[^>]*>([\s\S]*?)<\/applet>/gi, '');
+  sanitized = sanitized.replace(/<form[^>]*>([\s\S]*?)<\/form>/gi, '');
+  sanitized = sanitized.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, '');
+  sanitized = sanitized.replace(/<meta[^>]*>/gi, '');
+  sanitized = sanitized.replace(/<link[^>]*>/gi, '');
+
+  // 3. Remove inline event handlers (e.g., onload, onerror, onclick, onmouseover)
+  // Matches attributes starting with "on" followed by letters, optional whitespace, "=", optional whitespace, and quotes or non-whitespace
+  sanitized = sanitized.replace(/\s+on[a-zA-Z]+\s*=\s*(['"][^'"]*['"]|[^>\s]+)/gi, '');
+
+  // 4. Remove javascript: URIs in href or src attributes
+  sanitized = sanitized.replace(/\s+(href|src)\s*=\s*(['"]\s*javascript:[^'"]*['"]|javascript:[^>\s]+)/gi, '');
+  sanitized = sanitized.replace(/\s+(href|src)\s*=\s*(['"]\s*data:text\/html:[^'"]*['"]|data:text\/html:[^>\s]+)/gi, '');
+
+  // 5. Remove HTML comments to prevent bypasses/obfuscation
+  sanitized = sanitized.replace(/<!--[\s\S]*?-->/g, '');
+
+  return sanitized.trim();
+}

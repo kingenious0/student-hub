@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /onboarding/
+
+Sitemap: https://omni.kingenious.xyz/sitemap.xml

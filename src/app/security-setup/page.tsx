@@ -237,12 +237,20 @@ export default function SecuritySetupPage() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => setStep("select-method")}
-              className="px-12 py-4 bg-primary text-black rounded-2xl hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-[0.2em] text-xs shadow-xl"
-            >
-              Initialize Setup →
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-2">
+              <button
+                onClick={() => setStep("select-method")}
+                className="w-full sm:w-auto px-12 py-4 bg-primary text-black rounded-2xl hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-[0.2em] text-xs shadow-xl"
+              >
+                Secure Account →
+              </button>
+              <button
+                onClick={completeSetup}
+                className="w-full sm:w-auto px-8 py-4 bg-transparent text-foreground/50 border border-surface-border rounded-2xl hover:text-foreground hover:bg-surface transition-all font-black uppercase tracking-[0.2em] text-xs"
+              >
+                Skip for Now
+              </button>
+            </div>
           </motion.div>
         )
       
@@ -287,6 +295,14 @@ export default function SecuritySetupPage() {
                   <span className="block font-black uppercase italic text-sm">Master PIN</span>
                   <span className="text-[9px] text-foreground/40 font-bold uppercase tracking-widest">Recommended for Desktop</span>
                 </div>
+              </button>
+            </div>
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={completeSetup}
+                className="px-8 py-4 bg-transparent text-foreground/40 border border-surface-border rounded-2xl hover:text-foreground hover:bg-surface transition-all font-black uppercase tracking-[0.2em] text-[10px]"
+              >
+                Skip Security Setup for Now
               </button>
             </div>
           </motion.div>
@@ -405,13 +421,21 @@ export default function SecuritySetupPage() {
             </div>
             
             {!qrCodeUrl ? (
-              <button
-                onClick={setup2FA}
-                disabled={loading}
-                className="w-full px-8 py-4 bg-surface border-2 border-surface-border text-foreground rounded-2xl hover:border-primary transition-all font-black uppercase tracking-widest text-xs disabled:opacity-50"
-              >
-                {loading ? "Generating Payload..." : "Request 2FA Key"}
-              </button>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={setup2FA}
+                  disabled={loading}
+                  className="w-full px-8 py-4 bg-surface border-2 border-surface-border text-foreground rounded-2xl hover:border-primary transition-all font-black uppercase tracking-widest text-xs disabled:opacity-50"
+                >
+                  {loading ? "Generating Payload..." : "Request 2FA Key"}
+                </button>
+                <button
+                  onClick={completeSetup}
+                  className="w-full px-8 py-4 bg-transparent text-foreground/40 border border-surface-border rounded-2xl hover:text-foreground hover:bg-surface transition-all font-black uppercase tracking-widest text-xs"
+                >
+                  Skip 2FA Setup
+                </button>
+              </div>
             ) : (
               <div className="space-y-6">
                 <div className="bg-white p-6 rounded-[2rem] border-2 border-surface-border dark:bg-black">
@@ -461,6 +485,12 @@ export default function SecuritySetupPage() {
                   className="w-full px-8 py-5 bg-primary text-black rounded-2xl transition-all font-black uppercase tracking-[0.2em] text-xs shadow-xl disabled:opacity-50"
                 >
                   {loading ? "Authenticating..." : "Authorize Identity →"}
+                </button>
+                <button
+                  onClick={completeSetup}
+                  className="w-full mt-2 py-4 bg-transparent text-foreground/40 border border-surface-border rounded-2xl hover:text-foreground hover:bg-surface transition-all font-black uppercase tracking-widest text-xs"
+                >
+                  Skip 2FA Setup
                 </button>
               </div>
             )}
@@ -528,14 +558,14 @@ export default function SecuritySetupPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-2 mb-4">
             <StepIndicator 
               current={step === "intro"} 
-              done={["biometric", "2fa", "complete"].includes(step)} 
+              done={["passkey", "pin", "2fa", "complete"].includes(step as any)} 
               num="1" 
               label="Intro" 
             />
             <div className="hidden sm:block w-12 h-0.5 bg-surface-border" />
             <StepIndicator 
-              current={step === "biometric"} 
-              done={["2fa", "complete"].includes(step)} 
+              current={step === "passkey" || step === "pin"} 
+              done={["2fa", "complete"].includes(step as any)} 
               num="2" 
               label="Biometric" 
             />

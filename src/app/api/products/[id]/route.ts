@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { revalidateTag } from 'next/cache';
+import { sanitizeHtml } from '@/lib/security/validation';
 
 export async function GET(
     request: NextRequest,
@@ -18,7 +19,6 @@ export async function GET(
                     select: {
                         id: true,
                         name: true,
-                        clerkId: true,
                         currentHotspot: true,
                         lastActive: true,
                         shopName: true,
@@ -92,7 +92,7 @@ export async function PATCH(
             where: { id },
             data: {
                 title: body.title,
-                description: body.description,
+                description: body.description ? sanitizeHtml(body.description) : undefined,
                 price: parseFloat(body.price),
                 imageUrl: body.imageUrl,
                 hotspot: body.hotspot,

@@ -13,7 +13,7 @@ interface Story {
     title?: string;
     vendor: {
         name: string;
-        clerkId: string;
+        id: string;
     };
     likes: number;
     views: number;

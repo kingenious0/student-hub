@@ -15,7 +15,7 @@ export async function GET() {
                 vendor: {
                     select: {
                         name: true,
-                        clerkId: true,
+                        id: true,
                     }
                 }
             },
