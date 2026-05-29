@@ -37,9 +37,9 @@ export default function Home() {
       
       {/* 0. GLOBAL BACKGROUND PARTICLES - Optimized CSS animations to prevent CPU redraws & hydration mismatches */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30 md:opacity-100">
-        <div className="absolute w-[350px] h-[350px] bg-primary/5 rounded-full blur-[100px] top-[15%] left-[10%] animate-pulse" style={{ animationDuration: '10s' }} />
-        <div className="absolute w-[400px] h-[400px] bg-primary/5 rounded-full blur-[120px] top-[55%] right-[5%] animate-pulse" style={{ animationDuration: '14s' }} />
-        <div className="absolute w-[320px] h-[320px] bg-primary/5 rounded-full blur-[90px] bottom-[15%] left-[20%] animate-pulse" style={{ animationDuration: '12s' }} />
+        <div className="absolute w-[200px] h-[200px] md:w-[350px] md:h-[350px] bg-primary/5 rounded-full blur-[80px] md:blur-[100px] top-[15%] left-[10%] md:animate-pulse" style={{ animationDuration: '10s' }} />
+        <div className="absolute w-[400px] h-[400px] bg-primary/5 rounded-full blur-[120px] top-[55%] right-[5%] hidden md:block md:animate-pulse" style={{ animationDuration: '14s' }} />
+        <div className="absolute w-[320px] h-[320px] bg-primary/5 rounded-full blur-[90px] bottom-[15%] left-[20%] hidden md:block md:animate-pulse" style={{ animationDuration: '12s' }} />
       </div>
 
       {/* 1. PREMIUM DYNAMIC HERO */}
@@ -53,7 +53,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[#09090b]">
            {/* Single Elegant Static Radial Glow - 0% CPU/GPU overhead, highly sophisticated */}
            <div className="absolute top-[-20%] left-[15%] w-[70%] h-[80%] rounded-full bg-gradient-to-br from-orange-500/15 via-rose-600/10 to-transparent blur-[130px] pointer-events-none" />
-           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.08] mix-blend-overlay pointer-events-none" />
+           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3D%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22noiseFilter%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.65%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23noiseFilter)%22%2F%3E%3C%2Fsvg%3E')] opacity-[0.08] mix-blend-overlay pointer-events-none" />
            
            {/* Interactive Glow Follower - High performance translation using direct CSS variables (0 React re-renders) */}
            <div 
@@ -275,11 +275,22 @@ function CategoryPill({ href, icon, label, active = false }: { href: string; ico
 }
 
 
-// Floating Icon Component for Hero with Scroll Parallax
+// Floating Icon Component for Hero with Scroll Parallax (Bypassed entirely on mobile)
 function FloatingIcon({ icon, className, delay, depth = 0.1 }: { icon: string; className: string; delay: number; depth?: number }) {
+  const [isMobile, setIsMobile] = React.useState(true);
+
+  React.useEffect(() => {
+    setIsMobile(window.innerWidth < 1024);
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 1000], [0, 1000 * depth]);
-  const rotate = useTransform(scrollY, [0, 1000], [0, 45]);
+  const y = useTransform(scrollY, [0, 1000], [0, isMobile ? 0 : 1000 * depth]);
+  const rotate = useTransform(scrollY, [0, 1000], [0, isMobile ? 0 : 45]);
+
+  if (isMobile) return null; // Avoid mounting hooks/animation loops on mobile browser viewport!
 
   return (
     <motion.div
