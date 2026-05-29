@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
             value: "default-src 'self'; " +
                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://js.paystack.co; " +
                    "connect-src 'self' https://*.clerk.accounts.dev wss://*.clerk.accounts.dev https://api.paystack.co https://api.cloudinary.com; " +
-                   "img-src 'self' data: https://res.cloudinary.com https://img.clerk.com; " +
+                   "img-src 'self' data: https://res.cloudinary.com https://images.unsplash.com https://img.clerk.com; " +
                    "style-src 'self' 'unsafe-inline'; " +
                    "frame-src 'self' https://js.paystack.co https://*.clerk.accounts.dev; " +
                    "media-src 'self' blob: https://res.cloudinary.com;",
