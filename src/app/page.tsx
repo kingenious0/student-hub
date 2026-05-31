@@ -467,6 +467,10 @@ function FlashSalesSection() {
     return () => clearInterval(timer);
   }, [endTime]);
 
+  if (!loading && flashSales.length === 0) {
+    return null;
+  }
+
   return (
     <div className="space-y-8">
       {/* 1. Trending Marquee */}
