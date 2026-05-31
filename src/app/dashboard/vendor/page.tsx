@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -17,6 +17,7 @@ import { Package, ShoppingCart, DollarSign, Clock, Zap, Plus, Settings, ArrowRig
 
 export default function VendorDashboard() {
     const { user, isLoaded } = useUser();
+    const { getToken } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
@@ -37,7 +38,12 @@ export default function VendorDashboard() {
 
     const fetchDashboardData = async () => {
         try {
-            const res = await fetch('/api/vendor/dashboard');
+            const token = await getToken();
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            const res = await fetch('/api/vendor/dashboard', { headers });
             if (res.ok) {
                 const data = await res.json();
                 setStats({

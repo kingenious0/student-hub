@@ -21,10 +21,14 @@ export async function GET(req: NextRequest) {
             }
         });
 
+        if (!vendor) {
+            return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+        }
+
         // Debug logging
         console.log(`[VendorDashboard] Fetching for ClerkID: ${userId}, VendorID: ${vendor.id}`);
 
-        if (!vendor || vendor.role !== 'VENDOR') {
+        if (vendor.role !== 'VENDOR') {
             return NextResponse.json({ error: 'Not a vendor' }, { status: 403 });
         }
 

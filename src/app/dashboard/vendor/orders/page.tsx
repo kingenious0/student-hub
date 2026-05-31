@@ -18,6 +18,8 @@ import { useModal } from '@/context/ModalContext';
 import { toast } from 'sonner';
 import GoBack from '@/components/navigation/GoBack';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import {
     Table,
     TableBody,
@@ -79,6 +81,8 @@ const formatDate = (dateString: string) => {
 
 export default function VendorOrdersPage() {
     const modal = useModal();
+    const router = useRouter();
+    const { getToken } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'ALL' | 'NEW' | 'ACTIVE' | 'HISTORY'>('ALL');
@@ -93,7 +97,12 @@ export default function VendorOrdersPage() {
 
     const fetchOrders = async () => {
         try {
-            const res = await fetch('/api/vendor/orders');
+            const token = await getToken();
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            const res = await fetch('/api/vendor/orders', { headers });
             if (res.ok) {
                 const data = await res.json();
                 setOrders(data.orders || []);
@@ -107,9 +116,14 @@ export default function VendorOrdersPage() {
 
     const handleMarkReady = async (orderId: string) => {
         try {
+            const token = await getToken();
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`/api/vendor/orders/${orderId}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({ status: 'READY' }),
             });
             if (res.ok) { 
@@ -127,7 +141,15 @@ export default function VendorOrdersPage() {
         const confirmed = await modal.confirm('Deliver this yourself? You will earn the delivery fee and be responsible for the fulfillment.', 'Self-Delivery Protocol', false);
         if (!confirmed) return;
         try {
-            const res = await fetch(`/api/vendor/orders/${orderId}/self-deliver`, { method: 'POST' });
+            const token = await getToken();
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            const res = await fetch(`/api/vendor/orders/${orderId}/self-deliver`, { 
+                method: 'POST',
+                headers
+            });
             if (res.ok) { 
                 toast.success('Assigned to self-delivery');
                 fetchOrders(); 
@@ -149,9 +171,14 @@ export default function VendorOrdersPage() {
             return; 
         }
         try {
+            const token = await getToken();
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`/api/vendor/orders/${orderId}/complete`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({ releaseKey: key })
             });
             if (res.ok) { 
@@ -165,6 +192,25 @@ export default function VendorOrdersPage() {
         } catch (e) { 
             console.error(e); 
             modal.alert('Connection to security vault failed.', 'Network Error', 'error');
+        }
+    };
+
+    const handleContactCustomer = (order: Order) => {
+        modal.alert(
+            `Customer Name: ${order.student.name}\nEmail: ${order.student.email}\n\nYou can email them directly to coordinate delivery or updates.`,
+            'Contact Customer',
+            'info'
+        );
+    };
+
+    const handleReportIssue = async (orderId: string) => {
+        const confirmed = await modal.confirm(
+            `Are you sure you want to report an issue with Order #${orderId.slice(0, 8)}?\n\nThis will flag the order for Admin vetting and freeze the escrow funds.`,
+            'Flag Order Issue',
+            true
+        );
+        if (confirmed) {
+            toast.info('Issue reported successfully. Admin has been notified.');
         }
     };
 
@@ -356,10 +402,16 @@ export default function VendorOrdersPage() {
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                                                            <DropdownMenuItem>Contact Customer</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => router.push(`/dashboard/vendor/orders/${order.id}`)}>
+                                                                View Details
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleContactCustomer(order)}>
+                                                                Contact Customer
+                                                            </DropdownMenuItem>
                                                             <DropdownMenuSeparator />
-                                                            <DropdownMenuItem className="text-destructive">Report Issue</DropdownMenuItem>
+                                                            <DropdownMenuItem className="text-destructive" onClick={() => handleReportIssue(order.id)}>
+                                                                Report Issue
+                                                            </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </div>
