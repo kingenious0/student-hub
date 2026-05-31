@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCartStore } from '@/lib/store/cart';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useModal } from '@/context/ModalContext';
 import ProtocolGuard from '@/components/admin/ProtocolGuard';
@@ -16,6 +16,7 @@ export default function CartPage() {
     const modal = useModal();
     const [fulfillmentMethod, setFulfillmentMethod] = useState<'delivery' | 'pickup'>('delivery');
     const { user } = useUser();
+    const { getToken } = useAuth();
     const router = useRouter();
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
     const [manualEmail, setManualEmail] = useState('');
@@ -130,9 +131,17 @@ export default function CartPage() {
         // Actually, let's try to send simple checkout.
 
         try {
+            const token = await getToken();
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json'
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const res = await fetch('/api/orders/create', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({
                     items: items.map(i => ({ id: i.id, quantity: i.quantity })),
                     fulfillmentType: fulfillmentMethod === 'delivery' ? 'DELIVERY' : 'PICKUP'
