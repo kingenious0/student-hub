@@ -16,7 +16,7 @@ model User {
   email        String    @unique
   name         String?
   role         Role      @default(STUDENT)
-  university   String?   // e.g., "KNUST", "UG"
+  university   String?   @default("AAMUSTED") // Default to USTED Campus (AAMUSTED)
   
   // Vendor-specific fields
   shopName       String?

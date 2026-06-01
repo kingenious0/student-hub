@@ -125,26 +125,14 @@ export default function CheckoutForm({
         <div className="glass-strong rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden border-2 border-surface-border/50 hover:border-primary/30 transition-all">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full animate-pulse-glow"></div>
 
-            {/* Fulfillment Toggle */}
-            <div className="flex bg-background rounded-2xl p-1.5 mb-8 border border-surface-border">
-                <button
-                    onClick={() => setFulfillment('PICKUP')}
-                    className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${fulfillment === 'PICKUP'
-                        ? 'bg-primary text-primary-foreground omni-glow shadow-lg'
-                        : 'text-foreground/20 hover:text-foreground/40'
-                        }`}
-                >
-                    📍 Pick-up
-                </button>
-                <button
-                    onClick={() => setFulfillment('DELIVERY')}
-                    className={`flex-1 py-3 px-6 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${fulfillment === 'DELIVERY'
-                        ? 'bg-primary text-primary-foreground omni-glow shadow-lg'
-                        : 'text-foreground/20 hover:text-foreground/40'
-                        }`}
-                >
-                    🏃 Delivery
-                </button>
+            {/* Fulfillment: Locked to Pick-up for MVP */}
+            <div className="bg-background rounded-2xl p-4 mb-8 border border-surface-border text-center">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary">
+                    📍 FULFILLMENT PROTOCOL: SELF-PICKUP (CAMPUS HANDOVER)
+                </p>
+                <p className="text-[8px] text-foreground/40 uppercase tracking-[0.15em] mt-1 font-bold">
+                    Collect physically at the vendor drop-off hotspot
+                </p>
             </div>
 
             {/* Order Summary */}

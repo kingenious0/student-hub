@@ -41,28 +41,41 @@ export async function POST(req: NextRequest) {
             console.log(`[Paystack Webhook] Processing Success for Ref: ${reference}, Order: ${orderId}`);
 
             if (orderId) {
+                const releaseKey = Math.floor(100000 + Math.random() * 900000).toString();
                 await prisma.order.update({
                     where: { id: orderId },
                     data: {
                         status: 'PAID',
+                        escrowStatus: 'HELD',
+                        releaseKey: releaseKey,
                         paidAt: new Date(),
                     },
                 });
-                console.log(`[Paystack Webhook] Order ${orderId} marked as PAID`);
+                console.log(`[Paystack Webhook] Order ${orderId} marked as PAID with Escrow HELD and Key ${releaseKey}`);
             } else {
                 const orderGroup = await prisma.orderGroup.findUnique({
                     where: { paystackRef: reference },
-                    select: { id: true },
+                    include: { orders: true },
                 });
 
                 if (!orderGroup) {
                     console.warn(`[Paystack Webhook] No order group found for ref ${reference}`);
                 } else {
-                    await prisma.order.updateMany({
-                        where: { orderGroupId: orderGroup.id },
-                        data: { status: 'PAID', paidAt: new Date() },
+                    const updates = orderGroup.orders.map(async (order) => {
+                        if (order.status !== 'PENDING' && order.status !== 'CANCELLED') return;
+                        const releaseKey = Math.floor(100000 + Math.random() * 900000).toString();
+                        return prisma.order.update({
+                            where: { id: order.id },
+                            data: {
+                                status: 'PAID',
+                                escrowStatus: 'HELD',
+                                releaseKey: releaseKey,
+                                paidAt: new Date()
+                            }
+                        });
                     });
-                    console.log(`[Paystack Webhook] OrderGroup ${orderGroup.id} marked as PAID`);
+                    await Promise.all(updates);
+                    console.log(`[Paystack Webhook] OrderGroup ${orderGroup.id} orders marked as PAID with unique Escrow Keys`);
                 }
             }
         }

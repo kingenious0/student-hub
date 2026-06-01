@@ -74,7 +74,7 @@ export async function ensureUserExists() {
                 email: email,
                 name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Anonymous Student',
                 role: 'STUDENT', // Default role
-                // university field omitted -> defaults to null, triggering CampusGuard
+                university: 'AAMUSTED', // Default to AAMUSTED (USTED)
             },
             select: {
                 id: true,

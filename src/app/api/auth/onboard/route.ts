@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
             where: { clerkId: userId },
             update: {
                 name: name,
-                university: university || 'KNUST',
+                university: university || 'AAMUSTED',
                 onboarded: true,
                 phoneNumber: phoneNumber
             },
@@ -55,16 +55,24 @@ export async function POST(request: NextRequest) {
                 email: email,
                 name: name,
                 role: 'STUDENT', // Everyone starts as STUDENT
-                university: university || 'KNUST',
+                university: university || 'AAMUSTED',
                 onboarded: true,
                 vendorStatus: 'NOT_APPLICABLE',
                 phoneNumber: phoneNumber
             }
         });
 
-        // Create response - We DO NOT set the identity cookie here anymore.
-        // User must complete security setup to get the cookie.
+        // Create response - For the USTED MVP, we set the identity cookie directly
+        // after onboarding to allow frictionless access without high-friction biometric gating.
         const response = NextResponse.json({ success: true });
+        
+        response.cookies.set('OMNI_IDENTITY_VERIFIED', 'TRUE', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 30, // 30 days
+            path: '/',
+        });
         
         return response;
     } catch (error) {

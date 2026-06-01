@@ -257,3 +257,73 @@ export async function verifyTransaction(
 
     return response.json();
 }
+
+/**
+ * Create a Transfer Recipient on Paystack
+ */
+export async function createTransferRecipient(
+    name: string,
+    accountNumber: string,
+    bankCode: string
+): Promise<string> {
+    const response = await fetch(`${PAYSTACK_BASE_URL}/transferrecipient`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            type: 'mobile_money',
+            name: name,
+            account_number: accountNumber,
+            bank_code: bankCode,
+            currency: 'GHS',
+        }),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`Paystack recipient creation error: ${error.message || response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result.data.recipient_code;
+}
+
+/**
+ * Initiate an instant Transfer via Paystack (Mobile Money / Bank)
+ */
+export async function initiateTransfer(
+    amountGHS: number,
+    recipientCode: string,
+    reason: string = 'OMNI Vendor Withdrawal'
+): Promise<{ transfer_code: string; status: string }> {
+    // Paystack transfers expect amount in PESEWAS (GHS * 100)
+    const amountInPesewas = Math.round(amountGHS * 100);
+
+    const response = await fetch(`${PAYSTACK_BASE_URL}/transfer`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            source: 'balance',
+            amount: amountInPesewas,
+            recipient: recipientCode,
+            reason: reason,
+            currency: 'GHS',
+        }),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`Paystack transfer error: ${error.message || response.statusText}`);
+    }
+
+    const result = await response.json();
+    return {
+        transfer_code: result.data.transfer_code,
+        status: result.data.status,
+    };
+}

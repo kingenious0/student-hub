@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
             }
         });
 
-        if (!vendor || vendor.role !== 'VENDOR') {
+        const isAuthorized = vendor.role === 'VENDOR' || vendor.role === 'ADMIN' || vendor.role === 'GOD_MODE';
+        if (!vendor || !isAuthorized) {
             return NextResponse.json({ error: 'Not a vendor' }, { status: 403 });
         }
 
