@@ -76,7 +76,12 @@ export default function VendorDashboard() {
                         <h1 className="text-3xl font-black uppercase tracking-tighter">Vendor Command</h1>
                         <p className="text-foreground/60 font-medium">Welcome back, <span className="text-primary">{user?.firstName}</span></p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap gap-3">
+                        <Link href="/dashboard/vendor/earnings">
+                            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold border-none shadow-md shadow-emerald-500/10">
+                                💰 Withdraw Funds
+                            </Button>
+                        </Link>
                         <Link href="/dashboard/vendor/products/new">
                             <Button className="bg-primary text-black font-bold hover:bg-primary/90">
                                 <Plus className="mr-2 h-4 w-4" /> Add Product
@@ -97,9 +102,16 @@ export default function VendorDashboard() {
                             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
                             <DollarSign className="h-4 w-4 text-primary" />
                         </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">₵{stats.totalEarnings.toFixed(2)}</div>
-                            <p className="text-xs text-foreground/60">+20.1% from last month</p>
+                        <CardContent className="space-y-3">
+                            <div>
+                                <div className="text-2xl font-bold">₵{stats.totalEarnings.toFixed(2)}</div>
+                                <p className="text-xs text-foreground/60">+20.1% from last month</p>
+                            </div>
+                            <Link href="/dashboard/vendor/earnings" className="block pt-1">
+                                <Button size="sm" className="w-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 font-bold text-xs uppercase tracking-wider h-8">
+                                    💰 Payout Hub
+                                </Button>
+                            </Link>
                         </CardContent>
                     </Card>
                     <Card className="bg-surface border-surface-border">
@@ -141,21 +153,34 @@ export default function VendorDashboard() {
                         <SalesChart data={stats.monthlyRevenue} />
 
                         {/* Quick Actions (Shadcn Style) */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <Card className="bg-gradient-to-br from-blue-600 to-indigo-600 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer">
-                                <CardHeader>
-                                    <Package className="h-8 w-8 mb-2 opacity-80" />
-                                    <CardTitle>Manage Inventory</CardTitle>
-                                    <CardDescription className="text-blue-100">Update stock & prices</CardDescription>
-                                </CardHeader>
-                            </Card>
-                            <Card className="bg-gradient-to-br from-purple-600 to-pink-600 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer">
-                                <CardHeader>
-                                    <Zap className="h-8 w-8 mb-2 opacity-80" />
-                                    <CardTitle>Flash Sales</CardTitle>
-                                    <CardDescription className="text-purple-100">Create limited time deals</CardDescription>
-                                </CardHeader>
-                            </Card>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <Link href="/dashboard/vendor/products" className="block col-span-1">
+                                <Card className="bg-gradient-to-br from-blue-600 to-indigo-600 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                                    <CardHeader>
+                                        <Package className="h-8 w-8 mb-2 opacity-80" />
+                                        <CardTitle>Manage Inventory</CardTitle>
+                                        <CardDescription className="text-blue-100">Update stock & prices</CardDescription>
+                                    </CardHeader>
+                                </Card>
+                            </Link>
+                            <Link href="/dashboard/vendor/flash-sales" className="block col-span-1">
+                                <Card className="bg-gradient-to-br from-purple-600 to-pink-600 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                                    <CardHeader>
+                                        <Zap className="h-8 w-8 mb-2 opacity-80" />
+                                        <CardTitle>Flash Sales</CardTitle>
+                                        <CardDescription className="text-purple-100">Create limited time deals</CardDescription>
+                                    </CardHeader>
+                                </Card>
+                            </Link>
+                            <Link href="/dashboard/vendor/earnings" className="block col-span-1">
+                                <Card className="bg-gradient-to-br from-emerald-600 to-teal-600 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                                    <CardHeader>
+                                        <DollarSign className="h-8 w-8 mb-2 opacity-80" />
+                                        <CardTitle>Withdrawal Vault</CardTitle>
+                                        <CardDescription className="text-emerald-100">Instant MoMo payout</CardDescription>
+                                    </CardHeader>
+                                </Card>
+                            </Link>
                         </div>
                     </div>
 
