@@ -6,6 +6,26 @@ const nextConfig: NextConfig = {
   experimental: {
     proxyClientMaxBodySize: '100mb', // Allow large video uploads
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+      },
+    ],
+  },
   // Bypass TypeScript warnings for Cloudflare deployment
   typescript: {
     ignoreBuildErrors: true,

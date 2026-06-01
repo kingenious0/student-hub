@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { SearchIcon, ShoppingCartIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import { motion, AnimatePresence } from "framer-motion";
@@ -222,25 +223,16 @@ export default function Home() {
       {/* Footer with Vendor/Runner CTAs */}
       <footer className="bg-surface border-t border-surface-border mt-20">
         <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-2 gap-4 mb-8 md:mb-12">
-            <Link href="/become-vendor" className="group relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-5 md:p-10 transition-all hover:scale-[1.02] active:scale-95">
-              <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left">
-                <div className="text-3xl md:text-4xl mb-2 md:mb-4">🏪</div>
-                <h3 className="text-sm md:text-2xl font-black uppercase tracking-tight mb-1 md:mb-2">Sell on Omni</h3>
-                <p className="text-white/80 text-[10px] md:text-sm font-medium mb-3 md:mb-6 line-clamp-2 md:line-clamp-none">Open your shop. Reach students.</p>
-                <span className="inline-block px-4 py-2 md:px-6 md:py-3 bg-white text-indigo-600 font-black uppercase text-[10px] md:text-xs tracking-widest rounded-lg md:rounded-xl group-hover:scale-105 transition-transform">
-                  Start Selling
-                </span>
-              </div>
-            </Link>
-
-            <Link href="/runner" className="group relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white p-5 md:p-10 transition-all hover:scale-[1.02] active:scale-95">
-              <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left">
-                <div className="text-3xl md:text-4xl mb-2 md:mb-4">⚡</div>
-                <h3 className="text-sm md:text-2xl font-black uppercase tracking-tight mb-1 md:mb-2">Become Runner</h3>
-                <p className="text-white/80 text-[10px] md:text-sm font-medium mb-3 md:mb-6 line-clamp-2 md:line-clamp-none">Earn money. Flexible hours.</p>
-                <span className="inline-block px-4 py-2 md:px-6 md:py-3 bg-white text-emerald-600 font-black uppercase text-[10px] md:text-xs tracking-widest rounded-lg md:rounded-xl group-hover:scale-105 transition-transform">
-                  Join Fleet
+          <div className="max-w-3xl mx-auto mb-8 md:mb-12">
+            <Link href="/become-vendor" className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white p-8 md:p-12 transition-all hover:scale-[1.02] active:scale-95 block shadow-xl border border-white/10">
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div className="text-5xl mb-4 animate-bounce" style={{ animationDuration: '3s' }}>🏪</div>
+                <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tight mb-2">Sell on Omni</h3>
+                <p className="text-white/80 text-xs md:text-lg font-medium mb-6 max-w-lg leading-relaxed">
+                  Open your shop, reach over 10,000+ campus students daily, and receive secure escrow payouts directly to your MoMo wallet instantly.
+                </p>
+                <span className="inline-block px-8 py-4 bg-white text-indigo-600 font-black uppercase text-xs tracking-widest rounded-2xl group-hover:scale-105 transition-transform shadow-2xl">
+                  Start Selling Now →
                 </span>
               </div>
             </Link>
@@ -558,9 +550,11 @@ function FlashSalesSection() {
                   -{sale.discountPercent}%
                 </div>
                 {sale.product.imageUrl ? (
-                  <img
+                  <Image
                     src={sale.product.imageUrl}
                     alt={sale.product.title}
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
                     className="w-full h-full object-cover rounded-xl"
                   />
                 ) : (

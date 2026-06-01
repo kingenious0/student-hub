@@ -2,6 +2,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 
 interface EnhancedProductCardProps {
@@ -45,9 +46,11 @@ export default function EnhancedProductCard({
             {/* Image Container */}
             <div className="relative aspect-square bg-surface-hover overflow-hidden">
                 {imageUrl && !imageError ? (
-                    <img
+                    <Image
                         src={imageUrl}
                         alt={title}
+                        fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         onError={() => setImageError(true)}
                     />
