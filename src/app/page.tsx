@@ -105,13 +105,13 @@ export default function Home() {
                 <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">Limits</span>
               </motion.h1>
               
-              {/* Premium Static tilted badge - Animates smoothly only on hover, eliminating background CPU render overhead */}
+              {/* Premium Static tilted badge - Animates smoothly only on hover, hidden on mobile to prevent title obstruction */}
               <motion.div 
                 initial={{ opacity: 0, scale: 0, rotate: -6 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: "spring", delay: 0.8 }}
                 whileHover={{ scale: 1.1, rotate: -2 }}
-                className="absolute -top-10 -right-10 md:top-0 md:right-0 bg-[#39FF14] text-black px-6 py-3 rounded-2xl font-black text-2xl md:text-4xl shadow-[0_8px_20px_rgba(57,255,20,0.25)] border-4 border-black z-20 cursor-default transition-all duration-300 -rotate-6"
+                className="hidden md:block absolute md:top-0 md:right-0 bg-[#39FF14] text-black px-6 py-3 rounded-2xl font-black text-2xl md:text-4xl shadow-[0_8px_20px_rgba(57,255,20,0.25)] border-4 border-black z-20 cursor-default transition-all duration-300 -rotate-6"
                 style={{ willChange: 'transform' }}
               >
                 60% OFF
