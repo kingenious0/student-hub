@@ -9,14 +9,14 @@
    ======================================== */
 
 :root {
-  /* Light Mode Palette */
+  /* Light Mode Palette - Forest Emerald */
   --surface: #ffffff;
   --surface-border: #e2e8f0;
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --accent: oklch(0.97 0 0);
-  --primary-glow: rgba(79, 70, 229, 0.2);
-  --omni-green: #39FF14;
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --accent: #10B981;
+  --primary-glow: rgba(5, 150, 105, 0.15);
+  --omni-green: #10B981;
 
   /* Glassmorphism Variables */
   --glass-bg: rgba(255, 255, 255, 0.7);
@@ -59,15 +59,15 @@
 }
 
 [data-theme="omni"] {
-  /* Dark Mode Palette (OMNI Theme) */
+  /* Dark Mode Palette (OMNI Theme - Electric Emerald) */
   --background: #050505;
   --foreground: #ffffff;
   --surface: #0d1117;
   --surface-border: rgba(255, 255, 255, 0.05);
-  --primary: #39FF14;
+  --primary: #10B981;
   --primary-foreground: #000000;
-  --accent: #39FF14;
-  --primary-glow: rgba(57, 255, 20, 0.4);
+  --accent: #10B981;
+  --primary-glow: rgba(16, 185, 129, 0.35);
 
   /* Dark Glassmorphism */
   --glass-bg: rgba(13, 17, 23, 0.7);

@@ -220,8 +220,8 @@ export default function VendorOrdersPage() {
         
         // Tab Filter
         if (activeTab === 'NEW') filtered = filtered.filter(o => o.status === 'PAID');
-        else if (activeTab === 'ACTIVE') filtered = filtered.filter(o => ['PREPARING', 'READY', 'PICKED_UP'].includes(o.status));
-        else if (activeTab === 'HISTORY') filtered = filtered.filter(o => ['COMPLETED', 'CANCELLED', 'REFUNDED'].includes(o.status));
+        else if (activeTab === 'ACTIVE') filtered = filtered.filter(o => ['PREPARING', 'READY'].includes(o.status));
+        else if (activeTab === 'HISTORY') filtered = filtered.filter(o => ['COMPLETED', 'CANCELLED', 'REFUNDED', 'PICKED_UP'].includes(o.status));
 
         // Search Filter
         if (searchQuery) {
@@ -289,8 +289,8 @@ export default function VendorOrdersPage() {
                     {[
                         { id: 'ALL', label: 'All Orders' },
                         { id: 'NEW', label: 'New', count: getCount(['PAID']) },
-                        { id: 'ACTIVE', label: 'Processing', count: getCount(['PREPARING', 'READY', 'PICKED_UP']) },
-                        { id: 'HISTORY', label: 'History', count: getCount(['COMPLETED', 'CANCELLED', 'REFUNDED']) },
+                        { id: 'ACTIVE', label: 'Processing', count: getCount(['PREPARING', 'READY']) },
+                        { id: 'HISTORY', label: 'History', count: getCount(['COMPLETED', 'CANCELLED', 'REFUNDED', 'PICKED_UP']) },
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -365,31 +365,40 @@ export default function VendorOrdersPage() {
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     {order.status === 'PAID' && (
-                                                        <Button size="sm" onClick={() => handleMarkReady(order.id)}>
+                                                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium" onClick={() => handleMarkReady(order.id)}>
                                                             Accept
                                                         </Button>
                                                     )}
                                                     {order.status === 'PREPARING' && (
-                                                        <Button size="sm" onClick={() => handleMarkReady(order.id)}>
+                                                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium" onClick={() => handleMarkReady(order.id)}>
                                                             Mark Ready
                                                         </Button>
                                                     )}
-                                                    {order.status === 'READY' && !order.runnerId && (
-                                                        <Button size="sm" variant="outline" onClick={() => handleSelfDeliver(order.id)}>
-                                                            Self-Deliver
-                                                        </Button>
-                                                    )}
-                                                    {order.status === 'PICKED_UP' && (
+                                                    {order.status === 'READY' && (
                                                         <div className="flex items-center gap-2">
                                                             <Input 
-                                                                className="w-20 h-8 text-center text-xs" 
-                                                                placeholder="Key" 
+                                                                className="w-24 h-8 text-center text-xs bg-slate-900 border-emerald-500/30 text-white placeholder-slate-500 focus-visible:ring-emerald-500" 
+                                                                placeholder="Release PIN" 
                                                                 maxLength={6}
                                                                 value={releaseKeyInput[order.id] || ''}
                                                                 onChange={(e) => setReleaseKeyInput({ ...releaseKeyInput, [order.id]: e.target.value })}
                                                             />
-                                                            <Button size="sm" size-icon className="h-8 w-8 p-0" onClick={() => handleCompleteDelivery(order.id)}>
-                                                                <CheckCircleIcon className="h-4 w-4" />
+                                                            <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 animate-pulse" onClick={() => handleCompleteDelivery(order.id)}>
+                                                                Verify PIN
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                    {order.status === 'PICKED_UP' && (
+                                                        <div className="flex items-center gap-2">
+                                                            <Input 
+                                                                className="w-24 h-8 text-center text-xs bg-slate-900 border-emerald-500/30 text-white placeholder-slate-500 focus-visible:ring-emerald-500" 
+                                                                placeholder="Release PIN" 
+                                                                maxLength={6}
+                                                                value={releaseKeyInput[order.id] || ''}
+                                                                onChange={(e) => setReleaseKeyInput({ ...releaseKeyInput, [order.id]: e.target.value })}
+                                                            />
+                                                            <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 animate-pulse" onClick={() => handleCompleteDelivery(order.id)}>
+                                                                Verify PIN
                                                             </Button>
                                                         </div>
                                                     )}

@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
         // Normalize input: Support both new "items" array and legacy "productId" single mode
         let cartItems = [];
-        const { fulfillmentType = 'PICKUP' } = body;
+        const { fulfillmentType = 'PICKUP', fulfillmentNote = null } = body;
 
         if (body.items && Array.isArray(body.items)) {
             cartItems = body.items;
@@ -176,6 +176,7 @@ export async function POST(request: NextRequest) {
                         vendorId: vendorId,
                         amount: vendorTotal,
                         fulfillmentType: fulfillmentType as 'PICKUP' | 'DELIVERY',
+                        fulfillmentNote: fulfillmentNote || null,
                         status: 'PENDING',
                         escrowStatus: 'PENDING',
                     }

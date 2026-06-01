@@ -37,7 +37,17 @@ export async function POST(request: NextRequest) {
         // 2. Find OrderGroup
         const orderGroup = await prisma.orderGroup.findUnique({
             where: { paystackRef: reference },
-            include: { orders: true }
+            include: {
+                orders: {
+                    include: {
+                        items: {
+                            include: {
+                                product: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (!orderGroup) {
@@ -46,7 +56,6 @@ export async function POST(request: NextRequest) {
         }
 
         // Idempotency check (if already paid, return existing)
-        // Group doesn't have explicit paid status yet (I added 'status' in schema but check orders)
         const isAlreadyPaid = orderGroup.orders.some(o => o.status !== 'PENDING' && o.status !== 'CANCELLED');
 
         if (isAlreadyPaid) {
@@ -60,10 +69,15 @@ export async function POST(request: NextRequest) {
         // We update each order individually to give unique keys
         const updates = orderGroup.orders.map(async (order) => {
             const releaseKey = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            // Check if all items in this order are ready-made
+            const allReadyMade = order.items.every(item => item.product?.isReadyMade ?? true);
+            const targetStatus = allReadyMade ? 'READY' : 'PAID';
+
             return prisma.order.update({
                 where: { id: order.id },
                 data: {
-                    status: 'PAID',
+                    status: targetStatus,
                     escrowStatus: 'HELD',
                     releaseKey: releaseKey,
                     paidAt: new Date()

@@ -131,6 +131,7 @@ model Product {
   title       String
   description String
   price       Float
+  isReadyMade Boolean  @default(true)
   
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id])
@@ -279,6 +280,7 @@ model Order {
   runnerXpAwarded Int?        // XP awarded to runner
   
   fulfillmentType FulfillmentType @default(PICKUP)
+  fulfillmentNote String?
   
   // Timestamps
   createdAt       DateTime    @default(now())

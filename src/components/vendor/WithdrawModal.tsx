@@ -1,6 +1,9 @@
-
 'use client';
+
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, DollarSign, Wallet, Phone, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface WithdrawModalProps {
     isOpen: boolean;
@@ -18,6 +21,33 @@ export default function WithdrawModal({ isOpen, onClose, maxAmount, onSuccess }:
 
     if (!isOpen) return null;
 
+    const networks = [
+        { 
+            id: 'MTN', 
+            name: 'MTN MoMo', 
+            badge: '🟡',
+            logoBg: 'bg-amber-500',
+            activeStyles: 'border-amber-500 bg-amber-500/10 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.15)]',
+            inactiveStyles: 'border-surface-border bg-background/50 hover:border-amber-500/50 hover:bg-amber-500/5 text-foreground/70'
+        },
+        { 
+            id: 'TELECEL', 
+            name: 'Telecel', 
+            badge: '🔴',
+            logoBg: 'bg-rose-600',
+            activeStyles: 'border-rose-500 bg-rose-500/10 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.15)]',
+            inactiveStyles: 'border-surface-border bg-background/50 hover:border-rose-500/50 hover:bg-rose-500/5 text-foreground/70'
+        },
+        { 
+            id: 'AT', 
+            name: 'AT Money', 
+            badge: '🔵',
+            logoBg: 'bg-sky-500',
+            activeStyles: 'border-sky-500 bg-sky-500/10 text-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.15)]',
+            inactiveStyles: 'border-surface-border bg-background/50 hover:border-sky-500/50 hover:bg-sky-500/5 text-foreground/70'
+        }
+    ];
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -25,12 +55,12 @@ export default function WithdrawModal({ isOpen, onClose, maxAmount, onSuccess }:
 
         const val = parseFloat(amount);
         if (isNaN(val) || val <= 0) {
-            setError('Invalid amount');
+            setError('Please enter a valid amount');
             setLoading(false);
             return;
         }
         if (val > maxAmount) {
-            setError('Insufficient funds');
+            setError('Insufficient wallet balance');
             setLoading(false);
             return;
         }
@@ -43,6 +73,7 @@ export default function WithdrawModal({ isOpen, onClose, maxAmount, onSuccess }:
             });
 
             if (res.ok) {
+                toast.success(`GHS ${val.toFixed(2)} payout requested successfully!`);
                 onSuccess();
                 onClose();
             } else {
@@ -50,75 +81,136 @@ export default function WithdrawModal({ isOpen, onClose, maxAmount, onSuccess }:
                 setError(data.error || 'Failed to request withdrawal');
             }
         } catch (e) {
-            setError('Network error');
+            setError('Communication to the transaction ledger failed.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="bg-surface border border-surface-border rounded-2xl w-full max-w-md p-6 relative">
-                <button onClick={onClose} className="absolute top-4 right-4 text-foreground/40 hover:text-foreground">✕</button>
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 sm:p-6 overflow-y-auto">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-surface border border-surface-border rounded-[2.5rem] w-full max-w-md p-6 sm:p-8 relative overflow-hidden shadow-2xl"
+            >
+                {/* Background Glow */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full pointer-events-none" />
 
-                <h2 className="text-2xl font-black uppercase tracking-tighter mb-1">Request Payout</h2>
-                <p className="text-sm text-foreground/60 mb-6">Funds will be sent to your Mobile Money wallet.</p>
+                {/* Close Button */}
+                <button 
+                    onClick={onClose} 
+                    className="absolute top-6 right-6 p-2 rounded-full hover:bg-foreground/5 text-foreground/40 hover:text-foreground transition-all focus:outline-none"
+                >
+                    <X className="w-4 h-4" />
+                </button>
 
-                <div className="mb-6 bg-primary/10 rounded-xl p-4 flex justify-between items-center">
-                    <span className="text-xs font-bold uppercase tracking-widest text-primary">Available</span>
-                    <span className="text-xl font-black text-primary">₵{maxAmount.toFixed(2)}</span>
+                {/* Header */}
+                <div className="mb-6">
+                    <h2 className="text-2xl font-black uppercase tracking-tight mb-1 flex items-center gap-2">
+                        <Wallet className="w-6 h-6 text-primary" /> Payout Request
+                    </h2>
+                    <p className="text-xs text-foreground/40 font-bold uppercase tracking-wider">Withdraw your escrowed earnings directly.</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-[10px] font-black uppercase tracking-widest mb-1 opacity-60">Amount (₵)</label>
-                        <input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            className="w-full bg-background border border-surface-border rounded-xl p-3 font-bold focus:border-primary outline-none"
-                            placeholder="0.00"
-                            required
-                        />
+                {/* Balance Display */}
+                <div className="mb-8 p-5 bg-primary/5 border border-primary/10 rounded-2xl flex justify-between items-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent pointer-events-none" />
+                    <div className="relative z-10">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-primary block mb-1">Available Funds</span>
+                        <span className="text-3xl font-black tracking-tight text-foreground">₵{maxAmount.toFixed(2)}</span>
                     </div>
+                    <div className="p-3 bg-primary/10 rounded-xl border border-primary/10 relative z-10">
+                        <DollarSign className="w-5 h-5 text-primary" />
+                    </div>
+                </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest mb-1 opacity-60">Network</label>
-                            <select
-                                value={network}
-                                onChange={(e) => setNetwork(e.target.value)}
-                                className="w-full bg-background border border-surface-border rounded-xl p-3 font-bold focus:border-primary outline-none"
-                            >
-                                <option value="MTN">MTN MoMo</option>
-                                <option value="TELECEL">Telecel Cash</option>
-                                <option value="AT">AT Money</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-[10px] font-black uppercase tracking-widest mb-1 opacity-60">Number</label>
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Amount Input */}
+                    <div className="space-y-2">
+                        <label className="block text-[10px] font-black uppercase tracking-[0.15em] text-foreground/40">Amount to Withdraw (₵)</label>
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/30 font-black text-sm group-focus-within:text-primary transition-colors">₵</div>
                             <input
-                                type="tel"
-                                value={momoNumber}
-                                onChange={(e) => setMomoNumber(e.target.value)}
-                                className="w-full bg-background border border-surface-border rounded-xl p-3 font-bold focus:border-primary outline-none"
-                                placeholder="024..."
+                                type="number"
+                                step="0.01"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                className="w-full bg-background/50 border border-surface-border rounded-xl pl-9 pr-4 py-4 font-bold text-sm focus:border-primary outline-none transition-all placeholder:text-foreground/20 text-foreground"
+                                placeholder="0.00"
                                 required
                             />
                         </div>
                     </div>
 
-                    {error && <p className="text-red-500 text-xs font-bold">{error}</p>}
+                    {/* Network Select Grid */}
+                    <div className="space-y-2">
+                        <label className="block text-[10px] font-black uppercase tracking-[0.15em] text-foreground/40">MoMo Provider</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {networks.map((net) => {
+                                const isActive = network === net.id;
+                                return (
+                                    <button
+                                        key={net.id}
+                                        type="button"
+                                        onClick={() => setNetwork(net.id)}
+                                        className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 font-bold text-center transition-all duration-300 relative focus:outline-none ${
+                                            isActive ? net.activeStyles : net.inactiveStyles
+                                        }`}
+                                    >
+                                        <div className={`w-8 h-8 rounded-full ${net.logoBg} flex items-center justify-center text-white text-xs mb-1.5 shadow-sm`}>
+                                            {net.badge}
+                                        </div>
+                                        <span className="text-[10px] font-black tracking-tight uppercase leading-none">{net.name}</span>
+                                        {isActive && (
+                                            <div className="absolute top-1.5 right-1.5 text-inherit">
+                                                <CheckCircle2 className="w-3.5 h-3.5 fill-background" />
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
 
+                    {/* Momo Number Input */}
+                    <div className="space-y-2">
+                        <label className="block text-[10px] font-black uppercase tracking-[0.15em] text-foreground/40">Recipient Mobile Number</label>
+                        <div className="relative group">
+                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30 group-focus-within:text-primary transition-colors" />
+                            <input
+                                type="tel"
+                                value={momoNumber}
+                                onChange={(e) => setMomoNumber(e.target.value)}
+                                className="w-full bg-background/50 border border-surface-border rounded-xl pl-11 pr-4 py-4 font-bold text-sm focus:border-primary outline-none transition-all placeholder:text-foreground/20 text-foreground"
+                                placeholder="024XXXXXXX"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {error && (
+                        <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-xl text-xs font-bold uppercase tracking-wide">
+                            🚨 {error}
+                        </div>
+                    )}
+
+                    {/* Submit Button */}
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-black uppercase tracking-widest transition-all disabled:opacity-50 mt-4"
+                        className="w-full py-4.5 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 shadow-lg omni-glow flex items-center justify-center gap-2"
                     >
-                        {loading ? 'Processing...' : 'Confirm Withdrawal'}
+                        {loading ? (
+                            'TRANSMITTING REQUEST...'
+                        ) : (
+                            <>Confirm Withdrawal</>
+                        )}
                     </button>
                 </form>
-            </div>
+            </motion.div>
         </div>
     );
 }

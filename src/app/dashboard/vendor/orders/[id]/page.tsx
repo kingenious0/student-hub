@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-
-
+import { toast } from 'sonner';
+import { Phone, CheckCircle } from 'lucide-react';
 
 interface OrderDetail {
     id: string;
@@ -14,6 +14,8 @@ interface OrderDetail {
     escrowStatus: string;
     amount: number;
     createdAt: string;
+    fulfillmentType: 'PICKUP' | 'DELIVERY';
+    fulfillmentNote: string | null;
     items: Array<{
         product: {
             title: string;
@@ -26,10 +28,8 @@ interface OrderDetail {
     student: {
         name: string | null;
         email: string;
+        phoneNumber: string | null;
     };
-    runner: {
-        name: string | null;
-    } | null;
 }
 
 export default function VendorOrderDetails() {
@@ -39,6 +39,7 @@ export default function VendorOrderDetails() {
     const [order, setOrder] = useState<OrderDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
+    const [releaseKey, setReleaseKey] = useState('');
 
     useEffect(() => {
         if (id) fetchOrder();
@@ -71,9 +72,38 @@ export default function VendorOrderDetails() {
             const data = await res.json();
             if (data.success) {
                 setOrder(prev => prev ? { ...prev, status: newStatus } : null);
+                toast.success(`Order marked as ${newStatus}`);
             }
         } catch (error) {
             console.error('Failed to update status:', error);
+            toast.error('Failed to update status');
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const handleVerifyKey = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!releaseKey || releaseKey.length !== 6) {
+            toast.error('Please enter a valid 6-digit Release Key');
+            return;
+        }
+        setUpdating(true);
+        try {
+            const res = await fetch(`/api/vendor/orders/${id}/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ releaseKey }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                toast.success('Handoff verified successfully! Escrow released.');
+                setOrder(prev => prev ? { ...prev, status: 'COMPLETED', escrowStatus: 'RELEASED' } : null);
+            } else {
+                toast.error(data.error || 'Invalid Secure Key');
+            }
+        } catch (error) {
+            toast.error('Connection to transaction ledger failed.');
         } finally {
             setUpdating(false);
         }
@@ -174,8 +204,8 @@ export default function VendorOrderDetails() {
                         </div>
 
                         {/* Customer Info */}
-                        <div className="bg-surface border border-surface-border rounded-[2.5rem] p-8">
-                            <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6">Student Information</h2>
+                        <div className="bg-surface border border-surface-border rounded-[2.5rem] p-8 space-y-6">
+                            <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Student Information</h2>
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-foreground/10 rounded-full flex items-center justify-center text-xl">👤</div>
                                 <div>
@@ -183,20 +213,56 @@ export default function VendorOrderDetails() {
                                     <div className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">{order.student.email}</div>
                                 </div>
                             </div>
+                            
+                            {order.student.phoneNumber && (
+                                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-surface-border">
+                                    <a
+                                        href={`tel:${order.student.phoneNumber}`}
+                                        className="py-2.5 px-4 bg-background border border-surface-border rounded-xl text-[10px] font-black uppercase tracking-wider text-center text-foreground hover:bg-foreground/5 transition-all block"
+                                    >
+                                        📞 Call Customer
+                                    </a>
+                                    <a
+                                        href={`https://wa.me/${order.student.phoneNumber.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(order.student.name || 'Student')},%20this%20is%20your%20OMNI%20vendor.%20Coordinating%20order%20%23${order.id.slice(-6).toUpperCase()}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="py-2.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider text-center transition-all block border border-transparent shadow-md shadow-emerald-500/10"
+                                    >
+                                        💬 WhatsApp
+                                    </a>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Fulfillment details */}
+                        <div className="bg-surface border border-surface-border rounded-[2.5rem] p-8 space-y-4">
+                            <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Fulfillment Protocol</h2>
+                            <div className="flex justify-between items-center text-sm border-b border-surface-border pb-2">
+                                <span className="text-muted-foreground text-xs uppercase tracking-wider font-bold">Type</span>
+                                <span className="font-black text-xs uppercase tracking-wider text-primary animate-pulse-glow">
+                                    {order.fulfillmentType === 'DELIVERY' ? '🚚 Direct Delivery' : '📍 Self-Pickup'}
+                                </span>
+                            </div>
+                            {order.fulfillmentNote && (
+                                <div className="p-4 bg-background/50 border border-surface-border rounded-2xl">
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-foreground/30 block mb-1">Fulfillment Note</span>
+                                    <p className="text-xs font-semibold leading-relaxed text-foreground/80">{order.fulfillmentNote}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Right Column: Actions & Runner */}
+                    {/* Right Column: Actions */}
                     <div className="space-y-8">
                         {/* Control Panel */}
                         <div className="bg-surface border border-surface-border rounded-[2.5rem] p-8">
                             <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 text-center">Control Panel</h2>
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {order.status === 'PAID' && (
                                     <button
                                         onClick={() => updateStatus('PREPARING')}
                                         disabled={updating}
-                                        className="w-full py-4 bg-primary hover:bg-primary/80 disabled:opacity-50 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg omni-glow"
+                                        className="w-full py-4 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg omni-glow"
                                     >
                                         Start Preparing
                                     </button>
@@ -211,35 +277,43 @@ export default function VendorOrderDetails() {
                                     </button>
                                 )}
                                 {order.status === 'READY' && (
-                                    <div className="text-center py-4 bg-background/5 rounded-2xl border border-dashed border-surface-border">
-                                        <div className="text-2xl mb-1">📢</div>
-                                        <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">Awaiting Runner</p>
+                                    <form onSubmit={handleVerifyKey} className="space-y-4">
+                                        <div className="text-center py-4 bg-background/5 rounded-2xl border border-dashed border-surface-border mb-2">
+                                            <div className="text-2xl mb-1">🤝</div>
+                                            <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">Awaiting Escrow Unlock</p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="block text-[8px] font-black uppercase tracking-widest text-foreground/45">Enter Student's 6-Digit PIN</label>
+                                            <input
+                                                type="text"
+                                                maxLength={6}
+                                                value={releaseKey}
+                                                onChange={(e) => setReleaseKey(e.target.value)}
+                                                placeholder="e.g. 123456"
+                                                className="w-full bg-background border border-surface-border rounded-xl p-3 font-bold text-center tracking-[0.3em] focus:border-primary outline-none text-sm placeholder:tracking-normal placeholder:text-foreground/20 text-foreground"
+                                                required
+                                            />
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            disabled={updating}
+                                            className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-md shadow-emerald-500/10"
+                                        >
+                                            Complete Handoff & Release
+                                        </button>
+                                    </form>
+                                )}
+                                {order.status === 'COMPLETED' && (
+                                    <div className="text-center py-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                                        <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-2 animate-pulse-glow" />
+                                        <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Transaction Completed</p>
+                                        <p className="text-[8px] text-foreground/40 uppercase tracking-wider mt-1 font-bold">Funds Released to Vault</p>
                                     </div>
                                 )}
                                 <p className="text-[9px] text-center text-foreground/20 mt-4 leading-relaxed font-black uppercase tracking-tighter">
-                                    Updating order status notifies the customer and relevant runners instantly.
+                                    Funds are held securely in Escrow until the secure 6-digit key is verified.
                                 </p>
                             </div>
-                        </div>
-
-                        {/* Runner Info */}
-                        <div className="bg-surface border border-surface-border rounded-[2.5rem] p-8">
-                            <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6">Mission Runner</h2>
-                            {order.runner ? (
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center text-lg">🏃</div>
-                                    <div>
-                                        <div className="text-foreground font-black text-sm uppercase tracking-tight">{order.runner.name}</div>
-                                        <div className="text-green-400/60 text-[10px] font-black uppercase tracking-widest">EN ROUTE</div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-center py-4">
-                                    <div className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.3em] italic">
-                                        Not assigned yet
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

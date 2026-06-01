@@ -38,6 +38,7 @@ const productSchema = z.object({
     images: z.array(z.any()).min(1, "At least 1 image is required"),
     details: z.record(z.any()).optional(),
     stockQuantity: z.coerce.number().min(0, "Stock cannot be negative").default(1),
+    isReadyMade: z.boolean().default(true),
 });
 
 export default function ProductForm({ initialData, showTitle = true }: ProductFormProps) {
@@ -56,7 +57,8 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
             description: initialData?.description || '',
             images: initialData?.images || (initialData?.imageUrl ? [initialData.imageUrl] : []),
             stockQuantity: initialData?.stockQuantity || 1,
-            details: initialData?.details || {}
+            details: initialData?.details || {},
+            isReadyMade: initialData?.isReadyMade !== undefined ? initialData.isReadyMade : true,
         }
     });
 
@@ -379,6 +381,38 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                                         type="number"
                                         {...form.register('stockQuantity')}
                                         className="pl-9"
+                                    />
+                                </div>
+                            </div>
+
+                            <Separator />
+
+                            {/* Ready-Made Toggle */}
+                            <div className="space-y-3">
+                                <Label className="text-sm font-semibold flex items-center gap-2">Fulfillment Mode</Label>
+                                <div className="flex items-center justify-between p-4 bg-background border border-surface-border rounded-2xl hover:border-primary/20 transition-all">
+                                    <div className="space-y-1">
+                                        <p className="text-xs font-black uppercase tracking-wider text-foreground">Instantly Ready</p>
+                                        <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-tight leading-relaxed">Ready-made items (canned drinks, snacks, books, gadgets) skip preparation upon payment.</p>
+                                    </div>
+                                    <Controller
+                                        control={form.control}
+                                        name="isReadyMade"
+                                        render={({ field }) => (
+                                            <button
+                                                type="button"
+                                                onClick={() => field.onChange(!field.value)}
+                                                className={`w-12 h-6 rounded-full transition-colors relative focus:outline-none border border-surface-border/50 ${
+                                                    field.value ? 'bg-primary' : 'bg-foreground/10'
+                                                }`}
+                                            >
+                                                <div
+                                                    className={`w-5 h-5 rounded-full bg-white absolute top-0.5 shadow-md transition-transform duration-200 ${
+                                                        field.value ? 'translate-x-6' : 'translate-x-0.5'
+                                                    }`}
+                                                />
+                                            </button>
+                                        )}
                                     />
                                 </div>
                             </div>

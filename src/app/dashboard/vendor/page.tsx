@@ -117,7 +117,7 @@ export default function VendorDashboard() {
                     <Card className="bg-surface border-surface-border">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Orders</CardTitle>
-                            <ShoppingCart className="h-4 w-4 text-blue-500" />
+                            <ShoppingCart className="h-4 w-4 text-primary animate-pulse" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">+{stats.totalOrders}</div>
@@ -127,7 +127,7 @@ export default function VendorDashboard() {
                     <Card className="bg-surface border-surface-border">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Products</CardTitle>
-                            <Package className="h-4 w-4 text-purple-500" />
+                            <Package className="h-4 w-4 text-primary" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.totalProducts}</div>
@@ -137,7 +137,7 @@ export default function VendorDashboard() {
                     <Card className="bg-surface border-surface-border">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Pending</CardTitle>
-                            <Clock className="h-4 w-4 text-orange-500" />
+                            <Clock className="h-4 w-4 text-primary" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{stats.pendingOrders}</div>
@@ -155,27 +155,27 @@ export default function VendorDashboard() {
                         {/* Quick Actions (Shadcn Style) */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <Link href="/dashboard/vendor/products" className="block col-span-1">
-                                <Card className="bg-gradient-to-br from-blue-600 to-indigo-600 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                                <Card className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-surface-border/50 text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>
-                                        <Package className="h-8 w-8 mb-2 opacity-80" />
+                                        <Package className="h-8 w-8 mb-2 text-primary" />
                                         <CardTitle>Manage Inventory</CardTitle>
-                                        <CardDescription className="text-blue-100">Update stock & prices</CardDescription>
+                                        <CardDescription className="text-slate-300">Update stock & prices</CardDescription>
                                     </CardHeader>
                                 </Card>
                             </Link>
                             <Link href="/dashboard/vendor/flash-sales" className="block col-span-1">
-                                <Card className="bg-gradient-to-br from-purple-600 to-pink-600 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                                <Card className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-surface-border/50 text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>
-                                        <Zap className="h-8 w-8 mb-2 opacity-80" />
+                                        <Zap className="h-8 w-8 mb-2 text-primary animate-pulse" />
                                         <CardTitle>Flash Sales</CardTitle>
-                                        <CardDescription className="text-purple-100">Create limited time deals</CardDescription>
+                                        <CardDescription className="text-slate-300">Create limited time deals</CardDescription>
                                     </CardHeader>
                                 </Card>
                             </Link>
                             <Link href="/dashboard/vendor/earnings" className="block col-span-1">
-                                <Card className="bg-gradient-to-br from-emerald-600 to-teal-600 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full">
+                                <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>
-                                        <DollarSign className="h-8 w-8 mb-2 opacity-80" />
+                                        <DollarSign className="h-8 w-8 mb-2 text-white" />
                                         <CardTitle>Withdrawal Vault</CardTitle>
                                         <CardDescription className="text-emerald-100">Instant MoMo payout</CardDescription>
                                     </CardHeader>

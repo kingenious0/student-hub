@@ -35,6 +35,7 @@ export async function GET(
                     select: {
                         name: true,
                         email: true,
+                        phoneNumber: true,
                     }
                 },
                 vendor: {
@@ -42,6 +43,8 @@ export async function GET(
                         id: true,
                         name: true,
                         clerkId: true,
+                        phoneNumber: true,
+                        shopName: true,
                     }
                 },
                 runner: {

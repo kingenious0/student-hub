@@ -23,7 +23,9 @@ interface Order {
     id: string;
     status: string;
     createdAt: string;
-    pickupCode: string | null;
+    releaseKey: string | null;
+    fulfillmentType: 'PICKUP' | 'DELIVERY';
+    fulfillmentNote: string | null;
     items: Array<{
         product: {
             title: string;
@@ -34,22 +36,20 @@ interface Order {
     }>;
     vendor: {
         name: string;
+        shopName: string | null;
+        phoneNumber: string | null;
     };
-    runner?: {
-        name: string;
-    };
-    total: number;
+    amount: number;
 }
 
 const STEPS = [
-    { id: 'PAID', label: 'Order Confirmed', icon: Package, description: 'We have received your order.' },
+    { id: 'PAID', label: 'Order Confirmed', icon: Package, description: 'Payment received.' },
     { id: 'PREPARING', label: 'Preparing', icon: ChefHat, description: 'Vendor is preparing your items.' },
-    { id: 'READY', label: 'Ready for Pickup', icon: MapPin, description: 'Your order is ready for pickup.' },
-    { id: 'PICKED_UP', label: 'On the Way', icon: Truck, description: 'Runner has picked up your order.' },
-    { id: 'COMPLETED', label: 'Delivered', icon: Home, description: 'Enjoy your purchase!' },
+    { id: 'READY', label: 'Ready for Handoff', icon: MapPin, description: 'Awaiting pickup or direct vendor drop-off.' },
+    { id: 'COMPLETED', label: 'Completed', icon: Home, description: 'Handoff confirmed. Enjoy!' },
 ];
 
-const STATUS_ORDER = ['PENDING', 'PAID', 'PREPARING', 'READY', 'PICKED_UP', 'COMPLETED'];
+const STATUS_ORDER = ['PENDING', 'PAID', 'PREPARING', 'READY', 'COMPLETED'];
 
 export default function OrderTrackingPage({ params }: { params: { id: string } }) {
     const router = useRouter();
@@ -181,8 +181,8 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                             </div>
                             <Separator />
                             <div className="flex justify-between font-bold">
-                                <span>Total</span>
-                                <span>₵{order.items.reduce((acc, item) => acc + (item.product.price * item.quantity), 0).toFixed(2)}</span>
+                                <span>Total Paid</span>
+                                <span>₵{order.amount.toFixed(2)}</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -190,22 +190,53 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                     {/* Delivery Info */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Delivery Info</CardTitle>
+                            <CardTitle className="text-base">Handoff Details</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Vendor</span>
-                                <span className="font-medium">{order.vendor.name}</span>
+                                <span className="text-muted-foreground">Vendor Shop</span>
+                                <span className="font-medium">{order.vendor.shopName || order.vendor.name}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Runner</span>
-                                <span className="font-medium">{order.runner ? order.runner.name : 'Searching...'}</span>
+                                <span className="text-muted-foreground">Fulfillment</span>
+                                <span className="font-bold text-xs uppercase tracking-wider text-primary animate-pulse-glow">
+                                    {order.fulfillmentType === 'DELIVERY' ? '🚚 Direct Delivery' : '📍 Self-Pickup'}
+                                </span>
                             </div>
-                            {order.pickupCode && (
-                                <div className="mt-4 p-4 bg-muted rounded-lg text-center">
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Pickup Code</p>
-                                    <p className="text-2xl font-mono font-black tracking-widest">{order.pickupCode}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">Show this to the runner upon delivery.</p>
+
+                            {order.fulfillmentNote && (
+                                <div className="p-3 bg-foreground/5 rounded-xl border border-surface-border/50 text-xs">
+                                    <span className="font-bold text-[9px] uppercase tracking-wider text-foreground/45 block mb-1">Fulfillment Note</span>
+                                    <p className="font-semibold text-foreground/75 leading-relaxed">{order.fulfillmentNote}</p>
+                                </div>
+                            )}
+
+                            {order.vendor.phoneNumber && (
+                                <div className="grid grid-cols-2 gap-2 pt-2">
+                                    <a
+                                        href={`tel:${order.vendor.phoneNumber}`}
+                                        className="py-2.5 px-4 bg-background border border-surface-border rounded-xl text-[10px] font-black uppercase tracking-wider text-center text-foreground hover:bg-foreground/5 transition-all block"
+                                    >
+                                        📞 Call Vendor
+                                    </a>
+                                    <a
+                                        href={`https://wa.me/${order.vendor.phoneNumber.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(order.vendor.shopName || 'Vendor')},%20I'm%20coordinating%20my%20order%20%23${order.id.slice(-6).toUpperCase()}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="py-2.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider text-center transition-all block shadow-md shadow-emerald-500/10 border border-transparent"
+                                    >
+                                        💬 WhatsApp
+                                    </a>
+                                </div>
+                            )}
+
+                            {order.releaseKey && order.status !== 'COMPLETED' && (
+                                <div className="mt-4 p-5 bg-primary/5 rounded-2xl text-center border border-primary/10 relative overflow-hidden animate-pulse-glow">
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.25em] mb-2">Secure Release Key</p>
+                                    <p className="text-3xl font-mono font-black tracking-[0.3em] text-foreground pl-2">{order.releaseKey}</p>
+                                    <p className="text-[9px] text-foreground/40 mt-3 font-bold uppercase tracking-wider leading-relaxed">
+                                        Give this 6-digit key to the vendor when you receive your package.
+                                    </p>
                                 </div>
                             )}
                         </CardContent>

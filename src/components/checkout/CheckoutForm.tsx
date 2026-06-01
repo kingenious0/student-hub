@@ -21,6 +21,7 @@ export default function CheckoutForm({
     deliveryFee
 }: CheckoutFormProps) {
     const [fulfillment, setFulfillment] = useState<'PICKUP' | 'DELIVERY'>('PICKUP');
+    const [fulfillmentNote, setFulfillmentNote] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
     const subtotal = productPrice * quantity;
@@ -80,7 +81,8 @@ export default function CheckoutForm({
                 body: JSON.stringify({
                     productId,
                     quantity,
-                    fulfillmentType: fulfillment
+                    fulfillmentType: fulfillment,
+                    fulfillmentNote: fulfillmentNote.trim() || null
                 }),
             });
             const data = await res.json();
@@ -125,14 +127,48 @@ export default function CheckoutForm({
         <div className="glass-strong rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden border-2 border-surface-border/50 hover:border-primary/30 transition-all">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full animate-pulse-glow"></div>
 
-            {/* Fulfillment: Locked to Pick-up for MVP */}
-            <div className="bg-background rounded-2xl p-4 mb-8 border border-surface-border text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-primary">
-                    📍 FULFILLMENT PROTOCOL: SELF-PICKUP (CAMPUS HANDOVER)
-                </p>
-                <p className="text-[8px] text-foreground/40 uppercase tracking-[0.15em] mt-1 font-bold">
-                    Collect physically at the vendor drop-off hotspot
-                </p>
+            {/* Fulfillment Protocol Tabs */}
+            <div className="bg-background/40 border border-surface-border/50 rounded-2xl p-1 mb-8 flex gap-1 relative z-10">
+                <button
+                    type="button"
+                    onClick={() => setFulfillment('PICKUP')}
+                    className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
+                        fulfillment === 'PICKUP'
+                            ? 'bg-primary text-primary-foreground shadow-md'
+                            : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
+                    }`}
+                >
+                    📍 Self-Pickup
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setFulfillment('DELIVERY')}
+                    className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
+                        fulfillment === 'DELIVERY'
+                            ? 'bg-primary text-primary-foreground shadow-md'
+                            : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
+                    }`}
+                >
+                    🚚 Direct Delivery
+                </button>
+            </div>
+
+            {/* Fulfillment Note */}
+            <div className="space-y-2 mb-8">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 block">
+                    {fulfillment === 'DELIVERY' ? '🚚 Delivery Coordinates' : '📍 Pickup Note'}
+                </label>
+                <textarea
+                    value={fulfillmentNote}
+                    onChange={(e) => setFulfillmentNote(e.target.value)}
+                    placeholder={
+                        fulfillment === 'DELIVERY'
+                            ? 'e.g. "Wait under the tree at Atwima Gate. I\'m wearing a blue shirt. Room 203"'
+                            : 'e.g. "Leaving class now, will pick up in 10 mins"'
+                    }
+                    className="w-full bg-background border border-surface-border rounded-2xl p-4 font-bold text-xs focus:border-primary focus:outline-none outline-none resize-none h-20 transition-all placeholder:text-foreground/20 text-foreground"
+                    maxLength={200}
+                />
             </div>
 
             {/* Order Summary */}
