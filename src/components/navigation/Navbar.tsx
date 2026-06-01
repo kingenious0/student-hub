@@ -240,6 +240,14 @@ export default function Navbar() {
                             <div className="hidden lg:flex items-center gap-4 mr-2">
                                 <Link href="/" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
                                 <Link href="/orders" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Orders</Link>
+                                {dbUser?.role === 'VENDOR' && (
+                                    <Link 
+                                        href="/dashboard/vendor" 
+                                        className="text-xs font-black text-primary hover:text-primary/80 transition-all bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20 uppercase tracking-wider"
+                                    >
+                                        🏪 Vendor Dashboard
+                                    </Link>
+                                )}
                             </div>
 
                             <Link
@@ -379,7 +387,7 @@ export default function Navbar() {
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-xs font-black text-foreground uppercase tracking-widest">
-                                                        {dbUser?.role === 'VENDOR' ? 'Vendor Mode' : (dbUser?.vendorStatus === 'PENDING' ? 'Application Pending' : 'Become a Vendor')}
+                                                        {dbUser?.role === 'VENDOR' ? 'Vendor Dashboard' : (dbUser?.vendorStatus === 'PENDING' ? 'Application Pending' : 'Become a Vendor')}
                                                     </span>
                                                 </div>
                                             </div>
@@ -426,7 +434,7 @@ export default function Navbar() {
                                     {(dbUser?.role === 'VENDOR' || dbUser?.role === 'ADMIN') && (
                                         <div className="mb-6 p-4 bg-surface rounded-2xl border border-surface-border">
                                             <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3">
-                                                Business Terminal
+                                                Vendor Dashboard
                                             </h3>
                                             {dbUser?.role === 'VENDOR' && (
                                                 <DrawerLink href="/dashboard/vendor" icon={<StoreIcon className="w-5 h-5 text-[#39FF14]" />} label="Vendor Dashboard" setIsOpen={setIsDrawerOpen} active={isActive('/dashboard/vendor')} className="text-[#39FF14]" />
