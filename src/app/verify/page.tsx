@@ -318,7 +318,7 @@ export default function VerifyIdentityPage() {
 
           {/* Footer HUD */}
           <div className="mt-12 flex justify-between items-center font-mono text-[7px] text-foreground/20 italic font-black uppercase tracking-widest">
-            <span>Auth_Server: v2.0.4</span>
+            <span>System_Core: Online</span>
             <span className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-[#39FF14] rounded-full animate-pulse" />
               Connection_Encrypted

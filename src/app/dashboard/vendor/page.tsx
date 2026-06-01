@@ -175,7 +175,7 @@ export default function VendorDashboard() {
             </div>
 
             <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
-                <p>Designed by PraiseTech • github/praisetechzw</p>
+                <p>© 2026 OMNI Student Marketplace • All Rights Reserved</p>
             </div>
         </div>
     );
