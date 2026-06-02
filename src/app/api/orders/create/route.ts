@@ -2,28 +2,156 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { ensureUserExists } from '@/lib/auth/sync';
 
-export async function POST(request: NextRequest) {
+interface ProcessedCartItem {
+    id: string;
+    quantity: number;
+    finalPrice: number;
+    title: string;
+    vendorId: string;
+    activeFlashSaleId: string | null;
+}
+
+async function getAuthenticatedStudent(): Promise<any | null> {
+    let student = await ensureUserExists();
+    if (student) return student;
+
     try {
-        let student = await ensureUserExists();
+        const { cookies } = await import('next/headers');
+        const cookieStore = await cookies();
+        const isVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
+        const hybridClerkId = cookieStore.get('OMNI_HYBRID_SYNCED')?.value;
 
-        // Hybrid Auth Fallback for WebViews/Native Sync
-        if (!student) {
-            try {
-                const { cookies } = await import('next/headers');
-                const cookieStore = await cookies();
-                const isVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
-                const hybridClerkId = cookieStore.get('OMNI_HYBRID_SYNCED')?.value;
+        if (isVerified && hybridClerkId) {
+            return await prisma.user.findUnique({
+                where: { clerkId: hybridClerkId },
+            });
+        }
+    } catch (e) {
+        console.error('Hybrid auth fallback failed in order creation:', e);
+    }
+    return null;
+}
 
-                if (isVerified && hybridClerkId) {
-                    student = await prisma.user.findUnique({
-                        where: { clerkId: hybridClerkId },
-                    });
-                }
-            } catch (e) {
-                console.error('Hybrid auth fallback failed in order creation:', e);
+function processCartItems(
+    cartItems: any[],
+    products: any[]
+): { error?: string; status?: number; vendorGroups?: Record<string, ProcessedCartItem[]> } {
+    const productMap = new Map(products.map(p => [p.id, p]));
+    const vendorGroups: Record<string, ProcessedCartItem[]> = {};
+
+    for (const item of cartItems) {
+        const product = productMap.get(item.id);
+        if (!product) {
+            return { error: `Product not found: ${item.id}`, status: 404 };
+        }
+
+        let finalPrice = product.price;
+        let activeFlashSaleId = null;
+
+        if (product.flashSale) {
+            const now = new Date();
+            const { startTime, endTime, salePrice, stockSold, stockLimit } = product.flashSale;
+            if (now >= startTime && now <= endTime && stockSold < stockLimit) {
+                finalPrice = salePrice;
+                activeFlashSaleId = product.flashSale.id;
             }
         }
 
+        const processedItem: ProcessedCartItem = {
+            id: item.id,
+            quantity: item.quantity,
+            finalPrice,
+            title: product.title,
+            vendorId: product.vendorId,
+            activeFlashSaleId
+        };
+
+        if (!vendorGroups[product.vendorId]) {
+            vendorGroups[product.vendorId] = [];
+        }
+        vendorGroups[product.vendorId].push(processedItem);
+    }
+
+    return { vendorGroups };
+}
+
+async function executeOrderCreationTransaction(
+    tx: any,
+    studentId: string,
+    vendorGroups: Record<string, ProcessedCartItem[]>,
+    fulfillmentType: string,
+    fulfillmentNote: string | null,
+    paystackRef: string
+): Promise<number> {
+    const orderGroup = await tx.orderGroup.create({
+        data: {
+            paystackRef,
+            totalAmount: 0,
+            studentId
+        }
+    });
+
+    let calculatedGrandTotal = 0;
+
+    for (const [vendorId, items] of Object.entries(vendorGroups)) {
+        let vendorSubtotal = 0;
+        for (const item of items) {
+            vendorSubtotal += (item.finalPrice * item.quantity);
+        }
+
+        const settings = await tx.systemSettings.findUnique({ where: { id: 'GLOBAL_CONFIG' } });
+        const deliveryFee = (fulfillmentType === 'DELIVERY') ? (settings?.deliveryFee ?? 5.00) : 0.00;
+        const vendorTotal = vendorSubtotal + deliveryFee;
+        calculatedGrandTotal += vendorTotal;
+
+        const order = await tx.order.create({
+            data: {
+                orderGroupId: orderGroup.id,
+                studentId,
+                vendorId,
+                amount: vendorTotal,
+                fulfillmentType: fulfillmentType as 'PICKUP' | 'DELIVERY',
+                fulfillmentNote: fulfillmentNote || null,
+                status: 'PENDING',
+                escrowStatus: 'PENDING',
+            }
+        });
+
+        for (const item of items) {
+            await tx.orderItem.create({
+                data: {
+                    orderId: order.id,
+                    productId: item.id,
+                    quantity: item.quantity,
+                    price: item.finalPrice,
+                    productSnapshot: { title: item.title }
+                }
+            });
+
+            if (item.activeFlashSaleId) {
+                await tx.flashSale.update({
+                    where: { id: item.activeFlashSaleId },
+                    data: { stockSold: { increment: item.quantity } }
+                });
+            }
+        }
+    }
+
+    const settings = await tx.systemSettings.findUnique({ where: { id: 'GLOBAL_CONFIG' } });
+    const platformFee = settings?.platformFee ?? 2.00;
+    const finalGrandTotal = calculatedGrandTotal + platformFee;
+
+    await tx.orderGroup.update({
+        where: { id: orderGroup.id },
+        data: { totalAmount: finalGrandTotal }
+    });
+
+    return finalGrandTotal;
+}
+
+export async function POST(request: NextRequest) {
+    try {
+        const student = await getAuthenticatedStudent();
         if (!student) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
@@ -34,11 +162,9 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-
-        // Normalize input: Support both new "items" array and legacy "productId" single mode
-        let cartItems = [];
         const { fulfillmentType = 'PICKUP', fulfillmentNote = null } = body;
 
+        let cartItems = [];
         if (body.items && Array.isArray(body.items)) {
             cartItems = body.items;
         } else if (body.productId) {
@@ -47,7 +173,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'No items in cart' }, { status: 400 });
         }
 
-        // 1. Fetch all products to validate prices & stock
         const productIds = cartItems.map((i: any) => i.id);
         const products = await prisma.product.findMany({
             where: { id: { in: productIds } },
@@ -57,76 +182,21 @@ export async function POST(request: NextRequest) {
             }
         });
 
-        // Map for quick lookup
-        const productMap = new Map(products.map(p => [p.id, p]));
-
-        // 2. Group items by Vendor
-        const vendorGroups: Record<string, typeof cartItems> = {};
-        let grandTotal = 0;
-
-        // Validation & Grouping Loop
-        for (const item of cartItems) {
-            const product = productMap.get(item.id);
-            if (!product) {
-                return NextResponse.json({ error: `Product not found: ${item.id}` }, { status: 404 });
-            }
-
-            // Determine Price (Flash Sale Logic)
-            let finalPrice = product.price;
-            let activeFlashSaleId = null;
-
-            if (product.flashSale) {
-                const now = new Date();
-                const { startTime, endTime, salePrice, stockSold, stockLimit } = product.flashSale;
-                if (now >= startTime && now <= endTime && stockSold < stockLimit) {
-                    finalPrice = salePrice;
-                    activeFlashSaleId = product.flashSale.id;
-                }
-            }
-
-            // check stock (TODO in future: use product.stockQuantity)
-
-            // Add metadata to item for processing
-            const processedItem = {
-                ...item,
-                finalPrice,
-                title: product.title,
-                vendorId: product.vendorId,
-                activeFlashSaleId
-            };
-
-            if (!vendorGroups[product.vendorId]) {
-                vendorGroups[product.vendorId] = [];
-            }
-            vendorGroups[product.vendorId].push(processedItem);
+        const { error, status, vendorGroups } = processCartItems(cartItems, products);
+        if (error || !vendorGroups) {
+            return NextResponse.json({ error }, { status: status || 400 });
         }
-
-        // 2.5 Check for existing PENDING OrderGroup (Prevent Duplicates)
-        // If a pending group exists for this user with same approximate total (we can't know exact total before calc, so we check recent pending groups)
-        // Actually, we can just check if there is a PENDING group created < 15 mins ago that has not been paid.
-        // But users might change cart. A better check is:
-        // Reuse logic: If user has a pending OrderGroup, let's reuse it?
-        // Simpler approach: Just find any PENDING group created in last 10 mins.
 
         const recentPendingGroup = await prisma.orderGroup.findFirst({
             where: {
                 studentId: student.id,
-                createdAt: { gt: new Date(Date.now() - 15 * 60 * 1000) }, // 15 mins ago
-                orders: { some: { status: 'PENDING' } } // Has pending orders
+                createdAt: { gt: new Date(Date.now() - 15 * 60 * 1000) },
+                orders: { some: { status: 'PENDING' } }
             },
-            include: { orders: true },
             orderBy: { createdAt: 'desc' }
         });
 
-        // Calculate expected total to match
-        // We need to calculate total before reusing to be sure, or just assume if they hit checkout again it's same or new.
-        // If we reuse, we must return the paystackRef.
-        // To be safe, let's only reuse if the items match or we just return the pending one and let frontend re-process payment.
-        // WE WILL REUSE if found.
-
         if (recentPendingGroup) {
-            // Optional: You could check if amounts match exactly to be sure it's same cart
-            // For now, trusting the "Pending" status and 15 min window is sufficient for "Retry" behavior
             return NextResponse.json({
                 success: true,
                 paystackRef: recentPendingGroup.paystackRef,
@@ -137,89 +207,23 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // 3. Create Database Records (Transaction)
         const paystackRef = `OMNI-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        let grandTotal = 0;
 
         await prisma.$transaction(async (tx) => {
-            // A. Create OrderGroup
-            const orderGroup = await tx.orderGroup.create({
-                data: {
-                    paystackRef,
-                    totalAmount: 0, // Will update after summing
-                    studentId: student.id
-                }
-            });
-
-            let calculatedGrandTotal = 0;
-
-            // B. Create Order per Vendor
-            for (const [vendorId, items] of Object.entries(vendorGroups)) {
-                let vendorSubtotal = 0;
-
-                // Sum items
-                for (const item of items) {
-                    vendorSubtotal += (item.finalPrice * item.quantity);
-                }
-
-                // Add Dynamic Fees from System Settings
-                const settings = await tx.systemSettings.findUnique({ where: { id: 'GLOBAL_CONFIG' } });
-                const deliveryFee = (fulfillmentType === 'DELIVERY') ? (settings?.deliveryFee ?? 5.00) : 0.00;
-                
-                const vendorTotal = vendorSubtotal + deliveryFee;
-                calculatedGrandTotal += vendorTotal;
-
-                // Create Order
-                const order = await tx.order.create({
-                    data: {
-                        orderGroupId: orderGroup.id,
-                        studentId: student.id,
-                        vendorId: vendorId,
-                        amount: vendorTotal,
-                        fulfillmentType: fulfillmentType as 'PICKUP' | 'DELIVERY',
-                        fulfillmentNote: fulfillmentNote || null,
-                        status: 'PENDING',
-                        escrowStatus: 'PENDING',
-                    }
-                });
-
-                // Create OrderItems
-                for (const item of items) {
-                    await tx.orderItem.create({
-                        data: {
-                            orderId: order.id,
-                            productId: item.id,
-                            quantity: item.quantity,
-                            price: item.finalPrice,
-                            productSnapshot: { title: item.title } // Keep record of title
-                        }
-                    });
-
-                    // Increment Flash Sale Stock
-                    if (item.activeFlashSaleId) {
-                        await tx.flashSale.update({
-                            where: { id: item.activeFlashSaleId },
-                            data: { stockSold: { increment: item.quantity } }
-                        });
-                    }
-                }
-            }
-            // C. Update Grand Total (Adding Platform Fee for Developer Profit)
-            const settings = await tx.systemSettings.findUnique({ where: { id: 'GLOBAL_CONFIG' } });
-            const platformFee = settings?.platformFee ?? 2.00;
-            const finalGrandTotal = calculatedGrandTotal + platformFee;
-
-            await tx.orderGroup.update({
-                where: { id: orderGroup.id },
-                data: { totalAmount: finalGrandTotal }
-            });
-
-            grandTotal = finalGrandTotal;
+            grandTotal = await executeOrderCreationTransaction(
+                tx,
+                student.id,
+                vendorGroups,
+                fulfillmentType,
+                fulfillmentNote,
+                paystackRef
+            );
         });
 
-        // 4. Return Success
         return NextResponse.json({
             success: true,
-            paystackRef, // Frontend uses this to initialize Paystack
+            paystackRef,
             totalAmount: grandTotal,
             email: student.email,
             publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
@@ -230,4 +234,5 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'System Error', details: String(error) }, { status: 500 });
     }
 }
+
 

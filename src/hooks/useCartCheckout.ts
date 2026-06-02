@@ -1,0 +1,195 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useCartStore } from "@/lib/store/cart"
+import { useUser, useAuth } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
+import { useModal } from "@/context/ModalContext"
+
+export function useCartCheckout() {
+  const { items, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCartStore()
+  const modal = useModal()
+  const [fulfillmentMethod, setFulfillmentMethod] = useState<"delivery" | "pickup">("delivery")
+  const { user } = useUser()
+  const { getToken } = useAuth()
+  const router = useRouter()
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false)
+  const [manualEmail, setManualEmail] = useState("")
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [tempEmailInput, setTempEmailInput] = useState("")
+  const [isHybridAuth, setIsHybridAuth] = useState(false)
+  const [hybridClerkId, setHybridClerkId] = useState<string | null>(null)
+
+  const [deliveryFeeConfig, setDeliveryFeeConfig] = useState(10)
+  const [platformFeeConfig, setPlatformFeeConfig] = useState(2)
+  const [paystackPublicKey, setPaystackPublicKey] = useState(process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "")
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/system/config")
+        const data = await res.json()
+        if (data.success) {
+          setDeliveryFeeConfig(data.deliveryFee ?? 10.00)
+          setPlatformFeeConfig(data.platformFee ?? 2.00)
+          if (data.paystackPublicKey) {
+            setPaystackPublicKey(data.paystackPublicKey)
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch fees", e)
+      }
+    }
+    fetchSettings()
+
+    if (typeof window !== "undefined") {
+      const isVerified = document.cookie.split("; ").some(c => c.startsWith("OMNI_IDENTITY_VERIFIED=TRUE"))
+      const syncId = document.cookie.split("; ").find(c => c.trim().startsWith("OMNI_HYBRID_SYNCED="))?.split("=")[1]
+      if (isVerified) {
+        setIsHybridAuth(true)
+        if (syncId) setHybridClerkId(syncId)
+      }
+    }
+  }, [])
+
+  const subtotal = getCartTotal()
+  const deliveryFee = items.length > 0 ? (fulfillmentMethod === "delivery" ? deliveryFeeConfig : 0.00) : 0
+  const platformFee = items.length > 0 ? platformFeeConfig : 0.00
+  const total = subtotal + deliveryFee + platformFee
+
+  const handleCheckout = async () => {
+    if (items.length === 0) return
+
+    if (!user && !isHybridAuth) {
+      modal.alert("Please sign in to checkout.", "Sign In Required", "warning")
+      return
+    }
+
+    let userEmail = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || manualEmail
+
+    if (!userEmail && isHybridAuth && hybridClerkId) {
+      try {
+        const res = await fetch(`/api/users/me?clerkId=${hybridClerkId}`)
+        const data = await res.json()
+        if (data.success && data.user?.email) {
+          userEmail = data.user.email
+          setManualEmail(userEmail)
+        }
+      } catch (e) {
+        console.error("Hybrid Email Fetch Failed", e)
+      }
+    }
+
+    if (!userEmail) {
+      setShowEmailModal(true)
+      return
+    }
+
+    const PaystackPop = (window as unknown as { PaystackPop: { setup: (options: unknown) => { openIframe: () => void } } }).PaystackPop
+    if (!PaystackPop) {
+      modal.alert("Payment system loading... Please wait or refresh.", "Paystack Loading")
+      return
+    }
+
+    setIsCreatingOrder(true)
+
+    try {
+      const token = await getToken()
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json"
+      }
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`
+      }
+
+      const res = await fetch("/api/orders/create", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          items: items.map(i => ({ id: i.id, quantity: i.quantity })),
+          fulfillmentType: fulfillmentMethod === "delivery" ? "DELIVERY" : "PICKUP"
+        })
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        const handler = PaystackPop.setup({
+          key: paystackPublicKey,
+          email: userEmail,
+          amount: Math.ceil(total * 100),
+          currency: "GHS",
+          ref: data.paystackRef,
+          metadata: {
+            custom_fields: [
+              { display_name: "Order ID", variable_name: "order_id", value: data.paystackRef }
+            ]
+          },
+          callback: function (response: { reference: string }) {
+            const verifyPayment = async () => {
+              try {
+                const vRes = await fetch("/api/payments/verify", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ reference: response.reference })
+                })
+                const vData = await vRes.json()
+                if (vData.success) {
+                  clearCart()
+                  window.location.href = "/orders?success=true"
+                } else {
+                  modal.alert(`Verification failed: ${vData.error || "Unknown error"}`, "Payment Error", "error")
+                  setIsCreatingOrder(false)
+                }
+              } catch (e) {
+                console.error(e)
+                modal.alert("Payment verification connection error.", "System Error", "error")
+                setIsCreatingOrder(false)
+              }
+            }
+            verifyPayment()
+          },
+          onClose: function () {
+            setIsCreatingOrder(false)
+            modal.alert("Payment cancelled.", "Action Aborted", "info")
+          }
+        })
+        handler.openIframe()
+      } else {
+        modal.alert(`Order Error: ${data.error}`, "Submission Failed", "error")
+        setIsCreatingOrder(false)
+      }
+    } catch (error) {
+      console.error("Checkout Error", error)
+      modal.alert("System connection failed.", "Network Error", "error")
+      setIsCreatingOrder(false)
+    }
+  }
+
+  return {
+    items,
+    removeFromCart,
+    updateQuantity,
+    getCartTotal,
+    clearCart,
+    fulfillmentMethod,
+    setFulfillmentMethod,
+    isCreatingOrder,
+    manualEmail,
+    setManualEmail,
+    showEmailModal,
+    setShowEmailModal,
+    tempEmailInput,
+    setTempEmailInput,
+    isHybridAuth,
+    hybridClerkId,
+    deliveryFeeConfig,
+    platformFeeConfig,
+    paystackPublicKey,
+    subtotal,
+    deliveryFee,
+    platformFee,
+    total,
+    handleCheckout
+  }
+}
