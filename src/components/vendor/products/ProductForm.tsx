@@ -205,39 +205,16 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
         <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-6xl mx-auto pb-24 space-y-8">
             
             {/* Header Actions */}
-            <div className={`flex flex-col sm:flex-row sm:items-center ${showTitle ? 'justify-between' : 'justify-end'} gap-4`}>
-                {showTitle && (
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">
-                            {initialData ? 'Edit Product' : 'Add New Product'}
-                        </h1>
-                        <p className="text-muted-foreground text-sm">
-                            {initialData ? 'Update your product details below.' : 'Fill in the details to list your item on the marketplace.'}
-                        </p>
-                    </div>
-                )}
-
-                <Button
-                    type="submit"
-                    disabled={loading || uploading}
-                    size="lg"
-                    className="font-semibold shadow-md"
-                >
-                    {uploading ? (
-                        <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading Media...
-                        </>
-                    ) : loading ? (
-                        <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
-                        </>
-                    ) : (
-                        <>
-                            <Save className="w-4 h-4 mr-2" /> Publish Product
-                        </>
-                    )}
-                </Button>
-            </div>
+            {showTitle && (
+                <div className="flex flex-col gap-1 pb-2">
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        {initialData ? 'Edit Product' : 'Add New Product'}
+                    </h1>
+                    <p className="text-muted-foreground text-sm">
+                        {initialData ? 'Update your product details below.' : 'Fill in the details to list your item on the marketplace.'}
+                    </p>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* LEFT COLUMN: Main Info */}
@@ -535,7 +512,7 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                 </div>
 
                 {/* RIGHT COLUMN: Settings */}
-                <div className="space-y-8">
+                <div className="lg:sticky lg:top-24 lg:self-start space-y-6">
                     
                     {/* Organization */}
                     <Card>
@@ -631,6 +608,27 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                             </div>
                         </CardContent>
                     </Card>
+
+                    <Button
+                        type="submit"
+                        disabled={loading || uploading}
+                        size="lg"
+                        className="w-full font-semibold shadow-md"
+                    >
+                        {uploading ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading Media...
+                            </>
+                        ) : loading ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="w-4 h-4 mr-2" /> Publish Product
+                            </>
+                        )}
+                    </Button>
                 </div>
             </div>
 
