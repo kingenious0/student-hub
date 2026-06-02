@@ -28,19 +28,7 @@ export async function POST(request: NextRequest) {
 
             const targetUser = app.user;
 
-            // 2. Check Active Missions (Blocker)
-            const activeMissions = await tx.mission.count({
-                where: {
-                    runnerId: targetUser.id,
-                    status: { notIn: ['DELIVERED', 'CANCELLED', 'FAILED'] }
-                }
-            });
-
-            if (activeMissions > 0) {
-                throw new Error("User has active runner missions. Must complete them first.");
-            }
-
-            // 3. Promote User (Role Swap & Detail Update)
+            // 2. Promote User (Role Swap & Detail Update)
             // Note: Balance stays in 'balance' column. No transfer needed, just safe keeping.
 
             // Extract address from Json location if possible
@@ -51,8 +39,6 @@ export async function POST(request: NextRequest) {
                 where: { id: targetUser.id },
                 data: {
                     role: 'VENDOR',
-                    isRunner: false,        // Deactivate Runner logic
-                    runnerStatus: 'OFFLINE',
                     shopName: app.shopName,
                     shopLandmark: landmark,
                     vendorStatus: 'ACTIVE', // Immediate activation? Or Pending? User implied immediate "Approve"

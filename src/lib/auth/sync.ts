@@ -22,10 +22,6 @@ const getCachedUser = unstable_cache(
                 role: true,
                 university: true,
                 onboarded: true,
-                isRunner: true,
-                runnerStatus: true,
-                xp: true,
-                runnerLevel: true,
                 currentHotspot: true,
                 lastActive: true,
                 walletFrozen: true,
@@ -74,7 +70,7 @@ export async function ensureUserExists() {
                 email: email,
                 name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Anonymous Student',
                 role: 'STUDENT', // Default role
-                university: 'AAMUSTED', // Default to AAMUSTED (USTED)
+                university: 'USTED', // Default to USTED
             },
             select: {
                 id: true,
@@ -84,10 +80,6 @@ export async function ensureUserExists() {
                 role: true,
                 university: true,
                 onboarded: true,
-                isRunner: true,
-                runnerStatus: true,
-                xp: true,
-                runnerLevel: true,
                 currentHotspot: true,
                 lastActive: true,
                 walletFrozen: true,

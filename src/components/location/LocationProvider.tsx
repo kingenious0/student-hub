@@ -32,17 +32,10 @@ export default function LocationProvider({ children }: { children: ReactNode }) 
             // 3. Auto-Start Tracking for Students (Efficient, Foreground Only)
             // Skip web-side tracking if we are in the Mobile App (Native handles it)
             if (!isMobileApp) {
-                const isRunner = userRole === 'RUNNER' || user.publicMetadata?.isRunner;
-
-                // Only track non-runners via web (Runners use native app primarily, or manual toggle)
-                if (!isRunner) {
-                    try {
-                        // Pass 'true' to indicate this is an init call, handled safely in client
-                        startTracking('EFFICIENT', false);
-                    } catch (e) {
-                        // Rate limits might happen if we reload too fast, safely ignore
-                        console.warn('Web-side tracking init warning:', e);
-                    }
+                try {
+                    startTracking('EFFICIENT', false);
+                } catch (e) {
+                    console.warn('Web-side tracking init warning:', e);
                 }
             } else {
                 console.log('Mobile App detected: Web-side tracking suppressed in favor of Native Tracking.');

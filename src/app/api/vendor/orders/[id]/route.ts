@@ -54,7 +54,7 @@ export async function PATCH(
         // Notification Logic
         if (status === 'READY') {
             if (order.student.phoneNumber) {
-                // SMS: "OMNI: Your order [Item] is READY at [Shop]. Assigning runner..."
+                // SMS: "OMNI: Your order [Item] is READY at [Shop]."
                 const primaryItem = order.items?.[0];
                 const itemTitle = primaryItem ? primaryItem.product.title : 'Details';
                 const displayTitle = order.items.length > 1 ? `${itemTitle} +${order.items.length - 1}` : itemTitle;

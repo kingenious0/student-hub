@@ -79,7 +79,7 @@ export default function CampusGuard({ children }: { children: React.ReactNode })
                         🎓 Select Your Campus
                     </h2>
                     <p className="text-center text-foreground/50 text-xs font-bold uppercase tracking-widest mb-8">
-                        To see relevant products & runners near you
+                        To see relevant products near you
                     </p>
 
                     <div className="space-y-3 mb-8 max-h-[50vh] overflow-y-auto">

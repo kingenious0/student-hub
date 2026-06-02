@@ -38,8 +38,8 @@ export async function POST(request: NextRequest) {
             }, { status: 404 });
         }
 
-        // 2. Security Check: Only the vendor or a runner should be able to verify this
-        // In this implementation, we allow any authenticated vendor/runner as long as they have the key
+        // 2. Security Check: Only the vendor should be able to verify this
+        // which the student physically gives them.
         // which the student physically gives them.
 
         // 3. Verification successful! Release Escrow.
@@ -61,36 +61,6 @@ export async function POST(request: NextRequest) {
                 }
             })
         ]);
-
-        // Award XP to the runner if it was a delivery
-        if (order.fulfillmentType === 'DELIVERY' && order.runnerId) {
-            const runner = await prisma.user.findUnique({
-                where: { id: order.runnerId }
-            });
-
-            if (runner) {
-                const newXP = (runner.xp || 0) + 10;
-                const xpForNextLevel = (runner.runnerLevel || 1) * 100;
-
-                let newLevel = runner.runnerLevel || 1;
-                let remainingXP = newXP;
-
-                if (remainingXP >= xpForNextLevel) {
-                    newLevel += 1;
-                    remainingXP = 0; // Reset XP on level up for this simple system
-                }
-
-                await prisma.user.update({
-                    where: { id: order.runnerId },
-                    data: {
-                        xp: remainingXP,
-                        runnerLevel: newLevel,
-                        runnerStatus: 'IDLE', // Back to idle
-                        balance: { increment: order.runnerEarnings || 0 }
-                    }
-                });
-            }
-        }
 
         return NextResponse.json({
             success: true,

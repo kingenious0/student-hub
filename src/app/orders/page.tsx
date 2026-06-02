@@ -153,7 +153,7 @@ const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCan
                             </button>
                         </div>
                         <div className="px-4 py-2 text-[10px] text-zinc-500 text-center font-medium">
-                            Show this key to the runner/vendor ONLY when you have received the item.
+                            Show this key to the vendor ONLY when you have received the item.
                         </div>
                     </div>
                 )}

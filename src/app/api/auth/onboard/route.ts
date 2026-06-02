@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
             where: { clerkId: userId },
             update: {
                 name: name,
-                university: university || 'AAMUSTED',
+                university: university || 'USTED',
                 onboarded: true,
                 phoneNumber: phoneNumber
             },
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
                 email: email,
                 name: name,
                 role: 'STUDENT', // Everyone starts as STUDENT
-                university: university || 'AAMUSTED',
+                university: university || 'USTED',
                 onboarded: true,
                 vendorStatus: 'NOT_APPLICABLE',
                 phoneNumber: phoneNumber

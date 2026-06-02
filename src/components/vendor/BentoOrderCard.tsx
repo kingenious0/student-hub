@@ -38,7 +38,7 @@ export default function BentoOrderCard({ order }: BentoOrderCardProps) {
 
     const handleMarkReady = async () => {
         // Use Global Modal for standard confirmations
-        if (!await modal.confirm('Mark this order as READY for runner pickup?', 'Confirm Status Update')) return;
+        if (!await modal.confirm('Mark this order as READY?', 'Confirm Status Update')) return;
 
         setIsUpdating(true);
         try {

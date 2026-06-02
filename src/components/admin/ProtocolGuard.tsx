@@ -5,7 +5,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import FeatureDisabled from './FeatureDisabled';
 
 interface ProtocolGuardProps {
-    protocol: 'MARKET' | 'PULSE' | 'RUNNER' | 'ESCROW' | 'VENDOR' | 'MARKET_ACTIONS';
+    protocol: 'MARKET' | 'PULSE' | 'ESCROW' | 'VENDOR' | 'MARKET_ACTIONS';
     children: ReactNode;
     fallback?: ReactNode;
 }
@@ -60,7 +60,7 @@ function getFeatureName(protocol: string): string {
     const names: Record<string, string> = {
         'MARKET': 'Marketplace',
         'PULSE': 'Campus Pulse',
-        'RUNNER': 'Runner Mode',
+
         'ESCROW': 'Escrow',
         'VENDOR': 'Vendor Terminal',
         'MARKET_ACTIONS': 'Trading System'

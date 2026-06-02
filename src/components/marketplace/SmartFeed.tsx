@@ -74,7 +74,7 @@ export default function SmartFeed() {
                 </div>
                 <div className="space-y-4 max-w-md px-4">
                     <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">
-                        AAMUSTED’s Biggest Hustle is About to Begin
+                        USTED's Biggest Hustle is About to Begin
                     </h2>
                     <p className="text-sm text-foreground/60 font-medium leading-relaxed">
                         The marketplace is fresh, and the opportunity is huge. <br />

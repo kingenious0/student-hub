@@ -66,17 +66,7 @@ export async function POST(
                 }
             });
 
-            // Update Mission if exists
-            const mission = await tx.mission.findUnique({
-                where: { orderId: orderId }
-            });
 
-            if (mission) {
-                await tx.mission.update({
-                    where: { orderId: orderId },
-                    data: { status: 'COMPLETED' }
-                });
-            }
         });
 
         // Send Notification

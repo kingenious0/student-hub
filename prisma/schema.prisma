@@ -16,7 +16,7 @@ model User {
   email        String    @unique
   name         String?
   role         Role      @default(STUDENT)
-  university   String?   @default("AAMUSTED") // Default to USTED Campus (AAMUSTED)
+  university   String?   @default("USTED") // Default to USTED Campus
   
   // Vendor-specific fields
   shopName       String?
@@ -25,11 +25,6 @@ model User {
   isAcceptingOrders Boolean   @default(true)
   phoneNumber    String?
   
-  // Runner Mode fields
-  isRunner     Boolean   @default(false)
-  runnerStatus String    @default("OFFLINE") // OFFLINE, ONLINE, BUSY
-  xp           Int       @default(0)
-  runnerLevel  Int       @default(1)
   
   // Location tracking (hotspot-based)
   currentHotspot String? // e.g., "Balme Library", "Night Market", "Pent Hostel"
@@ -44,13 +39,11 @@ model User {
   products     Product[]
   orderGroups  OrderGroup[] @relation("StudentOrderGroups")
   orders       Order[]   @relation("StudentOrders")
-  deliveries   Order[]   @relation("RunnerDeliveries")
   vendorOrders Order[]   @relation("VendorOrders")
   stories      Story[]   @relation("VendorStories")
   payoutRequests PayoutRequest[]
   storyLikes   StoryLike[] @relation("UserStoryLikes")
   storyFavorites StoryFavorite[] @relation("UserStoryFavorites")
-  missions     Mission[]
   
   // Financials
   balance      Float     @default(0.0)
@@ -276,11 +269,6 @@ model Order {
   vendorId        String
   vendor          User        @relation("VendorOrders", fields: [vendorId], references: [id], onDelete: Cascade)
   
-  // Runner/delivery info
-  runnerId        String?
-  runner          User?       @relation("RunnerDeliveries", fields: [runnerId], references: [id], onDelete: SetNull)
-  runnerEarnings  Float?      // Runner's cut
-  runnerXpAwarded Int?        // XP awarded to runner
   
   fulfillmentType FulfillmentType @default(PICKUP)
   fulfillmentNote String?
@@ -295,8 +283,6 @@ model Order {
   pickupCode      String?     // 6-digit code for Vendor Hand-off
   releaseKey      String?     // 6-digit Secure Release Key (e.g., 882-104)
 
-  // Relation to Mission
-  mission         Mission?
   
   @@index([studentId])
   @@index([vendorId])
@@ -323,21 +309,6 @@ model OrderItem {
   @@index([productId])
 }
 
-model Mission {
-  id          String   @id @default(cuid())
-  
-  orderId     String   @unique
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  runnerId    String?
-  runner      User?    @relation(fields: [runnerId], references: [id], onDelete: SetNull)
-  
-  status      String   @default("PENDING") // PENDING, ASSIGNED, PICKED_UP, DELIVERED
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
 enum FulfillmentType {
   PICKUP
   DELIVERY
@@ -348,7 +319,6 @@ enum OrderStatus {
   PAID         // Payment received, in escrow
   PREPARING    // Vendor preparing order
   READY        // Ready for pickup/delivery
-  PICKED_UP    // Runner picked up (if delivery)
   COMPLETED    // QR scanned, escrow released
   CANCELLED    // Order cancelled
   REFUNDED     // Payment refunded
@@ -414,7 +384,7 @@ model SystemSettings {
   maintenanceMode Boolean  @default(false)
   deliveryFee     Float    @default(5.0)
   platformFee     Float    @default(2.0)
-  activeFeatures  String[] // ["MARKET", "PULSE", "RUNNER", "ESCROW"]
+  activeFeatures  String[] // ["MARKET", "PULSE", "ESCROW"]
   globalNotice    String?  // "Maintenance until 2:00 PM"
   contentOverride Json?    // Stores live-edited UI text
   

@@ -6,9 +6,9 @@
  */
 // University Registry System
 export const UNIVERSITY_REGISTRY = {
-    AAMUSTED: {
-        id: 'AAMUSTED',
-        name: 'AAMUSTED (Main)',
+    USTED: {
+        id: 'USTED',
+        name: 'USTED (Main)',
         hotspots: {
             OPOKU_WARE_II: 'Opoku Ware Hall II',
             CANTEEN: 'Campus Canteen',
@@ -141,9 +141,9 @@ export function getHotspotsForUniversity(uniId: string | null) {
 }
 
 // Backward compatibility for existing code using CAMPUS_HOTSPOTS
-// (Maps to AAMUSTED by default for now, or FLATTENED list)
+// (Maps to USTED by default for now, or FLATTENED list)
 export const CAMPUS_HOTSPOTS = {
-    ...UNIVERSITY_REGISTRY.AAMUSTED.hotspots,
+    ...UNIVERSITY_REGISTRY.USTED.hotspots,
     ...UNIVERSITY_REGISTRY.KNUST.hotspots,
     ...GENERIC_HOTSPOTS
 };

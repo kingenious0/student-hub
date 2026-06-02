@@ -45,12 +45,6 @@ const faqs: FAQItem[] = [
             'We use a secure escrow system. When you pay, funds are held safely by OMNI. They are only released to the vendor when you scan the QR code upon delivery to confirm you have received your order.',
     },
     {
-        category: 'orders',
-        question: 'How do I become a runner?',
-        answer:
-            'Go to the Runner Dashboard from the main menu and toggle your status to "Online". You will need to complete a quick verification process to start receiving delivery missions.',
-    },
-    {
         category: 'payments',
         question: 'What payment methods do you accept?',
         answer: 'We accept all major payment methods through Paystack, including Mobile Money (MTN, Telecel, AT), debit/credit cards, and bank transfers.',
@@ -65,7 +59,7 @@ const faqs: FAQItem[] = [
         category: 'account',
         question: 'Can I use OMNI on multiple campuses?',
         answer:
-            'Yes! You can switch your location in the header to see vendors and hubs at supported campuses like AAMUSTED, UPSA, etc.',
+            'Yes! You can switch your location in the header to see vendors and hubs at supported campuses like USTED, UPSA, etc.',
     },
 ];
 
@@ -314,7 +308,6 @@ export default function HelpPage() {
                                                         <option>Order Inquiries</option>
                                                         <option>Payment Issues</option>
                                                         <option>Vendor Support</option>
-                                                        <option>Runner Application</option>
                                                         <option>Bug Report</option>
                                                     </select>
                                                 </div>

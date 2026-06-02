@@ -8,7 +8,7 @@ This document provides a high-density, engineering-first breakdown of the OMNI S
 
 The repository is structured as a decoupled monorepo consisting of two primary projects:
 * **`student-hub/`**: The core web application, Next.js App Router API server, merchant portals, and administrative tooling.
-* **`student-mobile/`**: The mobile interface targeting student buyers and the last-mile delivery runner economy (React Native / Expo SDK 54).
+* **`student-mobile/`**: The mobile interface targeting student buyers (React Native / Expo SDK 54).
 
 ```
 student-marketplace/
@@ -106,14 +106,8 @@ To eliminate fraud in student-to-student transactions, the system implements a p
    * Upon successful Paystack webhook validation (`/api/webhooks/paystack`), the order status transitions to `PAID` and `escrowStatus` moves to `HELD`.
    * The platform generates a secure 6-digit release key and a corresponding encrypted QR code (AES-256 encrypted string containing transaction metadata).
 3. **Delivery Verification**:
-   * The runner scans the buyer’s QR code.
+   * The vendor scans the buyer’s QR code.
    * Decrypted payload verification triggers `/api/delivery/verify-qr`.
-   * **Atomic Database State Update**:
-     * The backend executes an atomic database transaction via `prisma.$transaction` that simultaneously executes the following:
-       * Transitions `Order` status to `COMPLETED` and `escrowStatus` to `RELEASED`.
-       * Credits the Vendor’s ledger account profile balance with the base price.
-       * Credits the Runner’s ledger account balance with the delivery fee.
-       * Increments the runner's gamification experience points (`xp`) and calculates if a level-up occurs.
 
 ### D. Campus Pulse (Vertical Story Feed)
 To boost sales, vendors can upload short-form engagement videos that live for exactly 24 hours.
@@ -162,10 +156,7 @@ model Order {
   vendorId        String
   vendor          User            @relation("VendorOrders", fields: [vendorId], references: [id], onDelete: Cascade)
   
-  runnerId        String?
-  runner          User?           @relation("RunnerDeliveries", fields: [runnerId], references: [id], onDelete: SetNull)
-  runnerEarnings  Float?
-  runnerXpAwarded Int?
+
   
   fulfillmentType FulfillmentType @default(PICKUP)
   
@@ -182,7 +173,7 @@ model Order {
 
 ### B. Relationship Policies
 * **Cascade on Delete**: Removing a core parent domain entity (e.g., a `Product`) deletes secondary data streams like reviews or active flash sale settings cascade-style.
-* **Safe Unlink on Null**: If a user acting as a runner leaves the platform, their associated completed `Order` records are strictly retained in the DB for historical financial audits, with the `runnerId` field nullified (`onDelete: SetNull`).
+
 
 ---
 
@@ -210,5 +201,4 @@ The codebase is functional for alpha demonstrations but has clear, actionable st
 * **Pre-Launch Task**: Map all campus logical landmarks to static database IDs and establish foreign key relations to enforce referential integrity and avoid string mismatch failures across client applications.
 
 #### Two-Step Fulfillment Hand-off:
-* **Current Status**: Hand-off from vendor to runner relies on verbal confirmation.
-* **Pre-Launch Task**: Enforce the full two-step transaction loop where the Vendor UI requires the runner to input a generated `pickupCode` before updating the ledger or marking the order state as `PICKED_UP`.
+

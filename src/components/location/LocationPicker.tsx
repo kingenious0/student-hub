@@ -24,7 +24,7 @@ interface LocationPickerProps {
     initialLng?: number;
 }
 
-const AAMUSTED_CENTER: [number, number] = [6.669, -1.679];
+const USTED_CENTER: [number, number] = [6.669, -1.679];
 
 // Component to handle map center updates when props change or search happens
 function MapUpdater({ center }: { center: [number, number] }) {
@@ -71,9 +71,9 @@ function DraggableMarker({ position, onPositionChange }: { position: [number, nu
 export default function LocationPicker({ onLocationSelect, initialLat, initialLng }: LocationPickerProps) {
     const { alert } = useModal();
 
-    // Default to AAMUSTED if no props provided
+    // Default to USTED if no props provided
     const [selectedLocation, setSelectedLocation] = useState<[number, number]>(
-        (initialLat && initialLng) ? [initialLat, initialLng] : AAMUSTED_CENTER
+        (initialLat && initialLng) ? [initialLat, initialLng] : USTED_CENTER
     );
 
     const [query, setQuery] = useState('');

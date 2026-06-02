@@ -14,7 +14,6 @@ export default function Footer() {
         '/checkout',                    // Checkout flow
         '/dashboard/vendor',            // Vendor dashboard
         '/dashboard/admin',             // Admin dashboard
-        '/runner',                      // Runner dashboard
         '/onboarding',                  // Onboarding flow
         '/sign-in',                     // Sign In
         '/sign-up',                     // Sign Up

@@ -13,7 +13,7 @@ export default function AboutPage() {
 
           <h2 className="text-2xl font-black uppercase tracking-tight mt-12 mb-4">Our Mission</h2>
           <p>
-            We aim to digitize the student experience by providing a safe, fast, and reliable platform for commerce and connection. Whether you're looking for late-night food, selling your old textbooks, or earning extra cash as a runner, OMNI is your hub.
+            We aim to digitize the student experience by providing a safe, fast, and reliable platform for commerce and connection. Whether you're looking for late-night food, selling your old textbooks, or starting your own shop, OMNI is your hub.
           </p>
 
           <h2 className="text-2xl font-black uppercase tracking-tight mt-12 mb-4">The Ecosystem</h2>

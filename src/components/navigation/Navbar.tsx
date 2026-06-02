@@ -38,7 +38,7 @@ export default function Navbar() {
         setMounted(true);
     }, []);
 
-    const [dbUser, setDbUser] = useState<{ role: string; vendorStatus: string; isRunner: boolean; onboarded: boolean; university?: string } | null>(null);
+    const [dbUser, setDbUser] = useState<{ role: string; vendorStatus: string; onboarded: boolean; university?: string } | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -396,30 +396,6 @@ export default function Navbar() {
                                             <ChevronRightIcon className="w-5 h-5 text-foreground/40" />
                                         </Link>
                                     </div>
-
-                                    {/* HUSTLE: RUNNER (Removed from UI but code preserved) */}
-                                    {/* {dbUser?.role !== 'VENDOR' && (
-                                        <div className="mb-6 p-1 -mt-4">
-                                            <Link
-                                                href={dbUser?.isRunner ? "/runner" : "/runner"}
-                                                onClick={() => setIsDrawerOpen(false)}
-                                                className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-background to-surface border border-yellow-500/30 rounded-2xl shadow-lg relative overflow-hidden group"
-                                            >
-                                                <div className="absolute inset-0 bg-yellow-500/5 group-hover:bg-yellow-500/10 transition-colors"></div>
-                                                <div className="flex items-center gap-3 relative z-10">
-                                                    <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center text-black">
-                                                        <ZapIcon className="w-5 h-5" />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-black text-foreground uppercase tracking-widest">
-                                                            {dbUser?.isRunner ? 'Runner Mode' : 'Become a Runner'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <ChevronRightIcon className="w-5 h-5 text-foreground/40" />
-                                            </Link>
-                                        </div>
-                                    )} */}
 
                                     <div className="mb-6">
                                         <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3 px-2">

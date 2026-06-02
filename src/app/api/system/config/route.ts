@@ -29,7 +29,7 @@ export async function GET() {
         return NextResponse.json({
             success: true,
             maintenanceMode: config?.maintenanceMode ?? false,
-            activeFeatures: config?.activeFeatures ?? ['MARKET', 'PULSE', 'RUNNER', 'ESCROW'],
+            activeFeatures: config?.activeFeatures ?? ['MARKET', 'PULSE', 'ESCROW'],
             globalNotice: config?.globalNotice ?? null,
             contentOverride: config?.contentOverride ?? {},
             paystackPublicKey,
@@ -40,7 +40,7 @@ export async function GET() {
         return NextResponse.json({
             success: false,
             maintenanceMode: false,
-            activeFeatures: ['MARKET', 'PULSE', 'RUNNER', 'ESCROW'],
+            activeFeatures: ['MARKET', 'PULSE', 'ESCROW'],
             globalNotice: null
         });
     }

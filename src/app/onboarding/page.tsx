@@ -134,7 +134,7 @@ export default function OnboardingPage() {
                                 <option value="UENR">University of Energy and Natural Resources</option>
                                 <option value="UDS">University for Development Studies</option>
                                 <option value="UEW">University of Education, Winneba</option>
-                                <option value="AAMUSTED">Akenten Appiah-Menka University of Skills Training and Entrepreneurial Development (AAMUSTED)</option>
+                                <option value="USTED">University of Skills Training and Entrepreneurial Development (USTED)</option>
                                 <option value="UMAT">University of Mines and Technology</option>
                                 <option value="UHAS">University of Health and Allied Sciences</option>
                                 <option value="UNIMAC">University of Media, Arts and Communication</option>

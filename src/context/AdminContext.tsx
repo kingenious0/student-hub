@@ -24,7 +24,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const [isGhostAdmin, setIsGhostAdmin] = useState(false);
     const [superAccess, setSuperAccess] = useState(false);
     const [ghostEditMode, setGhostEditMode] = useState(false);
-    const [activeFeatures, setActiveFeatures] = useState<string[]>(['MARKET', 'PULSE', 'RUNNER', 'ESCROW', 'VENDOR']);
+    const [activeFeatures, setActiveFeatures] = useState<string[]>(['MARKET', 'PULSE', 'ESCROW', 'VENDOR']);
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [contentOverrides, setContentOverrides] = useState<Record<string, any>>({});
     const [isConfigLoaded, setIsConfigLoaded] = useState(false);

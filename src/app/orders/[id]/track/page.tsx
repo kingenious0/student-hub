@@ -124,7 +124,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                 <Card>
                     <CardHeader>
                         <CardTitle>Order Status</CardTitle>
-                        <CardDescription>Estimated delivery time depends on runner availability.</CardDescription>
+                        <CardDescription>Estimated delivery time depends on vendor preparation.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isCancelled ? (

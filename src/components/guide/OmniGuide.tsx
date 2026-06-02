@@ -28,13 +28,6 @@ const MEMBER_STEPS = [
         content: 'Browse the feed to find products from students near you. Use the Search to find specific halls.',
         position: 'bottom-left'
     },
-    {
-        id: 'runner',
-        target: 'omni-nav-runner',
-        title: 'SHADOW RUNNER',
-        content: 'Want to earn cash? Activate Runner Mode to deliver items.',
-        position: 'bottom-left'
-    }
 ];
 
 // --- MOBILE MEMBER TOUR (Authenticated Mobile) ---
@@ -100,7 +93,7 @@ const ONBOARDING_STEPS = [
         id: 'onboard_student_select',
         target: 'omni-onboard-student',
         title: 'STUDENT ACCESS',
-        content: 'Select this if you want to buy items, browse the feed, or eventually become a Runner.',
+        content: 'Select this if you want to buy items or browse the feed.',
         position: 'right'
     },
     {

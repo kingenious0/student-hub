@@ -15,12 +15,12 @@ export async function GET(request: NextRequest) {
         const activeEscrows = await prisma.order.findMany({
             where: {
                 escrowStatus: 'HELD',
-                status: { in: ['READY', 'PICKED_UP'] } // Orders in progress
+                status: { in: ['READY'] }
             },
             include: {
                 vendor: { select: { id: true, shopName: true, name: true } },
                 student: { select: { id: true, name: true, email: true } },
-                runner: { select: { id: true, name: true } }
+
             },
             orderBy: { createdAt: 'desc' }
         });
@@ -67,10 +67,7 @@ export async function POST(request: NextRequest) {
                     data: { balance: { increment: order.amount } }
                 })
             ]);
-            // NOTE: Runners don't get paid here automatically unless we add that logic, 
-            // but usually a dispute means manual resolution. 
-            // Ideally we should also pay the runner if they did the work. 
-            // For now, simple vendor release is the priority.
+
         } else if (action === 'FORCE_REFUND') {
             // Just mark as REFUNDED. The actual money refund (Paystack) might be manual or via API.
             // For MVP, we flag it in DB.

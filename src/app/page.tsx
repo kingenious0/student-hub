@@ -126,7 +126,7 @@ export default function Home() {
               transition={{ delay: 0.6 }}
               className="text-white/40 text-xl md:text-3xl font-bold mb-14 max-w-2xl leading-none tracking-tight"
             >
-              The digital hub for the <span className="text-white">AAMUSTED</span> underground economy.
+              The digital hub for the <span className="text-white">USTED</span> underground economy.
             </motion.p>
 
             {/* CTA Button with Liquid Gradient */}
