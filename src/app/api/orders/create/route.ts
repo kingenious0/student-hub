@@ -203,14 +203,17 @@ export async function POST(request: NextRequest) {
                     }
                 }
             }
+            // C. Update Grand Total (Adding Platform Fee for Developer Profit)
+            const settings = await tx.systemSettings.findUnique({ where: { id: 'GLOBAL_CONFIG' } });
+            const platformFee = settings?.platformFee ?? 2.00;
+            const finalGrandTotal = calculatedGrandTotal + platformFee;
 
-            // C. Update Grand Total
             await tx.orderGroup.update({
                 where: { id: orderGroup.id },
-                data: { totalAmount: calculatedGrandTotal }
+                data: { totalAmount: finalGrandTotal }
             });
 
-            grandTotal = calculatedGrandTotal;
+            grandTotal = finalGrandTotal;
         });
 
         // 4. Return Success

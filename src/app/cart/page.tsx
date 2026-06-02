@@ -71,7 +71,8 @@ export default function CartPage() {
 
     const subtotal = getCartTotal();
     const deliveryFee = items.length > 0 ? (fulfillmentMethod === 'delivery' ? deliveryFeeConfig : 0.00) : 0;
-    const total = subtotal + deliveryFee;
+    const platformFee = items.length > 0 ? platformFeeConfig : 0.00;
+    const total = subtotal + deliveryFee + platformFee;
 
     const handleCheckout = async () => {
         if (items.length === 0) return;
@@ -386,6 +387,12 @@ export default function CartPage() {
                                             </span>
                                             <span className={`font-bold ${fulfillmentMethod === 'pickup' ? 'text-green-600' : 'text-gray-900 dark:text-foreground'}`}>
                                                 {items.length > 0 ? (fulfillmentMethod === 'delivery' ? `₵${deliveryFeeConfig.toFixed(2)}` : `Free`) : '₵0.00'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm font-medium text-gray-600 dark:text-foreground/70">
+                                            <span>Access Royalty</span>
+                                            <span className="font-bold text-gray-900 dark:text-foreground">
+                                                ₵{items.length > 0 ? platformFeeConfig.toFixed(2) : '0.00'}
                                             </span>
                                         </div>
 
