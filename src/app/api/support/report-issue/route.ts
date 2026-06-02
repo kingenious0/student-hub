@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         });
 
         // Send SMS to Admin
-        const adminPhone = process.env.ADMIN_SUPPORT_PHONE || '0244795495';
+        const adminPhone = process.env.ADMIN_SUPPORT_PHONE || '0597626090';
         if (adminPhone) {
             const smsText = `OMNI ESCROW ISSUE: Order #${order.id.slice(0, 8).toUpperCase()} has been flagged by vendor ${vendor.shopName || vendor.name}. Check your email.`;
             await sendSMS(adminPhone, smsText);

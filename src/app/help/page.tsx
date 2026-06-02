@@ -390,13 +390,13 @@ export default function HelpPage() {
                                 Need emergency system assistance? Contact our central operations desk directly.
                             </p>
                             <div className="space-y-3 font-semibold text-xs text-foreground/80">
-                                <a href="mailto:support@omni-student.com" className="flex items-center gap-3 p-3 rounded-xl hover:bg-foreground/5 border border-transparent hover:border-surface-border transition-all">
+                                <a href="mailto:omnighana@gmail.com" className="flex items-center gap-3 p-3 rounded-xl hover:bg-foreground/5 border border-transparent hover:border-surface-border transition-all">
                                     <Mail className="w-4 h-4 text-primary" />
-                                    support@omni-student.com
+                                    omnighana@gmail.com
                                 </a>
-                                <a href="tel:0244795495" className="flex items-center gap-3 p-3 rounded-xl hover:bg-foreground/5 border border-transparent hover:border-surface-border transition-all">
+                                <a href="tel:0597626090" className="flex items-center gap-3 p-3 rounded-xl hover:bg-foreground/5 border border-transparent hover:border-surface-border transition-all">
                                     <Phone className="w-4 h-4 text-primary" />
-                                    +233 24 479 5495
+                                    +233 59 762 6090
                                 </a>
                             </div>
                         </div>

@@ -112,7 +112,7 @@ export async function sendSupportTicketEmail({
         </div>
     `;
 
-    const adminEmail = process.env.ADMIN_SUPPORT_EMAIL || 'kingeniousrecord@gmail.com';
+    const adminEmail = process.env.ADMIN_SUPPORT_EMAIL || 'omnighana@gmail.com';
 
     await sendEmail({
         to: adminEmail,
@@ -155,7 +155,7 @@ export async function sendOrderIssueEmail({
         </div>
     `;
 
-    const adminEmail = process.env.ADMIN_SUPPORT_EMAIL || 'kingeniousrecord@gmail.com';
+    const adminEmail = process.env.ADMIN_SUPPORT_EMAIL || 'omnighana@gmail.com';
 
     await sendEmail({
         to: adminEmail,
