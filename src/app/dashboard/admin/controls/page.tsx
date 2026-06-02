@@ -19,6 +19,37 @@ export default function SystemControlsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
+    const [resetting, setResetting] = useState(false);
+
+    const handleCleanSlate = async () => {
+        const confirmed = confirm(
+            "⚠️ DESTRUCTIVE ACTION WARNING! ⚠️\n\nAre you absolutely sure you want to delete all order transactions, payouts, and reset all student/vendor balances to ₵0.00?\n\nThis will completely purge all test data so you can launch with a clean live ledger. This action CANNOT be undone!"
+        );
+        if (!confirmed) return;
+
+        setResetting(true);
+        setMessage('');
+
+        try {
+            const res = await fetch('/api/admin/clean-slate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                alert("🎉 SUCCESS: Ledgers purged! All user and vendor balances have been reset to ₵0.00.");
+                setMessage('DATABASE RESET TO PRODUCTION CLEAN SLATE');
+                setTimeout(() => setMessage(''), 5000);
+            } else {
+                alert(`❌ FAILURE: ${data.error || 'Server error'}`);
+            }
+        } catch (error) {
+            alert("❌ COMMUNICATION ERROR: Could not trigger production reset.");
+        } finally {
+            setResetting(false);
+        }
+    };
 
     useEffect(() => {
         fetchConfig();
@@ -189,6 +220,46 @@ export default function SystemControlsPage() {
                                     [ DEV MODE: Download Full JSON Core Archive ]
                                 </span>
                             </Link>
+                        </div>
+
+                        {/* Production Clean Slate / Database Reset */}
+                        <div className="pt-8 border-t border-surface-border space-y-6">
+                            <div>
+                                <h3 className="text-xl font-black text-red-500 uppercase tracking-tight">Production Clean Slate</h3>
+                                <p className="text-foreground/30 text-[10px] font-black uppercase tracking-widest mt-1">
+                                    Permanently wipe all test transactions, orders, payouts, and reset user balances back to ₵0.00.
+                                </p>
+                            </div>
+                            
+                            <div className="p-6 bg-red-950/20 border border-red-500/25 rounded-3xl space-y-4">
+                                <div className="flex items-start gap-3">
+                                    <span className="text-red-500 text-lg mt-0.5">⚠️</span>
+                                    <div className="flex-1">
+                                        <p className="text-[10px] font-black text-white uppercase tracking-wider mb-1">
+                                            DESTRUCTIVE DEPLOYMENT PROTOCOL
+                                        </p>
+                                        <p className="text-[10px] text-foreground/55 leading-relaxed font-mono">
+                                            This action is irreversible. All order histories, items, and pending/completed payout requests will be deleted from CockroachDB to establish a pristine clean production ledger.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={handleCleanSlate}
+                                    disabled={resetting}
+                                    className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black text-sm uppercase tracking-widest rounded-xl transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {resetting ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            PURGING LEDGERS...
+                                        </>
+                                    ) : (
+                                        "EXECUTE PRODUCTION RESET"
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </div>
 

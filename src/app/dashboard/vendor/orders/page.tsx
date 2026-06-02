@@ -79,6 +79,39 @@ const formatDate = (dateString: string) => {
     });
 };
 
+// Synthesize cash register / success double-chime using native AudioContext (zero static file dependency)
+const playNotificationSound = () => {
+    try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        
+        // Chime 1
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        gain1.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+        osc1.start(audioCtx.currentTime);
+        osc1.stop(audioCtx.currentTime + 0.6);
+
+        // Chime 2
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.1); // A5
+        gain2.gain.setValueAtTime(0.15, audioCtx.currentTime + 0.1);
+        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
+        osc2.start(audioCtx.currentTime + 0.1);
+        osc2.stop(audioCtx.currentTime + 0.7);
+    } catch (e) {
+        console.error('Failed to play synthesized sound:', e);
+    }
+};
+
 export default function VendorOrdersPage() {
     const modal = useModal();
     const router = useRouter();
@@ -93,6 +126,8 @@ export default function VendorOrdersPage() {
 
     useEffect(() => {
         fetchOrders();
+        const interval = setInterval(fetchOrders, 8000); // 8s polling for fast real-time updates
+        return () => clearInterval(interval);
     }, []);
 
     const fetchOrders = async () => {
@@ -105,7 +140,22 @@ export default function VendorOrdersPage() {
             const res = await fetch('/api/vendor/orders', { headers });
             if (res.ok) {
                 const data = await res.json();
-                setOrders(data.orders || []);
+                const newOrders = data.orders || [];
+
+                setOrders((prevOrders) => {
+                    if (prevOrders.length > 0) {
+                        const oldIds = prevOrders.map(o => o.id);
+                        const hasNewOrder = newOrders.some((o: any) => !oldIds.includes(o.id) && (o.status === 'PAID' || o.status === 'READY'));
+                        if (hasNewOrder) {
+                            playNotificationSound();
+                            toast.success('🔔 NEW ORDER RECEIVED!', {
+                                description: 'A customer has purchased items from your shop. Check the New tab!',
+                                duration: 8000
+                            });
+                        }
+                    }
+                    return newOrders;
+                });
             }
         } catch (error) {
             console.error('Failed to fetch orders:', error);

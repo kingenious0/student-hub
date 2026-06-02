@@ -38,8 +38,10 @@ export async function POST(request: NextRequest) {
         const orderGroup = await prisma.orderGroup.findUnique({
             where: { paystackRef: reference },
             include: {
+                student: true,
                 orders: {
                     include: {
+                        vendor: true,
                         items: {
                             include: {
                                 product: true
@@ -86,6 +88,48 @@ export async function POST(request: NextRequest) {
         });
 
         const updatedOrders = await Promise.all(updates);
+
+        // 3.5 Automated Real-Time SMS Notifications (Wigal API Trigger)
+        try {
+            const { sendSMS } = await import('@/lib/sms/wigal');
+            const keyMap = new Map(updatedOrders.map(o => [o.id, o.releaseKey]));
+
+            // A. Notify Student / Buyer
+            if (orderGroup.student && orderGroup.student.phoneNumber) {
+                const studentName = orderGroup.student.name || 'Student';
+                const totalAmount = orderGroup.totalAmount.toFixed(2);
+
+                const keyLines = orderGroup.orders.map(o => {
+                    const shop = o.vendor?.shopName || o.vendor?.name || 'Vendor';
+                    const key = keyMap.get(o.id) || o.releaseKey;
+                    return `- ${shop}: ${key}`;
+                }).join('\n');
+
+                const studentMsg = `OMNI PAY: Hello ${studentName}, payment of ₵${totalAmount} is confirmed! 🛡️\nRelease Keys:\n${keyLines}\nShare this key with the vendor ONLY when you receive your items.`;
+
+                sendSMS(orderGroup.student.phoneNumber, studentMsg).then(res => {
+                    console.log('[SMS-NOTIFY] Student SMS Sent:', res);
+                });
+            }
+
+            // B. Notify each Vendor / Seller
+            for (const o of orderGroup.orders) {
+                if (o.vendor && o.vendor.phoneNumber) {
+                    const vendorPhone = o.vendor.phoneNumber;
+                    const vendorName = o.vendor.shopName || o.vendor.name || 'Vendor';
+                    const itemsSummary = o.items.map(i => `${i.quantity}x ${i.productSnapshot && (i.productSnapshot as any).title || i.product?.title || 'Item'}`).join(', ');
+                    const amountStr = o.amount.toFixed(2);
+
+                    const vendorMsg = `OMNI ORDER: Hello ${vendorName}, you have a new order! 🔔\nItems: ${itemsSummary}\nTotal: ₵${amountStr}\nFulfillment: ${o.fulfillmentType}\nOpen the OMNI Dashboard to manage and fulfill.`;
+
+                    sendSMS(vendorPhone, vendorMsg).then(res => {
+                        console.log(`[SMS-NOTIFY] Vendor (${vendorName}) SMS Sent:`, res);
+                    });
+                }
+            }
+        } catch (smsError) {
+            console.error('[SMS-NOTIFY] Failed to dispatch SMS notifications:', smsError);
+        }
 
         // Update Group Status? (Optional, if I added status field)
         // prisma.orderGroup.update(...)
