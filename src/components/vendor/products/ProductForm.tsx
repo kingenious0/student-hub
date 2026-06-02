@@ -5,7 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
-import { Save, Loader2, DollarSign, Package, Layers, Image as ImageIcon } from 'lucide-react';
+import { Save, Loader2, DollarSign, Package, Layers, Image as ImageIcon, TrendingUp, BadgeCheck } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 import { DescriptionEditor } from './DescriptionEditor';
 import { Button } from '@/components/ui/button';
@@ -539,6 +539,36 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                                 {form.formState.errors.price && (
                                     <p className="text-destructive text-xs font-medium">{form.formState.errors.price.message}</p>
                                 )}
+
+                                {/* Live Earnings Preview */}
+                                {(() => {
+                                    const price = parseFloat(form.watch('price') as any) || 0;
+                                    if (price <= 0) return null;
+                                    const fee = price * 0.05;
+                                    const earn = price - fee;
+                                    return (
+                                        <div className="mt-3 p-3 rounded-2xl bg-emerald-500/8 border border-emerald-500/20">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-2 flex items-center gap-1">
+                                                <TrendingUp className="w-3 h-3" /> Your Earnings Preview
+                                            </p>
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-foreground/50">Buyer pays</span>
+                                                    <span className="font-bold text-foreground">₵{price.toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-foreground/50">Platform fee (5%)</span>
+                                                    <span className="font-bold text-red-400">-₵{fee.toFixed(2)}</span>
+                                                </div>
+                                                <div className="h-px bg-emerald-500/20 my-1" />
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="font-black text-emerald-400">You receive</span>
+                                                    <span className="font-black text-emerald-400">₵{earn.toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
 
                             <Separator />
@@ -629,6 +659,33 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                             </>
                         )}
                     </Button>
+
+                    {/* Fee Transparency Card */}
+                    <div className="p-4 rounded-2xl border border-surface-border bg-surface/40 space-y-3">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 flex items-center gap-1">
+                            <BadgeCheck className="w-3 h-3" /> Platform Fee — Industry Lowest
+                        </p>
+                        <p className="text-xs text-foreground/60 leading-relaxed">
+                            We take only <span className="font-black text-foreground">5%</span> per sale — so you keep <span className="font-black text-emerald-400">95%</span> of every order.
+                        </p>
+                        <div className="space-y-1.5">
+                            {[
+                                { name: 'Fiverr', fee: '20%', color: 'text-red-400' },
+                                { name: 'Amazon', fee: '15%', color: 'text-orange-400' },
+                                { name: 'Etsy', fee: '6.5%', color: 'text-yellow-400' },
+                                { name: 'StudentHub ✓', fee: '5%', color: 'text-emerald-400' },
+                            ].map(p => (
+                                <div key={p.name} className="flex justify-between items-center text-[11px]">
+                                    <span className="text-foreground/50 font-medium">{p.name}</span>
+                                    <span className={`font-black ${p.color}`}>{p.fee}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <p className="text-[10px] text-foreground/30 leading-relaxed">
+                            Tip: Want to net exactly ₵100? List at ₵106 and pocket ₵100.70 after fee.
+                        </p>
+                    </div>
+
                 </div>
             </div>
 
