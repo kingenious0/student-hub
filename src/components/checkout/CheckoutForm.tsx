@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 interface CheckoutFormProps {
@@ -24,8 +24,24 @@ export default function CheckoutForm({
     const [fulfillmentNote, setFulfillmentNote] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+    const [paystackPublicKey, setPaystackPublicKey] = useState(process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '');
     const subtotal = productPrice * quantity;
     const total = subtotal + (fulfillment === 'DELIVERY' ? deliveryFee : 0);
+
+    useEffect(() => {
+        const loadPaystackKey = async () => {
+            try {
+                const res = await fetch('/api/system/config');
+                const data = await res.json();
+                if (data.success && data.paystackPublicKey) {
+                    setPaystackPublicKey(data.paystackPublicKey);
+                }
+            } catch (err) {
+                console.error("Failed to load dynamic Paystack public key:", err);
+            }
+        };
+        loadPaystackKey();
+    }, []);
 
     const onSuccess = async (reference: { reference: string }) => {
         // After Paystack success, verify on our backend
@@ -90,7 +106,7 @@ export default function CheckoutForm({
             if (data.success) {
                 // 2. Launch Paystack using the Inline script
                 const handler = PaystackPop.setup({
-                    key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
+                    key: paystackPublicKey,
                     email: email,
                     amount: total * 100,
                     currency: 'GHS',

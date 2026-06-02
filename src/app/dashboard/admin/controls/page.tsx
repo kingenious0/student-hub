@@ -9,7 +9,12 @@ export default function SystemControlsPage() {
     const [config, setConfig] = useState({
         deliveryFee: 5.0,
         platformFee: 2.0,
-        maintenanceMode: false
+        maintenanceMode: false,
+        paystackMode: 'TEST',
+        paystackTestSecretKey: '',
+        paystackTestPublicKey: '',
+        paystackLiveSecretKey: '',
+        paystackLivePublicKey: ''
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -184,6 +189,112 @@ export default function SystemControlsPage() {
                                     [ DEV MODE: Download Full JSON Core Archive ]
                                 </span>
                             </Link>
+                        </div>
+                    </div>
+
+                    {/* PAYSTACK DYNAMIC GATEWAY CONFIGURATION */}
+                    <div className="bg-surface border border-surface-border rounded-[3rem] p-10 space-y-10">
+                        <div className="border-b border-surface-border pb-8 flex justify-between items-center">
+                            <div>
+                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Paystack Gateway</h2>
+                                <p className="text-foreground/30 text-[10px] font-black uppercase tracking-widest mt-2">Manage environment states and API key infrastructure.</p>
+                            </div>
+                            <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${
+                                config.paystackMode === 'LIVE' 
+                                    ? 'text-red-500 bg-red-500/10 border-red-500/20' 
+                                    : 'text-primary bg-primary/10 border-primary/20'
+                            }`}>
+                                {config.paystackMode === 'LIVE' ? '🔴 Live Mode Active' : '🟡 Test Mode Active'}
+                            </span>
+                        </div>
+
+                        {/* Paystack Mode Selector Toggle */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-10 border-b border-surface-border">
+                            <div>
+                                <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Transaction Mode</h3>
+                                <p className="text-foreground/30 text-[10px] font-black uppercase tracking-widest mt-1">Switch immediately between simulating payments and processing real money.</p>
+                            </div>
+                            <div className="flex bg-background border border-surface-border rounded-2xl p-1 gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setConfig({ ...config, paystackMode: 'TEST' })}
+                                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                                        config.paystackMode === 'TEST'
+                                            ? 'bg-primary text-primary-foreground shadow-md'
+                                            : 'text-foreground/60 hover:text-foreground'
+                                    }`}
+                                >
+                                    Test Mode
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setConfig({ ...config, paystackMode: 'LIVE' })}
+                                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all ${
+                                        config.paystackMode === 'LIVE'
+                                            ? 'bg-red-600 text-white shadow-md'
+                                            : 'text-foreground/60 hover:text-foreground'
+                                    }`}
+                                >
+                                    Live Mode
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* API Keys Configuration Input Fields */}
+                        <div className="space-y-6">
+                            <h3 className="text-sm font-black text-foreground uppercase tracking-[0.2em] mb-4">Environment Keys Configuration</h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Test Keys */}
+                                <div className="space-y-4 p-6 bg-background/30 rounded-3xl border border-surface-border">
+                                    <h4 className="text-xs font-black uppercase text-foreground/50 tracking-wider">Test Configuration</h4>
+                                    <div className="space-y-2">
+                                        <label className="block text-[9px] font-black uppercase text-foreground/45">Test Public Key</label>
+                                        <input
+                                            type="text"
+                                            value={config.paystackTestPublicKey || ''}
+                                            onChange={(e) => setConfig({ ...config, paystackTestPublicKey: e.target.value })}
+                                            placeholder="pk_test_..."
+                                            className="w-full bg-background border border-surface-border rounded-xl p-3 font-bold text-xs outline-none focus:border-primary text-foreground"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-[9px] font-black uppercase text-foreground/45">Test Secret Key</label>
+                                        <input
+                                            type="password"
+                                            value={config.paystackTestSecretKey || ''}
+                                            onChange={(e) => setConfig({ ...config, paystackTestSecretKey: e.target.value })}
+                                            placeholder="sk_test_..."
+                                            className="w-full bg-background border border-surface-border rounded-xl p-3 font-bold text-xs outline-none focus:border-primary text-foreground"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Live Keys */}
+                                <div className="space-y-4 p-6 bg-background/30 rounded-3xl border border-surface-border">
+                                    <h4 className="text-xs font-black uppercase text-red-500/75 tracking-wider">Live Configuration</h4>
+                                    <div className="space-y-2">
+                                        <label className="block text-[9px] font-black uppercase text-foreground/45">Live Public Key</label>
+                                        <input
+                                            type="text"
+                                            value={config.paystackLivePublicKey || ''}
+                                            onChange={(e) => setConfig({ ...config, paystackLivePublicKey: e.target.value })}
+                                            placeholder="pk_live_..."
+                                            className="w-full bg-background border border-surface-border rounded-xl p-3 font-bold text-xs outline-none focus:border-red-500 text-foreground"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-[9px] font-black uppercase text-foreground/45">Live Secret Key</label>
+                                        <input
+                                            type="password"
+                                            value={config.paystackLiveSecretKey || ''}
+                                            onChange={(e) => setConfig({ ...config, paystackLiveSecretKey: e.target.value })}
+                                            placeholder="sk_live_..."
+                                            className="w-full bg-background border border-surface-border rounded-xl p-3 font-bold text-xs outline-none focus:border-red-500 text-foreground"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

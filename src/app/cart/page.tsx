@@ -27,6 +27,7 @@ export default function CartPage() {
 
     const [deliveryFeeConfig, setDeliveryFeeConfig] = useState(10);
     const [platformFeeConfig, setPlatformFeeConfig] = useState(2);
+    const [paystackPublicKey, setPaystackPublicKey] = useState(process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '');
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -36,6 +37,9 @@ export default function CartPage() {
                 if (data.success) {
                     setDeliveryFeeConfig(data.deliveryFee ?? 10.00);
                     setPlatformFeeConfig(data.platformFee ?? 2.00);
+                    if (data.paystackPublicKey) {
+                        setPaystackPublicKey(data.paystackPublicKey);
+                    }
                 }
             } catch (e) {
                 console.error('Failed to fetch fees', e);
@@ -152,7 +156,7 @@ export default function CartPage() {
 
             if (data.success) {
                 const handler = PaystackPop.setup({
-                    key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
+                    key: paystackPublicKey,
                     email: userEmail,
                     amount: Math.ceil(total * 100),
                     currency: 'GHS',

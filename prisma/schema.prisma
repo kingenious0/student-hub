@@ -415,6 +415,13 @@ model SystemSettings {
   globalNotice    String?  // "Maintenance until 2:00 PM"
   contentOverride Json?    // Stores live-edited UI text
   
+  // Paystack Dynamic Configuration
+  paystackMode          String   @default("TEST") // "TEST" or "LIVE"
+  paystackTestSecretKey String?
+  paystackTestPublicKey String?
+  paystackLiveSecretKey String?
+  paystackLivePublicKey String?
+
   updatedAt       DateTime @updatedAt
 }
 

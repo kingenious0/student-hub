@@ -8,11 +8,27 @@ if (typeof window !== 'undefined') {
   throw new Error('Paystack integration should only run on server side');
 }
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+import { prisma } from '@/lib/db/prisma';
+
 const PAYSTACK_BASE_URL = 'https://api.paystack.co';
 
-if (!PAYSTACK_SECRET_KEY) {
-  throw new Error('PAYSTACK_SECRET_KEY environment variable is not set');
+async function getPaystackSecretKey(): Promise<string> {
+    try {
+        const config = await prisma.systemSettings.findUnique({
+            where: { id: 'GLOBAL_CONFIG' },
+            select: { paystackMode: true, paystackLiveSecretKey: true, paystackTestSecretKey: true }
+        });
+        if (config) {
+            if (config.paystackMode === 'LIVE' && config.paystackLiveSecretKey) {
+                return config.paystackLiveSecretKey;
+            } else if (config.paystackMode === 'TEST' && config.paystackTestSecretKey) {
+                return config.paystackTestSecretKey;
+            }
+        }
+    } catch (e) {
+        console.error("Failed to load secret key from db, falling back to env:", e);
+    }
+    return process.env.PAYSTACK_SECRET_KEY || "";
 }
 
 export interface PaystackCustomer {
@@ -88,10 +104,11 @@ export interface VerifyPaymentResponse {
 export async function createPaymentRequest(
     params: CreatePaymentRequestParams
 ): Promise<PaymentRequestResponse> {
+    const secretKey = await getPaystackSecretKey();
     const response = await fetch(`${PAYSTACK_BASE_URL}/paymentrequest`, {
         method: 'POST',
         headers: {
-            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+            Authorization: `Bearer ${secretKey}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -121,12 +138,13 @@ export async function createPaymentRequest(
 export async function verifyPaymentRequest(
     requestCode: string
 ): Promise<VerifyPaymentResponse> {
+    const secretKey = await getPaystackSecretKey();
     const response = await fetch(
         `${PAYSTACK_BASE_URL}/paymentrequest/verify/${requestCode}`,
         {
             method: 'GET',
             headers: {
-                Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+                Authorization: `Bearer ${secretKey}`,
             },
         }
     );
@@ -145,12 +163,13 @@ export async function verifyPaymentRequest(
 export async function fetchPaymentRequest(
     idOrCode: string
 ): Promise<PaymentRequestResponse> {
+    const secretKey = await getPaystackSecretKey();
     const response = await fetch(
         `${PAYSTACK_BASE_URL}/paymentrequest/${idOrCode}`,
         {
             method: 'GET',
             headers: {
-                Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+                Authorization: `Bearer ${secretKey}`,
             },
         }
     );
@@ -169,10 +188,11 @@ export async function fetchPaymentRequest(
 export async function createCustomer(
     customer: PaystackCustomer
 ): Promise<{ customer_code: string }> {
+    const secretKey = await getPaystackSecretKey();
     const response = await fetch(`${PAYSTACK_BASE_URL}/customer`, {
         method: 'POST',
         headers: {
-            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+            Authorization: `Bearer ${secretKey}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(customer),
@@ -196,8 +216,9 @@ export async function verifyWebhookSignature(
     payload: string,
     signature: string
 ): Promise<boolean> {
+    const secretKey = await getPaystackSecretKey();
     const encoder = new TextEncoder();
-    const keyData = encoder.encode(PAYSTACK_SECRET_KEY);
+    const keyData = encoder.encode(secretKey);
     const data = encoder.encode(payload);
 
     const key = await crypto.subtle.importKey(
@@ -240,12 +261,13 @@ export interface VerifyTransactionResponse {
 export async function verifyTransaction(
     reference: string
 ): Promise<VerifyTransactionResponse> {
+    const secretKey = await getPaystackSecretKey();
     const response = await fetch(
         `${PAYSTACK_BASE_URL}/transaction/verify/${reference}`,
         {
             method: 'GET',
             headers: {
-                Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+                Authorization: `Bearer ${secretKey}`,
             },
         }
     );
@@ -266,10 +288,11 @@ export async function createTransferRecipient(
     accountNumber: string,
     bankCode: string
 ): Promise<string> {
+    const secretKey = await getPaystackSecretKey();
     const response = await fetch(`${PAYSTACK_BASE_URL}/transferrecipient`, {
         method: 'POST',
         headers: {
-            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+            Authorization: `Bearer ${secretKey}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -300,11 +323,12 @@ export async function initiateTransfer(
 ): Promise<{ transfer_code: string; status: string }> {
     // Paystack transfers expect amount in PESEWAS (GHS * 100)
     const amountInPesewas = Math.round(amountGHS * 100);
+    const secretKey = await getPaystackSecretKey();
 
     const response = await fetch(`${PAYSTACK_BASE_URL}/transfer`, {
         method: 'POST',
         headers: {
-            Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+            Authorization: `Bearer ${secretKey}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
