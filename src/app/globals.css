@@ -74,6 +74,20 @@
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   --blur-amount: 20px;
+
+  /* UI Components Variables for OMNI Dark Mode */
+  --card: #0d1117;
+  --card-foreground: #ffffff;
+  --popover: #0d1117;
+  --popover-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #10B981;
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: rgba(255, 255, 255, 0.6);
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-foreground: #ffffff;
+  --accent-foreground: #000000;
 }
 
 @theme inline {

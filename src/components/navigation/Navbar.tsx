@@ -395,8 +395,8 @@ export default function Navbar() {
                                         </Link>
                                     </div>
 
-                                    {/* HUSTLE: RUNNER */}
-                                    {dbUser?.role !== 'VENDOR' && (
+                                    {/* HUSTLE: RUNNER (Removed from UI but code preserved) */}
+                                    {/* {dbUser?.role !== 'VENDOR' && (
                                         <div className="mb-6 p-1 -mt-4">
                                             <Link
                                                 href={dbUser?.isRunner ? "/runner" : "/runner"}
@@ -417,7 +417,7 @@ export default function Navbar() {
                                                 <ChevronRightIcon className="w-5 h-5 text-foreground/40" />
                                             </Link>
                                         </div>
-                                    )}
+                                    )} */}
 
                                     <div className="mb-6">
                                         <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3 px-2">

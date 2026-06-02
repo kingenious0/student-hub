@@ -15,12 +15,22 @@ interface ImageUploaderProps {
 export const ImageUploader = ({ value = [], onChange, maxFiles = 10, disabled }: ImageUploaderProps) => {
     const [previews, setPreviews] = useState<string[]>([]);
 
-    // Revoke object URLs to avoid memory leaks
+    // Revoke object URLs and generate them correctly on value change to avoid memory leaks or rendering glitches
     useEffect(() => {
+        const objectUrls = value.map(item => {
+            if (typeof item === 'string') return item;
+            return URL.createObjectURL(item);
+        });
+        setPreviews(objectUrls);
+
         return () => {
-            previews.forEach(url => URL.revokeObjectURL(url));
+            objectUrls.forEach((url, i) => {
+                if (typeof value[i] !== 'string') {
+                    URL.revokeObjectURL(url);
+                }
+            });
         };
-    }, [previews]);
+    }, [value]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         // Simply append new files to existing value
@@ -51,12 +61,6 @@ export const ImageUploader = ({ value = [], onChange, maxFiles = 10, disabled }:
         disabled: disabled || value.length >= maxFiles
     });
 
-    // Helper to get URL for preview
-    const getPreview = (item: File | string) => {
-        if (typeof item === 'string') return item;
-        return URL.createObjectURL(item);
-    };
-
     return (
         <div className="space-y-4">
             {/* Dropzone */}
@@ -86,7 +90,7 @@ export const ImageUploader = ({ value = [], onChange, maxFiles = 10, disabled }:
                     {value.map((item, index) => (
                         <div key={index} className="group relative aspect-square bg-zinc-100 dark:bg-zinc-900 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
                             <img
-                                src={getPreview(item)}
+                                src={previews[index] || ''}
                                 alt="Preview"
                                 className="w-full h-full object-cover"
                             />
