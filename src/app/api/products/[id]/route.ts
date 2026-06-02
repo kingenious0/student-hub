@@ -22,7 +22,8 @@ export async function GET(
                         currentHotspot: true,
                         lastActive: true,
                         shopName: true,
-                        vendorStatus: true
+                        vendorStatus: true,
+                        phoneNumber: true
                     },
                 },
                 category: true,

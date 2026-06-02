@@ -124,7 +124,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[10000] bg-black/65 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+                        className="fixed inset-0 z-[10000] bg-black/75 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
                         onClick={handleCancel}
                     >
                         <motion.div
@@ -132,7 +132,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 30 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className={`w-full max-w-[360px] sm:max-w-[390px] glass-strong rounded-[2rem] border-2 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden ${config.variant === 'error' ? 'border-red-500/30' : 'border-primary/20'
+                            className={`w-full max-w-[360px] sm:max-w-[390px] bg-zinc-950/98 rounded-[2rem] border-2 shadow-[0_0_50px_rgba(0,0,0,0.7)] overflow-hidden ${config.variant === 'error' ? 'border-red-500/40' : 'border-emerald-500/30'
                                 }`}
                             onClick={e => e.stopPropagation()}
                         >
@@ -152,7 +152,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
 
                             {/* Message */}
                             <div className="px-6 sm:px-8 pb-6 pt-2">
-                                <p className="text-white/60 text-center font-bold text-xs uppercase tracking-wider leading-relaxed">
+                                <p className="text-zinc-300 text-center font-bold text-xs uppercase tracking-wider leading-relaxed">
                                     {config.message}
                                 </p>
 
@@ -173,7 +173,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
                             </div>
 
                             {/* Actions */}
-                            <div className="p-3 bg-white/[0.02] border-t border-white/5 flex gap-3">
+                            <div className="p-3 bg-white/[0.02] border-t border-zinc-800/40 flex gap-3">
                                 {config.cancelText && (
                                     <button
                                         onClick={handleCancel}

@@ -231,6 +231,20 @@ export default function ProductDetailsPage() {
                                 >
                                     {product.vendor.shopName || product.vendor.name}
                                 </Link>
+                                {product.vendor.phoneNumber && (
+                                    <>
+                                        <span className="h-4 w-px bg-black/10 dark:bg-white/10"></span>
+                                        <a
+                                            href={`tel:${product.vendor.phoneNumber}`}
+                                            className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-full transition-all"
+                                        >
+                                            <svg className="w-3 h-3 fill-current inline-block mr-1" viewBox="0 0 24 24">
+                                                <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.57a1 1 0 00-1.01.24l-2.2 2.2a15.09 15.09 0 01-6.59-6.59l2.2-2.2a1 1 0 00.24-1.01 11.4 11.4 0 01-.57-3.53A1 1 0 0011 3H4a1 1 0 00-1 1 17 17 0 0017 17 1 1 0 001 -1v-7a1 1 0 00-1-1z" />
+                                            </svg>
+                                            Call Vendor
+                                        </a>
+                                    </>
+                                )}
                             </div>
                         </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, DollarSign, Wallet, Phone, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -18,6 +18,20 @@ export default function WithdrawModal({ isOpen, onClose, maxAmount, onSuccess }:
     const [network, setNetwork] = useState('MTN');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    // Pre-fill the MoMo number with the user's saved registration phoneNumber
+    useEffect(() => {
+        if (isOpen) {
+            fetch('/api/users/me')
+                .then(res => res.json())
+                .then(data => {
+                    if (data?.phoneNumber) {
+                        setMomoNumber(data.phoneNumber);
+                    }
+                })
+                .catch(err => console.error("Failed to load user MoMo details:", err));
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -66,10 +80,14 @@ export default function WithdrawModal({ isOpen, onClose, maxAmount, onSuccess }:
         }
 
         try {
-            const res = await fetch('/api/vendor/withdraw', {
+            const res = await fetch('/api/vendor/payouts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: val, momoNumber, network })
+                body: JSON.stringify({ 
+                    amount: val, 
+                    momoNumber, 
+                    network: network === 'TELECEL' ? 'VODA' : network 
+                })
             });
 
             if (res.ok) {

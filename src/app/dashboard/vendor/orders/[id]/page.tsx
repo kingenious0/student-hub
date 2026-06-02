@@ -215,20 +215,26 @@ export default function VendorOrderDetails() {
                             </div>
                             
                             {order.student.phoneNumber && (
-                                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-surface-border">
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-surface-border">
                                     <a
                                         href={`tel:${order.student.phoneNumber}`}
-                                        className="py-2.5 px-4 bg-background border border-surface-border rounded-xl text-[10px] font-black uppercase tracking-wider text-center text-foreground hover:bg-foreground/5 transition-all block"
+                                        className="py-3 px-4 bg-background border border-surface-border rounded-2xl text-[10px] font-black uppercase tracking-wider text-foreground hover:bg-foreground/5 transition-all flex items-center justify-center gap-1.5"
                                     >
-                                        📞 Call Customer
+                                        <svg className="w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24">
+                                            <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.57a1 1 0 00-1.01.24l-2.2 2.2a15.09 15.09 0 01-6.59-6.59l2.2-2.2a1 1 0 00.24-1.01 11.4 11.4 0 01-.57-3.53A1 1 0 0011 3H4a1 1 0 00-1 1 17 17 0 0017 17 1 1 0 001 -1v-7a1 1 0 00-1-1z" />
+                                        </svg>
+                                        Call Customer
                                     </a>
                                     <a
                                         href={`https://wa.me/${order.student.phoneNumber.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(order.student.name || 'Student')},%20this%20is%20your%20OMNI%20vendor.%20Coordinating%20order%20%23${order.id.slice(-6).toUpperCase()}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="py-2.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider text-center transition-all block border border-transparent shadow-md shadow-emerald-500/10"
+                                        className="py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 border border-transparent"
                                     >
-                                        💬 WhatsApp
+                                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.968C16.588 1.971 14.12 .947 11.5 1.946c-5.438 0-9.862 4.371-9.866 9.8.001 1.716.463 3.39 1.337 4.866L1.93 21.054l4.717-1.727zM16.86 14.85c-.262-.13-1.552-.765-1.792-.852-.24-.087-.415-.13-.59.13-.175.26-.677.852-.83.1 .027-.152.152-.305.24-.567.13-.262.065-.492-.033-.622-.097-.13-.787-1.897-1.077-2.593-.282-.676-.572-.587-.788-.597-.203-.01-.437-.01-.67-.01-.233 0-.612.087-.932.437-.32.35-1.222 1.197-1.222 2.91 0 1.712 1.25 3.367 1.425 3.6.175.233 2.46 3.757 5.96 5.27.832.36 1.482.575 1.99.736.837.266 1.598.228 2.2.138.672-.1 2.072-.847 2.362-1.666.29-.82.29-1.522.203-1.666-.088-.145-.32-.233-.582-.363z" />
+                                        </svg>
+                                        WhatsApp
                                     </a>
                                 </div>
                             )}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,14 +20,49 @@ export default function VendorSettingsPage() {
     const [phone, setPhone] = useState("");
     const [isAcceptingOrders, setIsAcceptingOrders] = useState(true);
 
+    // Fetch existing settings on mount
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('/api/users/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    setShopName(data.shopName || "");
+                    setPhone(data.phoneNumber || "");
+                    setIsAcceptingOrders(data.isAcceptingOrders !== undefined ? data.isAcceptingOrders : true);
+                }
+            } catch (e) {
+                console.error("Failed to load settings:", e);
+            }
+        };
+        fetchSettings();
+    }, []);
+
     const handleSave = async () => {
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            const res = await fetch('/api/vendor/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    shopName,
+                    phoneNumber: phone,
+                    isAcceptingOrders
+                })
+            });
+            if (res.ok) {
+                toast.success("Settings saved successfully!");
+                router.refresh();
+                router.push('/dashboard/vendor');
+            } else {
+                toast.error("Failed to save settings. Please try again.");
+            }
+        } catch (error) {
+            console.error("Save error:", error);
+            toast.error("Failed to save settings due to a network issue.");
+        } finally {
             setIsLoading(false);
-            toast.success("Settings saved successfully!");
-            router.push('/dashboard/vendor');
-        }, 1000);
+        }
     };
 
     return (
