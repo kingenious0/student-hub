@@ -20,6 +20,52 @@ export default function SystemControlsPage() {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
     const [resetting, setResetting] = useState(false);
+    const [pendingPayouts, setPendingPayouts] = useState<any[]>([]);
+    const [processingPayoutId, setProcessingPayoutId] = useState<string | null>(null);
+
+    const fetchPendingPayouts = async () => {
+        try {
+            const res = await fetch('/api/admin/payouts');
+            const data = await res.json();
+            if (data.success) {
+                setPendingPayouts(data.payouts || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch pending payouts');
+        }
+    };
+
+    const handlePayoutAction = async (payoutId: string, action: 'RETRY' | 'FORCE_APPROVE' | 'REJECT') => {
+        let confirmMsg = '';
+        if (action === 'RETRY') confirmMsg = 'Retry executing this payout instantly via Paystack transfer API?';
+        if (action === 'FORCE_APPROVE') confirmMsg = 'Force approve this payout request? Choose this if you have manually sent Mobile Money to the vendor yourself.';
+        if (action === 'REJECT') confirmMsg = 'Reject this payout request and refund the vendor\'s balance?';
+
+        const confirmed = confirm(confirmMsg);
+        if (!confirmed) return;
+
+        setProcessingPayoutId(payoutId);
+
+        try {
+            const res = await fetch('/api/admin/payouts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ payoutId, action })
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                alert(`🎉 SUCCESS: Payout request resolved!`);
+                fetchPendingPayouts(); // refresh list
+            } else {
+                alert(`❌ FAILURE: ${data.error || 'Server error'} - ${data.details || ''}`);
+            }
+        } catch (error) {
+            alert('❌ CONNECTION ERROR: Could not process payout action.');
+        } finally {
+            setProcessingPayoutId(null);
+        }
+    };
 
     const handleCleanSlate = async () => {
         const confirmed = confirm(
@@ -53,6 +99,7 @@ export default function SystemControlsPage() {
 
     useEffect(() => {
         fetchConfig();
+        fetchPendingPayouts();
     }, []);
 
     const fetchConfig = async () => {
@@ -261,6 +308,77 @@ export default function SystemControlsPage() {
                                 </button>
                             </div>
                         </div>
+                    </div>
+
+                    {/* PENDING PAYOUTS MANAGEMENT PANEL */}
+                    <div className="bg-surface border border-surface-border rounded-[3rem] p-10 space-y-10">
+                        <div className="border-b border-surface-border pb-8 flex justify-between items-center">
+                            <div>
+                                <h2 className="text-2xl font-black text-foreground uppercase tracking-tight">Pending Payouts Audit</h2>
+                                <p className="text-foreground/30 text-[10px] font-black uppercase tracking-widest mt-2">Manage and execute pending vendor withdrawal fallbacks.</p>
+                            </div>
+                            <span className="bg-yellow-500/10 text-yellow-500 border border-yellow-500/25 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                ⚡ Action Required: {pendingPayouts.length}
+                            </span>
+                        </div>
+
+                        {pendingPayouts.length === 0 ? (
+                            <div className="text-center py-10 space-y-3 bg-background/25 rounded-3xl border border-dashed border-surface-border">
+                                <span className="text-4xl">🛡️</span>
+                                <p className="text-sm font-bold text-foreground/60 uppercase tracking-wide">Pristine Financial Ledger</p>
+                                <p className="text-[10px] text-foreground/30 font-black uppercase tracking-wider">No pending vendor withdrawals requiring manual intervention.</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                {pendingPayouts.map((payout) => (
+                                    <div key={payout.id} className="p-6 bg-background/50 border border-surface-border rounded-3xl space-y-4">
+                                        {/* Row 1: Details */}
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                            <div>
+                                                <h4 className="text-sm font-black text-foreground uppercase">
+                                                    {payout.vendor?.shopName || payout.vendor?.name || 'Unknown Vendor'}
+                                                </h4>
+                                                <p className="text-[10px] font-mono text-foreground/40 mt-1">
+                                                    ID: #{payout.id.slice(0, 8)} • Phone: {payout.momoNumber} ({payout.network})
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-2xl font-black text-foreground">₵{payout.amount.toFixed(2)}</span>
+                                                <p className="text-[9px] text-foreground/30 font-mono mt-0.5">{new Date(payout.createdAt).toLocaleString('en-GB')}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Row 2: Action Buttons */}
+                                        <div className="flex flex-wrap gap-3 pt-4 border-t border-surface-border/50">
+                                            <button
+                                                type="button"
+                                                disabled={processingPayoutId !== null}
+                                                onClick={() => handlePayoutAction(payout.id, 'RETRY')}
+                                                className="px-4 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-[10px] uppercase tracking-widest rounded-xl transition-all shadow-md disabled:opacity-50 flex items-center gap-1.5"
+                                            >
+                                                {processingPayoutId === payout.id ? 'PROCESSING...' : 'RETRY INSTANT PAYOUT'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled={processingPayoutId !== null}
+                                                onClick={() => handlePayoutAction(payout.id, 'FORCE_APPROVE')}
+                                                className="px-4 py-2.5 bg-foreground/5 hover:bg-foreground/15 border border-surface-border text-foreground font-black text-[10px] uppercase tracking-widest rounded-xl transition-all disabled:opacity-50"
+                                            >
+                                                FORCE MARK PAID
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled={processingPayoutId !== null}
+                                                onClick={() => handlePayoutAction(payout.id, 'REJECT')}
+                                                className="px-4 py-2.5 bg-red-950/20 hover:bg-red-950/40 border border-red-500/30 text-red-400 font-black text-[10px] uppercase tracking-widest rounded-xl transition-all disabled:opacity-50"
+                                            >
+                                                REJECT & REFUND
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* PAYSTACK DYNAMIC GATEWAY CONFIGURATION */}
