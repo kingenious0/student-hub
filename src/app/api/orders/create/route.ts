@@ -81,13 +81,63 @@ async function executeOrderCreationTransaction(
     vendorGroups: Record<string, ProcessedCartItem[]>,
     fulfillmentType: string,
     fulfillmentNote: string | null,
-    paystackRef: string
+    paystackRef: string,
+    couponCode: string | null
 ): Promise<number> {
+    let couponId: string | null = null;
+    let discountAmount = 0;
+
+    if (couponCode) {
+        const coupon = await tx.coupon.findUnique({
+            where: { code: couponCode.trim().toUpperCase() }
+        });
+
+        if (!coupon) {
+            throw new Error('Invalid promo code');
+        }
+
+        if (!coupon.isActive) {
+            throw new Error('This promo code is no longer active');
+        }
+
+        const now = new Date();
+        if (now > coupon.expiryDate) {
+            throw new Error('This promo code has expired');
+        }
+
+        if (coupon.usedCount >= coupon.maxUses) {
+            throw new Error('This promo code has reached its maximum usage limit');
+        }
+
+        // Calculate items subtotal
+        let itemsSubtotal = 0;
+        for (const [vendorId, items] of Object.entries(vendorGroups)) {
+            for (const item of items) {
+                itemsSubtotal += (item.finalPrice * item.quantity);
+            }
+        }
+
+        if (coupon.discountType === 'PERCENTAGE') {
+            discountAmount = itemsSubtotal * (coupon.discountValue / 100);
+        } else if (coupon.discountType === 'FIXED') {
+            discountAmount = Math.min(coupon.discountValue, itemsSubtotal);
+        }
+
+        // Increment usedCount
+        await tx.coupon.update({
+            where: { id: coupon.id },
+            data: { usedCount: { increment: 1 } }
+        });
+
+        couponId = coupon.id;
+    }
+
     const orderGroup = await tx.orderGroup.create({
         data: {
             paystackRef,
             totalAmount: 0,
-            studentId
+            studentId,
+            couponId
         }
     });
 
@@ -139,11 +189,11 @@ async function executeOrderCreationTransaction(
 
     const settings = await tx.systemSettings.findUnique({ where: { id: 'GLOBAL_CONFIG' } });
     const platformFee = settings?.platformFee ?? 2.00;
-    const finalGrandTotal = calculatedGrandTotal + platformFee;
+    const finalGrandTotal = Math.max(0, calculatedGrandTotal + platformFee - discountAmount);
 
     await tx.orderGroup.update({
         where: { id: orderGroup.id },
-        data: { totalAmount: finalGrandTotal }
+        data: { totalAmount: parseFloat(finalGrandTotal.toFixed(2)) }
     });
 
     return finalGrandTotal;
@@ -162,7 +212,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { fulfillmentType = 'PICKUP', fulfillmentNote = null } = body;
+        const { fulfillmentType = 'PICKUP', fulfillmentNote = null, couponCode = null } = body;
 
         let cartItems = [];
         if (body.items && Array.isArray(body.items)) {
@@ -217,7 +267,8 @@ export async function POST(request: NextRequest) {
                 vendorGroups,
                 fulfillmentType,
                 fulfillmentNote,
-                paystackRef
+                paystackRef,
+                couponCode
             );
         });
 
@@ -229,8 +280,21 @@ export async function POST(request: NextRequest) {
             publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Create Order Error:', error);
+        const errorMessage = error?.message || 'System Error';
+        
+        const couponErrors = [
+            'Invalid promo code',
+            'This promo code is no longer active',
+            'This promo code has expired',
+            'This promo code has reached its maximum usage limit'
+        ];
+        
+        if (couponErrors.includes(errorMessage)) {
+            return NextResponse.json({ error: errorMessage }, { status: 400 });
+        }
+
         return NextResponse.json({ error: 'System Error', details: String(error) }, { status: 500 });
     }
 }

@@ -12,7 +12,12 @@ import {
     ClockIcon,
     MoreHorizontal,
     Eye,
-    ArrowLeft
+    ArrowLeft,
+    Phone,
+    Mail,
+    MessageSquare,
+    X,
+    AlertTriangle
 } from 'lucide-react';
 import { useModal } from '@/context/ModalContext';
 import { toast } from 'sonner';
@@ -54,6 +59,7 @@ interface Order {
     student: {
         name: string;
         email: string;
+        phoneNumber: string | null;
     };
     vendorId: string;
     runnerId: string | null;
@@ -122,6 +128,10 @@ export default function VendorOrdersPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [releaseKeyInput, setReleaseKeyInput] = useState<{ [key: string]: string }>({});
+    const [contactOrder, setContactOrder] = useState<Order | null>(null);
+    const [reportOrder, setReportOrder] = useState<Order | null>(null);
+    const [reportDetails, setReportDetails] = useState('');
+    const [submittingReport, setSubmittingReport] = useState(false);
     const itemsPerPage = 10;
 
     useEffect(() => {
@@ -246,21 +256,45 @@ export default function VendorOrdersPage() {
     };
 
     const handleContactCustomer = (order: Order) => {
-        modal.alert(
-            `Customer Name: ${order.student.name}\nEmail: ${order.student.email}\n\nYou can email them directly to coordinate delivery or updates.`,
-            'Contact Customer',
-            'info'
-        );
+        setContactOrder(order);
     };
 
-    const handleReportIssue = async (orderId: string) => {
-        const confirmed = await modal.confirm(
-            `Are you sure you want to report an issue with Order #${orderId.slice(0, 8)}?\n\nThis will flag the order for Admin vetting and freeze the escrow funds.`,
-            'Flag Order Issue',
-            true
-        );
-        if (confirmed) {
-            toast.info('Issue reported successfully. Admin has been notified.');
+    const handleReportIssue = (order: Order) => {
+        setReportOrder(order);
+        setReportDetails('');
+    };
+
+    const submitReportIssue = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!reportOrder || !reportDetails.trim()) return;
+        setSubmittingReport(true);
+        try {
+            const token = await getToken();
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            const res = await fetch('/api/support/report-issue', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    orderId: reportOrder.id,
+                    details: reportDetails
+                })
+            });
+            if (res.ok) {
+                toast.success('Escrow flagged. Administrator has been alerted.');
+                setReportOrder(null);
+                fetchOrders();
+            } else {
+                const data = await res.json();
+                toast.error(data.error || 'Failed to submit report.');
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Network error while reporting issue.');
+        } finally {
+            setSubmittingReport(false);
         }
     };
 
@@ -411,7 +445,12 @@ export default function VendorOrdersPage() {
                                                 </div>
                                             </TableCell>
                                             <TableCell>{getStatusBadge(order.status)}</TableCell>
-                                            <TableCell className="text-right font-medium">₵{(order.amount * 0.95).toFixed(2)}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex flex-col items-end">
+                                                    <span className="font-bold text-sm">₵{order.amount.toFixed(2)}</span>
+                                                    <span className="text-[10px] text-emerald-400 font-medium">(Payout: ₵{(order.amount * 0.95).toFixed(2)})</span>
+                                                </div>
+                                            </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     {order.status === 'PAID' && (
@@ -432,49 +471,49 @@ export default function VendorOrdersPage() {
                                                                 maxLength={6}
                                                                 value={releaseKeyInput[order.id] || ''}
                                                                 onChange={(e) => setReleaseKeyInput({ ...releaseKeyInput, [order.id]: e.target.value })}
-                                                            />
-                                                            <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 animate-pulse" onClick={() => handleCompleteDelivery(order.id)}>
-                                                                Verify PIN
-                                                            </Button>
-                                                        </div>
-                                                    )}
-                                                    {order.status === 'PICKED_UP' && (
-                                                        <div className="flex items-center gap-2">
-                                                            <Input 
-                                                                className="w-24 h-8 text-center text-xs bg-slate-900 border-emerald-500/30 text-white placeholder-slate-500 focus-visible:ring-emerald-500" 
-                                                                placeholder="Release PIN" 
-                                                                maxLength={6}
-                                                                value={releaseKeyInput[order.id] || ''}
-                                                                onChange={(e) => setReleaseKeyInput({ ...releaseKeyInput, [order.id]: e.target.value })}
-                                                            />
-                                                            <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 animate-pulse" onClick={() => handleCompleteDelivery(order.id)}>
-                                                                Verify PIN
-                                                            </Button>
-                                                        </div>
-                                                    )}
-                                                    
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                                <MoreHorizontal className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                            <DropdownMenuItem onClick={() => router.push(`/dashboard/vendor/orders/${order.id}`)}>
-                                                                View Details
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleContactCustomer(order)}>
-                                                                Contact Customer
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem className="text-destructive" onClick={() => handleReportIssue(order.id)}>
-                                                                Report Issue
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
-                                            </TableCell>
+                                                             />
+                                                             <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 animate-pulse" onClick={() => handleCompleteDelivery(order.id)}>
+                                                                 Verify PIN
+                                                             </Button>
+                                                         </div>
+                                                     )}
+                                                     {order.status === 'PICKED_UP' && (
+                                                         <div className="flex items-center gap-2">
+                                                             <Input 
+                                                                 className="w-24 h-8 text-center text-xs bg-slate-900 border-emerald-500/30 text-white placeholder-slate-500 focus-visible:ring-emerald-500" 
+                                                                 placeholder="Release PIN" 
+                                                                 maxLength={6}
+                                                                 value={releaseKeyInput[order.id] || ''}
+                                                                 onChange={(e) => setReleaseKeyInput({ ...releaseKeyInput, [order.id]: e.target.value })}
+                                                             />
+                                                             <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 animate-pulse" onClick={() => handleCompleteDelivery(order.id)}>
+                                                                 Verify PIN
+                                                             </Button>
+                                                         </div>
+                                                     )}
+                                                     
+                                                     <DropdownMenu>
+                                                         <DropdownMenuTrigger asChild>
+                                                             <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                 <MoreHorizontal className="h-4 w-4" />
+                                                             </Button>
+                                                         </DropdownMenuTrigger>
+                                                         <DropdownMenuContent align="end">
+                                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                             <DropdownMenuItem onClick={() => router.push(`/dashboard/vendor/orders/${order.id}`)}>
+                                                                 View Details
+                                                             </DropdownMenuItem>
+                                                             <DropdownMenuItem onClick={() => handleContactCustomer(order)}>
+                                                                 Contact Customer
+                                                             </DropdownMenuItem>
+                                                             <DropdownMenuSeparator />
+                                                             <DropdownMenuItem className="text-destructive" onClick={() => handleReportIssue(order)}>
+                                                                 Report Issue
+                                                             </DropdownMenuItem>
+                                                         </DropdownMenuContent>
+                                                     </DropdownMenu>
+                                                 </div>
+                                             </TableCell>
                                         </TableRow>
                                     );
                                 })
@@ -508,6 +547,134 @@ export default function VendorOrdersPage() {
                     </div>
                 )}
             </div>
+
+            {/* Contact Customer Modal */}
+            <AnimatePresence>
+                {contactOrder && (
+                    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 sm:p-6 overflow-y-auto">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-surface border border-surface-border rounded-[2.5rem] w-full max-w-md p-6 sm:p-8 relative overflow-hidden shadow-2xl"
+                        >
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setContactOrder(null)}
+                                className="absolute top-6 right-6 p-2 rounded-full hover:bg-foreground/5 text-foreground/40 hover:text-foreground transition-all focus:outline-none"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+
+                            {/* Header */}
+                            <div className="mb-6">
+                                <h2 className="text-2xl font-black uppercase tracking-tight mb-1 flex items-center gap-2">
+                                    <Phone className="w-6 h-6 text-primary" /> Contact Customer
+                                </h2>
+                                <p className="text-xs text-foreground/40 font-bold uppercase tracking-wider">Choose a channel to coordinate delivery.</p>
+                            </div>
+
+                            {/* Customer Info Card */}
+                            <div className="mb-6 p-4 bg-primary/5 border border-primary/10 rounded-2xl">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Customer</p>
+                                <p className="text-lg font-bold text-foreground leading-none mb-1">{contactOrder.student.name}</p>
+                                <p className="text-xs text-foreground/60">{contactOrder.student.email}</p>
+                                {contactOrder.student.phoneNumber && (
+                                    <p className="text-xs text-foreground/60 mt-1 font-mono">{contactOrder.student.phoneNumber}</p>
+                                )}
+                            </div>
+
+                            {/* Action channels */}
+                            <div className="space-y-3">
+                                {contactOrder.student.phoneNumber ? (
+                                    <>
+                                        <a
+                                            href={`tel:${contactOrder.student.phoneNumber}`}
+                                            className="w-full py-4 bg-background border border-surface-border hover:bg-foreground/5 text-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95"
+                                        >
+                                            <Phone className="w-4 h-4 text-primary" /> Call Phone
+                                        </a>
+                                        <a
+                                            href={`https://wa.me/${contactOrder.student.phoneNumber.replace(/[^0-9]/g, '')}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95"
+                                        >
+                                            <MessageSquare className="w-4 h-4" /> Open WhatsApp
+                                        </a>
+                                    </>
+                                ) : (
+                                    <div className="text-center p-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 rounded-xl text-[10px] font-black uppercase tracking-wide">
+                                        ⚠️ Phone contact not available
+                                    </div>
+                                )}
+                                <a
+                                    href={`mailto:${contactOrder.student.email}`}
+                                    className="w-full py-4 bg-background border border-surface-border hover:bg-foreground/5 text-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95"
+                                >
+                                    <Mail className="w-4 h-4 text-primary" /> Send Email
+                                </a>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Report Issue Modal */}
+            <AnimatePresence>
+                {reportOrder && (
+                    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 sm:p-6 overflow-y-auto">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-surface border border-surface-border rounded-[2.5rem] w-full max-w-md p-6 sm:p-8 relative overflow-hidden shadow-2xl"
+                        >
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setReportOrder(null)}
+                                className="absolute top-6 right-6 p-2 rounded-full hover:bg-foreground/5 text-foreground/40 hover:text-foreground transition-all focus:outline-none"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+
+                            {/* Header */}
+                            <div className="mb-6">
+                                <h2 className="text-2xl font-black uppercase tracking-tight mb-1 flex items-center gap-2 text-rose-500">
+                                    <AlertTriangle className="w-6 h-6" /> Flag Escrow Issue
+                                </h2>
+                                <p className="text-xs text-foreground/40 font-bold uppercase tracking-wider">Freeze the escrow and request admin vetting.</p>
+                            </div>
+
+                            <form onSubmit={submitReportIssue} className="space-y-4">
+                                <div className="p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl text-[11px] leading-relaxed text-rose-400 font-bold uppercase tracking-wide">
+                                    CAUTION: Reporting an issue will temporarily freeze payout for Order #{reportOrder.id.slice(0, 8)} and notify the support administrators to resolve the conflict.
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] font-black uppercase tracking-[0.15em] text-foreground/40">Provide issue details</label>
+                                    <textarea
+                                        value={reportDetails}
+                                        onChange={(e) => setReportDetails(e.target.value)}
+                                        rows={4}
+                                        className="w-full bg-background/50 border border-surface-border rounded-xl p-4 font-bold text-xs focus:border-primary outline-none transition-all placeholder:text-foreground/20 text-foreground resize-none"
+                                        placeholder="Explain the problem (e.g. customer refused to share release key, item rejected, incorrect address, etc.)"
+                                        required
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={submittingReport || !reportDetails.trim()}
+                                    className="w-full py-4 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-rose-600/20 flex items-center justify-center"
+                                >
+                                    {submittingReport ? 'TRANSMITTING ALERTS...' : 'ALERT ADMINISTRATOR'}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
             
             <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
                 <p>© 2026 OMNI Student Marketplace • All Rights Reserved</p>

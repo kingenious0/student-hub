@@ -34,111 +34,18 @@ export async function POST(request: NextRequest) {
 
         console.log(`[PaymentVerify] Paystack Success. Amount: ${verification.data.amount}`);
 
-        // 2. Find OrderGroup
-        const orderGroup = await prisma.orderGroup.findUnique({
-            where: { paystackRef: reference },
-            include: {
-                student: true,
-                orders: {
-                    include: {
-                        vendor: true,
-                        items: {
-                            include: {
-                                product: true
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        // 2. Process payment verification using the shared helper
+        const { confirmOrderGroupPayment } = await import('@/lib/payments/verify');
+        const result = await confirmOrderGroupPayment(reference);
 
-        if (!orderGroup) {
-            console.error(`[PaymentVerify] OrderGroup Not Found for ref: ${reference}`);
-            return NextResponse.json({ error: 'Order Record Not Found', ref: reference }, { status: 404 });
+        if (!result.success) {
+            return NextResponse.json({ error: result.error || 'Verification Failed' }, { status: result.status || 400 });
         }
-
-        // Idempotency check (if already paid, return existing)
-        const isAlreadyPaid = orderGroup.orders.some(o => o.status !== 'PENDING' && o.status !== 'CANCELLED');
-
-        if (isAlreadyPaid) {
-            return NextResponse.json({
-                success: true,
-                message: 'Payment already processed',
-            });
-        }
-
-        // 3. Process Payments & Generate Keys
-        // We update each order individually to give unique keys
-        const updates = orderGroup.orders.map(async (order) => {
-            const releaseKey = Math.floor(100000 + Math.random() * 900000).toString();
-            
-            // Check if all items in this order are ready-made
-            const allReadyMade = order.items.every(item => item.product?.isReadyMade ?? true);
-            const targetStatus = allReadyMade ? 'READY' : 'PAID';
-
-            return prisma.order.update({
-                where: { id: order.id },
-                data: {
-                    status: targetStatus,
-                    escrowStatus: 'HELD',
-                    releaseKey: releaseKey,
-                    paidAt: new Date()
-                }
-            });
-        });
-
-        const updatedOrders = await Promise.all(updates);
-
-        // 3.5 Automated Real-Time SMS Notifications (Wigal API Trigger)
-        try {
-            const { sendSMS } = await import('@/lib/sms/wigal');
-            const keyMap = new Map(updatedOrders.map(o => [o.id, o.releaseKey]));
-
-            // A. Notify Student / Buyer
-            if (orderGroup.student && orderGroup.student.phoneNumber) {
-                const studentName = orderGroup.student.name || 'Student';
-                const totalAmount = orderGroup.totalAmount.toFixed(2);
-
-                const keyLines = orderGroup.orders.map(o => {
-                    const shop = o.vendor?.shopName || o.vendor?.name || 'Vendor';
-                    const key = keyMap.get(o.id) || o.releaseKey;
-                    return `- ${shop}: ${key}`;
-                }).join('\n');
-
-                const studentMsg = `OMNI PAY: Hello ${studentName}, payment of ₵${totalAmount} is confirmed! 🛡️\nRelease Keys:\n${keyLines}\nShare this key with the vendor ONLY when you receive your items.`;
-
-                sendSMS(orderGroup.student.phoneNumber, studentMsg).then(res => {
-                    console.log('[SMS-NOTIFY] Student SMS Sent:', res);
-                });
-            }
-
-            // B. Notify each Vendor / Seller
-            for (const o of orderGroup.orders) {
-                if (o.vendor && o.vendor.phoneNumber) {
-                    const vendorPhone = o.vendor.phoneNumber;
-                    const vendorName = o.vendor.shopName || o.vendor.name || 'Vendor';
-                    const itemsSummary = o.items.map(i => `${i.quantity}x ${i.productSnapshot && (i.productSnapshot as any).title || i.product?.title || 'Item'}`).join(', ');
-                    const amountStr = o.amount.toFixed(2);
-
-                    const vendorMsg = `OMNI ORDER: Hello ${vendorName}, you have a new order! 🔔\nItems: ${itemsSummary}\nTotal: ₵${amountStr}\nFulfillment: ${o.fulfillmentType}\nOpen the OMNI Dashboard to manage and fulfill.`;
-
-                    sendSMS(vendorPhone, vendorMsg).then(res => {
-                        console.log(`[SMS-NOTIFY] Vendor (${vendorName}) SMS Sent:`, res);
-                    });
-                }
-            }
-        } catch (smsError) {
-            console.error('[SMS-NOTIFY] Failed to dispatch SMS notifications:', smsError);
-        }
-
-        // Update Group Status? (Optional, if I added status field)
-        // prisma.orderGroup.update(...)
 
         return NextResponse.json({
             success: true,
             message: 'Payment verified. Orders confirmed.',
-            order: updatedOrders[0],
-            orders: updatedOrders
+            orders: result.orders
         });
 
     } catch (error) {

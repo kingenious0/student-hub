@@ -23,7 +23,6 @@ export default function GlobalNav() {
 
     const navItems = [
         { label: 'Market', href: '/', icon: '🏪' },
-        { label: 'Pulse', href: '/stories', icon: '📱' },
         { label: 'Dashboard', href: '/dashboard', icon: '📊' },
     ];
 

@@ -80,3 +80,86 @@ export async function sendVendorNewOrderAlert(vendorEmail: string, orderId: stri
         htmlContent: html
     });
 }
+
+export async function sendSupportTicketEmail({
+    name,
+    email,
+    subject,
+    message,
+    orderId
+}: {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
+    orderId?: string;
+}) {
+    const html = `
+        <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+            <h2 style="color: #059669; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-top: 0; font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em;">New Support Request Received 🎟️</h2>
+            <div style="margin: 20px 0; font-size: 14px; line-height: 1.6; color: #334155;">
+                <p style="margin: 5px 0;"><strong>Name:</strong> ${name}</p>
+                <p style="margin: 5px 0;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #059669; text-decoration: none;">${email}</a></p>
+                <p style="margin: 5px 0;"><strong>Subject:</strong> ${subject}</p>
+                ${orderId ? `<p style="margin: 5px 0;"><strong>Order ID:</strong> <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace;">#${orderId}</code></p>` : ''}
+                <div style="margin-top: 20px; background: #f8fafc; border-left: 4px solid #059669; padding: 15px; border-radius: 6px; color: #1e293b; font-style: italic;">
+                    ${message.replace(/\n/g, '<br/>')}
+                </div>
+            </div>
+            <div style="font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 15px; text-align: center; text-transform: uppercase;">
+                Sent via OMNI Support Engine • System Notification
+            </div>
+        </div>
+    `;
+
+    const adminEmail = process.env.ADMIN_SUPPORT_EMAIL || 'kingeniousrecord@gmail.com';
+
+    await sendEmail({
+        to: adminEmail,
+        subject: `[OMNI SUPPORT] ${subject}`,
+        htmlContent: html
+    });
+}
+
+export async function sendOrderIssueEmail({
+    orderId,
+    vendorName,
+    vendorEmail,
+    customerName,
+    customerEmail,
+    details
+}: {
+    orderId: string;
+    vendorName: string;
+    vendorEmail: string;
+    customerName: string;
+    customerEmail: string;
+    details: string;
+}) {
+    const html = `
+        <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #fee2e2; border-radius: 12px; background: #ffffff;">
+            <h2 style="color: #dc2626; border-bottom: 2px solid #fee2e2; padding-bottom: 10px; margin-top: 0; font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em;">Order Issue Reported ⚠️</h2>
+            <div style="margin: 20px 0; font-size: 14px; line-height: 1.6; color: #334155;">
+                <p style="margin: 5px 0;"><strong>Order ID:</strong> <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace;">#${orderId}</code></p>
+                <p style="margin: 5px 0;"><strong>Reported By Vendor:</strong> ${vendorName} (${vendorEmail})</p>
+                <p style="margin: 5px 0;"><strong>Customer Details:</strong> ${customerName} (${customerEmail})</p>
+                
+                <div style="margin-top: 20px; background: #fff5f5; border-left: 4px solid #dc2626; padding: 15px; border-radius: 6px; color: #991b1b; font-weight: 500;">
+                    <strong style="display: block; margin-bottom: 5px; color: #7f1d1d; text-transform: uppercase; font-size: 11px;">Issue Details:</strong>
+                    ${details.replace(/\n/g, '<br/>')}
+                </div>
+            </div>
+            <div style="font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 15px; text-align: center; text-transform: uppercase;">
+                OMNI Security Escrow Hold Protocol Activated
+            </div>
+        </div>
+    `;
+
+    const adminEmail = process.env.ADMIN_SUPPORT_EMAIL || 'kingeniousrecord@gmail.com';
+
+    await sendEmail({
+        to: adminEmail,
+        subject: `⚠️ [OMNI ESCROW ISSUE] Order #${orderId.slice(0, 8).toUpperCase()}`,
+        htmlContent: html
+    });
+}

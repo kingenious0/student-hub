@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
 import GlobalSearch from './GlobalSearch';
 import { useCartStore } from '@/lib/store/cart';
+import CartDrawer from './CartDrawer';
 import {
     MenuIcon,
     XIcon,
@@ -39,6 +40,7 @@ export default function Navbar() {
 
     const [dbUser, setDbUser] = useState<{ role: string; vendorStatus: string; isRunner: boolean; onboarded: boolean; university?: string } | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const [globalNotice, setGlobalNotice] = useState<string | null>(null);
 
@@ -250,9 +252,9 @@ export default function Navbar() {
                                 )}
                             </div>
 
-                            <Link
-                                href="/cart"
-                                className="relative p-2 text-foreground hover:text-primary transition-colors group"
+                            <button
+                                onClick={() => setCartDrawerOpen(true)}
+                                className="relative p-2 text-foreground hover:text-primary transition-colors group cursor-pointer bg-transparent border-0"
                             >
                                 <ShoppingCartIcon className="w-6 h-6 group-hover:scale-110 transition-transform block" />
                                 {mounted && itemCount > 0 && (
@@ -260,7 +262,7 @@ export default function Navbar() {
                                         <span className="text-[10px] font-black text-white">{itemCount}</span>
                                     </div>
                                 )}
-                            </Link>
+                            </button>
 
                             <div className="hidden lg:block" id="omni-nav-profile">
                                 <UserButton appearance={{ elements: { avatarBox: "w-9 h-9 border-2 border-surface-border" } }}>
@@ -424,7 +426,22 @@ export default function Navbar() {
                                             Shop & Save
                                         </h3>
                                         <DrawerLink href="/" icon={<StoreIcon className="w-5 h-5" />} label="Marketplace" setIsOpen={setIsDrawerOpen} active={isActive('/')} />
-                                        <DrawerLink href="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} label="My Cart" setIsOpen={setIsDrawerOpen} badge={itemCount} active={isActive('/cart')} />
+                                        <div
+                                            onClick={() => {
+                                                setIsDrawerOpen(false);
+                                                setCartDrawerOpen(true);
+                                            }}
+                                            className="flex items-center justify-between p-3 rounded-xl transition-all hover:bg-surface/50 cursor-pointer"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <span className="text-foreground/60"><ShoppingCartIcon className="w-5 h-5" /></span>
+                                                <span className="font-bold text-sm uppercase tracking-tight text-foreground/70">My Cart</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {itemCount > 0 && <span className="px-2 py-0.5 bg-primary text-primary-foreground text-[10px] font-black rounded-full">{itemCount}</span>}
+                                                <ChevronRightIcon className="w-4 h-4 text-foreground/20" />
+                                            </div>
+                                        </div>
                                         <DrawerLink href="/orders" icon={<PackageIcon className="w-5 h-5" />} label="My Orders" setIsOpen={setIsDrawerOpen} active={isActive('/orders')} />
                                         <DrawerLink href="/security-setup" icon={<Shield className="w-5 h-5 text-blue-500" />} label="OMNI Security" setIsOpen={setIsDrawerOpen} active={isActive('/security-setup')} />
                                         <DrawerLink href="/settings" icon={<Settings className="w-5 h-5" />} label="Settings" setIsOpen={setIsDrawerOpen} active={isActive('/settings')} />
@@ -451,6 +468,9 @@ export default function Navbar() {
                     </>
                 )}
             </AnimatePresence>
+
+            {/* Cart Drawer Component */}
+            <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
         </>
     );
 }

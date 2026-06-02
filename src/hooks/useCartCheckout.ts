@@ -20,6 +20,12 @@ export function useCartCheckout() {
   const [isHybridAuth, setIsHybridAuth] = useState(false)
   const [hybridClerkId, setHybridClerkId] = useState<string | null>(null)
 
+  // Coupon Engine States
+  const [couponCodeInput, setCouponCodeInput] = useState("")
+  const [appliedCoupon, setAppliedCoupon] = useState<{ id: string; code: string; discountAmount: number } | null>(null)
+  const [couponError, setCouponError] = useState<string | null>(null)
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
+
   const [deliveryFeeConfig, setDeliveryFeeConfig] = useState(10)
   const [platformFeeConfig, setPlatformFeeConfig] = useState(2)
   const [paystackPublicKey, setPaystackPublicKey] = useState(process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "")
@@ -55,7 +61,41 @@ export function useCartCheckout() {
   const subtotal = getCartTotal()
   const deliveryFee = items.length > 0 ? (fulfillmentMethod === "delivery" ? deliveryFeeConfig : 0.00) : 0
   const platformFee = items.length > 0 ? platformFeeConfig : 0.00
-  const total = subtotal + deliveryFee + platformFee
+  const discount = appliedCoupon ? appliedCoupon.discountAmount : 0
+  const total = Math.max(0, subtotal - discount + deliveryFee + platformFee)
+
+  const handleApplyCoupon = async (code: string) => {
+    if (!code.trim()) return
+    setIsValidatingCoupon(true)
+    setCouponError(null)
+    try {
+      const res = await fetch(`/api/coupons/validate?code=${encodeURIComponent(code.trim().toUpperCase())}&subtotal=${subtotal}`)
+      const data = await res.json()
+      if (data.success) {
+        setAppliedCoupon({
+          id: data.couponId,
+          code: data.code,
+          discountAmount: data.discountAmount
+        })
+        setCouponError(null)
+      } else {
+        setCouponError(data.error || "Invalid coupon code")
+        setAppliedCoupon(null)
+      }
+    } catch (e) {
+      console.error(e)
+      setCouponError("Connection error. Try again.")
+      setAppliedCoupon(null)
+    } finally {
+      setIsValidatingCoupon(false)
+    }
+  }
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponCodeInput("")
+    setCouponError(null)
+  }
 
   const handleCheckout = async () => {
     if (items.length === 0) return
@@ -107,7 +147,8 @@ export function useCartCheckout() {
         headers,
         body: JSON.stringify({
           items: items.map(i => ({ id: i.id, quantity: i.quantity })),
-          fulfillmentType: fulfillmentMethod === "delivery" ? "DELIVERY" : "PICKUP"
+          fulfillmentType: fulfillmentMethod === "delivery" ? "DELIVERY" : "PICKUP",
+          couponCode: appliedCoupon?.code || null
         })
       })
 
@@ -189,7 +230,15 @@ export function useCartCheckout() {
     subtotal,
     deliveryFee,
     platformFee,
+    discount,
     total,
-    handleCheckout
+    handleCheckout,
+    couponCodeInput,
+    setCouponCodeInput,
+    appliedCoupon,
+    couponError,
+    isValidatingCoupon,
+    handleApplyCoupon,
+    handleRemoveCoupon
   }
 }

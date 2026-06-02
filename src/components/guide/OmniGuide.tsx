@@ -29,13 +29,6 @@ const MEMBER_STEPS = [
         position: 'bottom-left'
     },
     {
-        id: 'pulse',
-        target: 'omni-nav-pulse',
-        title: 'CAMPUS PULSE',
-        content: 'Intercept live signals. See what is happening on campus right now.',
-        position: 'bottom-left'
-    },
-    {
         id: 'runner',
         target: 'omni-nav-runner',
         title: 'SHADOW RUNNER',
@@ -65,13 +58,6 @@ const MOBILE_MEMBER_STEPS = [
         target: 'omni-mobile-marketplace',
         title: 'MARKETPLACE',
         content: 'This is your feed. Buy, sell, and trade with students on campus.',
-        position: 'bottom'
-    },
-    {
-        id: 'mobile_pulse',
-        target: 'omni-mobile-pulse',
-        title: 'CAMPUS PULSE',
-        content: 'Watch live stories and stay updated with campus trends.',
         position: 'bottom'
     }
 ];
@@ -128,8 +114,7 @@ const ONBOARDING_STEPS = [
 
 const CONTAINER_MAP: Record<string, string> = {
     'omni-mobile-menu': 'omni-navbar',
-    'omni-mobile-marketplace': 'omni-drawer',
-    'omni-mobile-pulse': 'omni-drawer'
+    'omni-mobile-marketplace': 'omni-drawer'
 };
 
 export default function OmniGuide() {

@@ -244,6 +244,9 @@ model OrderGroup {
   
   orders        Order[]  // The split shipments resulting from this payment
   
+  couponId      String?
+  coupon        Coupon?  @relation(fields: [couponId], references: [id])
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
@@ -456,3 +459,17 @@ model VendorApplication {
 
   @@index([status])
 }
+
+model Coupon {
+  id             String       @id @default(uuid())
+  code           String       @unique
+  discountType   String       // "PERCENTAGE" or "FIXED"
+  discountValue  Float
+  maxUses        Int          @default(100)
+  usedCount      Int          @default(0)
+  expiryDate     DateTime
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  orderGroups    OrderGroup[]
+}
+
