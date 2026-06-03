@@ -82,7 +82,7 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
-              <button className="absolute -bottom-1 -right-1 w-9 h-9 bg-primary text-primary-foreground rounded-xl flex items-center justify-center hover:opacity-90 transition shadow-lg">
+              <button aria-label="Change profile photo" className="absolute -bottom-1 -right-1 w-11 h-11 bg-primary text-primary-foreground rounded-xl flex items-center justify-center hover:opacity-90 transition shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                 <Camera className="w-4 h-4" />
               </button>
             </div>
@@ -112,13 +112,13 @@ export default function ProfilePage() {
             {/* Action Buttons */}
             <div className="flex gap-2 pb-2">
               <Link href="/settings">
-                <button className="px-5 py-2.5 bg-surface text-foreground rounded-xl border border-surface-border font-black text-[10px] uppercase tracking-widest hover:bg-foreground/5 transition flex items-center gap-2">
+                <button className="px-5 py-2.5 bg-surface text-foreground rounded-xl border border-surface-border font-black text-[10px] uppercase tracking-widest hover:bg-foreground/5 transition flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                   <Settings className="w-3.5 h-3.5" />
                   Settings
                 </button>
               </Link>
               <Link href="/security-setup">
-                <button className="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition flex items-center gap-2">
+                <button className="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                   <Shield className="w-3.5 h-3.5" />
                   Security
                 </button>
@@ -255,7 +255,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <Link href="/security-setup">
-                  <button className="w-full py-3 bg-destructive text-destructive-foreground rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition">
+                  <button className="w-full py-3 bg-destructive text-destructive-foreground rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                     Setup Now
                   </button>
                 </Link>
@@ -327,7 +327,7 @@ export default function ProfilePage() {
                   <p className="text-2xl font-black uppercase tracking-tight text-foreground">{userData.role}</p>
                   {userData.role === "STUDENT" && (
                     <Link href="/apply-vendor">
-                      <button className="mt-4 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition">
+                      <button className="mt-4 px-6 py-3 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest hover:opacity-90 transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                         Become a Vendor
                       </button>
                     </Link>
@@ -340,7 +340,7 @@ export default function ProfilePage() {
             <div className="text-center pt-4">
               <button
                 onClick={() => router.push("/sign-out")}
-                className="px-6 py-3 text-foreground/40 hover:text-destructive font-black text-[10px] uppercase tracking-widest transition-colors"
+                className="px-6 py-3 text-foreground/40 hover:text-destructive font-black text-[10px] uppercase tracking-widest transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
               >
                 Sign Out
               </button>

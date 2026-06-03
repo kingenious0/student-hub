@@ -148,22 +148,22 @@ export default function CheckoutForm({
                 <button
                     type="button"
                     onClick={() => setFulfillment('PICKUP')}
-                    className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
-                        fulfillment === 'PICKUP'
-                            ? 'bg-primary text-primary-foreground shadow-md'
-                            : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
-                    }`}
-                >
-                    📍 Self-Pickup
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setFulfillment('DELIVERY')}
-                    className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 ${
-                        fulfillment === 'DELIVERY'
-                            ? 'bg-primary text-primary-foreground shadow-md'
-                            : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
-                    }`}
+                            className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+                                fulfillment === 'PICKUP'
+                                    ? 'bg-primary text-primary-foreground shadow-md'
+                                    : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
+                            }`}
+                        >
+                            📍 Self-Pickup
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFulfillment('DELIVERY')}
+                            className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+                                fulfillment === 'DELIVERY'
+                                    ? 'bg-primary text-primary-foreground shadow-md'
+                                    : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
+                            }`}
                 >
                     🚚 Direct Delivery
                 </button>
@@ -199,12 +199,14 @@ export default function CheckoutForm({
                     <div className="flex items-center bg-background rounded-xl p-1 border border-surface-border">
                         <button
                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                            className="w-8 h-8 rounded-lg bg-foreground/5 border border-surface-border flex items-center justify-center hover:bg-foreground/10 text-foreground font-black transition-colors"
+                            aria-label="Decrease quantity"
+                            className="w-11 h-11 rounded-lg bg-foreground/5 border border-surface-border flex items-center justify-center hover:bg-foreground/10 text-foreground font-black transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                         >-</button>
                         <span className="w-12 text-center text-foreground font-black">{quantity}</span>
                         <button
                             onClick={() => setQuantity(quantity + 1)}
-                            className="w-8 h-8 rounded-lg bg-foreground/5 border border-surface-border flex items-center justify-center hover:bg-foreground/10 text-foreground font-black transition-colors"
+                            aria-label="Increase quantity"
+                            className="w-11 h-11 rounded-lg bg-foreground/5 border border-surface-border flex items-center justify-center hover:bg-foreground/10 text-foreground font-black transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                         >+</button>
                     </div>
                 </div>
@@ -239,7 +241,7 @@ export default function CheckoutForm({
             <button
                 onClick={handleCheckout}
                 disabled={isCreatingOrder}
-                className="w-full py-6 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 omni-glow mb-6"
+                className="w-full py-6 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 omni-glow mb-6 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
             >
                 {isCreatingOrder ? (
                     'TRANSMITTING PROTOCOL...'

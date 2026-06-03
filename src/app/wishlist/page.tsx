@@ -147,7 +147,8 @@ export default function WishlistPage() {
 
                                     <button
                                         onClick={() => handleRemove(product.id)}
-                                        className="absolute top-3 right-3 z-10 w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-red-500 transition-colors"
+                                        aria-label="Remove from wishlist"
+                                        className="absolute top-3 right-3 z-10 w-11 h-11 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-red-500 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
                                         <XIcon className="w-4 h-4 text-white" />
                                     </button>

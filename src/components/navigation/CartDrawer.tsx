@@ -113,7 +113,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             </div>
                             <button
                                 onClick={onClose}
-                                className="p-2 hover:bg-surface rounded-full transition-colors border border-transparent hover:border-surface-border"
+                                className="p-3 hover:bg-surface rounded-full transition-colors border border-transparent hover:border-surface-border focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                aria-label="Close cart"
                             >
                                 <X className="w-5 h-5 text-foreground/60" />
                             </button>
@@ -132,7 +133,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                     </div>
                                     <button 
                                         onClick={onClose}
-                                        className="px-6 py-2.5 bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest rounded-xl hover:scale-95 active:scale-95 transition-all shadow-md"
+                                        className="px-6 py-2.5 bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest rounded-xl hover:scale-95 active:scale-95 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
                                         Start Browsing
                                     </button>
@@ -143,7 +144,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                     <div className="bg-surface p-1 rounded-2xl border border-surface-border flex gap-1">
                                         <button
                                             onClick={() => setFulfillmentMethod('delivery')}
-                                            className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2
+                                            className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none
                                                 ${fulfillmentMethod === 'delivery' 
                                                     ? 'bg-background text-primary border border-surface-border shadow-sm' 
                                                     : 'text-foreground/50 hover:text-foreground'
@@ -153,7 +154,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                         </button>
                                         <button
                                             onClick={() => setFulfillmentMethod('pickup')}
-                                            className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2
+                                            className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none
                                                 ${fulfillmentMethod === 'pickup' 
                                                     ? 'bg-background text-primary border border-surface-border shadow-sm' 
                                                     : 'text-foreground/50 hover:text-foreground'
@@ -190,14 +191,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                                 <div className="flex items-center gap-2 bg-surface border border-surface-border/60 rounded-xl p-1">
                                                                     <button
                                                                         onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                                                                        className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-background transition-colors text-foreground/60"
+                                                                        className="w-11 h-11 rounded-lg flex items-center justify-center hover:bg-background transition-colors text-foreground/60 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                                        aria-label="Decrease quantity"
                                                                     >
                                                                         <Minus className="w-3.5 h-3.5" />
                                                                     </button>
                                                                     <span className="text-xs font-black w-4 text-center">{item.quantity}</span>
                                                                     <button
                                                                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                                        className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-background transition-colors text-foreground/60"
+                                                                        className="w-11 h-11 rounded-lg flex items-center justify-center hover:bg-background transition-colors text-foreground/60 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                                        aria-label="Increase quantity"
                                                                     >
                                                                         <Plus className="w-3.5 h-3.5" />
                                                                     </button>
@@ -205,7 +208,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                                 {/* Remove */}
                                                                 <button
                                                                     onClick={() => removeFromCart(item.id)}
-                                                                    className="p-2 text-foreground/30 hover:text-red-500 transition-colors"
+                                                                    className="w-11 h-11 flex items-center justify-center text-foreground/30 hover:text-red-500 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                                    aria-label="Remove item"
                                                                 >
                                                                     <Trash2 className="w-4 h-4" />
                                                                 </button>
@@ -248,7 +252,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                     <button
                                         onClick={handleCheckout}
                                         disabled={isCreatingOrder}
-                                        className="w-full py-4 bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 hover:brightness-110"
+                                        className="w-full py-4 bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
                                         {isCreatingOrder ? (
                                             <>
@@ -265,7 +269,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                     <Link
                                         href="/cart"
                                         onClick={onClose}
-                                        className="w-full py-3 bg-surface border border-surface-border text-foreground/60 hover:text-foreground font-black text-[10px] uppercase tracking-widest rounded-xl text-center transition-colors"
+                                        className="w-full py-3 bg-surface border border-surface-border text-foreground/60 hover:text-foreground font-black text-[10px] uppercase tracking-widest rounded-xl text-center transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
                                         Open Detailed Cart Page
                                     </Link>

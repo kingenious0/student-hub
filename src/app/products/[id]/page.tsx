@@ -137,6 +137,7 @@ export default function ProductDetailsPage() {
                             size="icon"
                             onClick={() => router.back()}
                             className="rounded-full hover:bg-black/5 hover:bg-foreground/10"
+                            aria-label="Go back"
                         >
                             <span className="text-xl">←</span>
                         </Button>
@@ -306,7 +307,8 @@ export default function ProductDetailsPage() {
                                             <button
                                                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                                 disabled={quantity <= 1 || isOutOfStock}
-                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30"
+                                                aria-label="Decrease quantity"
+                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                             >
                                                 −
                                             </button>
@@ -314,7 +316,8 @@ export default function ProductDetailsPage() {
                                             <button
                                                 onClick={() => setQuantity(quantity + 1)}
                                                 disabled={isOutOfStock}
-                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30"
+                                                aria-label="Increase quantity"
+                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                             >
                                                 +
                                             </button>
@@ -331,7 +334,8 @@ export default function ProductDetailsPage() {
                                                     toast.success('Added to wishlist');
                                                 }
                                             }}
-                                            className={`w-16 h-16 rounded-full border flex items-center justify-center transition-all flex-shrink-0 ${isInWishlist(product.id)
+                                            aria-label={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                                            className={`w-16 h-16 rounded-full border flex items-center justify-center transition-all flex-shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${isInWishlist(product.id)
                                                     ? 'bg-red-500/10 border-red-500/30 text-red-500'
                                                     : 'bg-black/5 bg-foreground/5 border-black/5 border-foreground/5 text-foreground/40 hover:text-red-500 hover:border-red-500/30'
                                                 }`}
@@ -343,7 +347,7 @@ export default function ProductDetailsPage() {
                                         <button
                                             onClick={handleAddToCart}
                                             disabled={isOutOfStock || isGhostAdmin}
-                                            className="flex-1 h-16 bg-primary text-black rounded-full font-black text-sm md:text-base uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-black/20 shadow-primary/20 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3"
+                                            className="flex-1 h-16 bg-primary text-black rounded-full font-black text-sm md:text-base uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-black/20 shadow-primary/20 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                         >
                                             <div className="w-1 h-1 rounded-full bg-current"></div>
                                             {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
@@ -360,7 +364,7 @@ export default function ProductDetailsPage() {
                                             router.push(`/checkout/${product.id}?quantity=${quantity}`);
                                         }}
                                         disabled={isOutOfStock || isGhostAdmin}
-                                        className="w-full h-14 rounded-full border-2 border-primary/30 bg-primary/5 font-black uppercase tracking-widest text-xs text-primary hover:bg-primary/10 hover:border-primary/50 transition-all"
+                                        className="w-full h-14 rounded-full border-2 border-primary/30 bg-primary/5 font-black uppercase tracking-widest text-xs text-primary hover:bg-primary/10 hover:border-primary/50 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
                                         Instant Checkout
                                     </button>

@@ -10,7 +10,7 @@ export default function ThemeToggle() {
     return (
         <button
             onClick={toggleTheme}
-            className="relative w-14 h-7 rounded-full bg-white/5 border border-white/10 p-1 flex items-center transition-all hover:bg-white/10"
+            className="relative w-[56px] h-10 rounded-full bg-white/5 border border-white/10 p-1 flex items-center transition-all hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
             title={`Switch to ${theme === 'omni' ? 'Standard' : 'OMNI'} mode`}
         >
             <motion.div

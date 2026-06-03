@@ -147,7 +147,8 @@ const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCan
                                     navigator.clipboard.writeText(order.releaseKey || ''); 
                                     toast.success('Secure Key copied to clipboard');
                                 }}
-                                className="w-12 h-12 rounded-lg bg-foreground/5 flex items-center justify-center hover:bg-foreground/10 transition-colors border border-surface-border text-foreground"
+                                className="w-12 h-12 rounded-lg bg-foreground/5 flex items-center justify-center hover:bg-foreground/10 transition-colors border border-surface-border text-foreground focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                aria-label="Copy secure key"
                             >
                                 📋
                             </button>
@@ -160,12 +161,12 @@ const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCan
 
                 {/* Action Buttons */}
                 <div className="flex gap-3">
-                    <button className="flex-1 py-4 bg-primary text-black font-black uppercase tracking-widest text-xs rounded-xl hover:opacity-90 transition-opacity">
+                    <button className="flex-1 py-4 bg-primary text-black font-black uppercase tracking-widest text-xs rounded-xl hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                         Message Partner
                     </button>
                     <button
                         onClick={() => handleCancel(order.id)}
-                        className="px-6 py-4 bg-red-500/10 text-red-500 font-black uppercase tracking-widest text-xs rounded-xl hover:bg-red-500/20 transition-colors border border-red-500/20"
+                        className="px-6 py-4 bg-red-500/10 text-red-500 font-black uppercase tracking-widest text-xs rounded-xl hover:bg-red-500/20 transition-colors border border-red-500/20 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         Abort
                     </button>
@@ -182,7 +183,10 @@ const CondensedOrderStrip = ({ order, onClick }: { order: Order, onClick: () => 
         <motion.div
             layoutId={`order-strip-${order.id}`}
             onClick={onClick}
-            className="group w-full bg-surface backdrop-blur-md border border-surface-border hover:border-primary/20 p-4 rounded-xl flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] mb-3 shadow-sm"
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
+            tabIndex={0}
+            role="button"
+            className="group w-full bg-surface backdrop-blur-md border border-surface-border hover:border-primary/20 p-4 rounded-xl flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] mb-3 shadow-sm focus-visible:ring-2 focus-visible:ring-primary"
         >
             <div className="flex items-center gap-4">
                 {/* Tiny Image Thumbnail */}
@@ -217,7 +221,10 @@ const LedgerRow = ({ order, onClick }: { order: Order, onClick: () => void }) =>
     return (
         <div
             onClick={onClick}
-            className="flex items-center justify-between p-4 border-b border-surface-border hover:bg-foreground/5 transition-colors cursor-pointer group"
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
+            tabIndex={0}
+            role="button"
+            className="flex items-center justify-between p-4 border-b border-surface-border hover:bg-foreground/5 transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-primary"
         >
             <div className="flex items-center gap-4">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs ${isSuccess ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-500'}`}>
@@ -365,7 +372,7 @@ Live. Learn. Earn.
                         <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Acquisition Archive</h2>
                         <p className="text-xs text-foreground/40 font-mono mt-1">ID: #{order.id.toUpperCase()}</p>
                     </div>
-                    <button onClick={onClose} className="w-8 h-8 rounded-full bg-foreground/10 text-foreground/40 flex items-center justify-center hover:bg-foreground/20">✕</button>
+                    <button onClick={onClose} aria-label="Close modal" className="w-11 h-11 rounded-full bg-foreground/10 text-foreground/40 flex items-center justify-center hover:bg-foreground/20 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">✕</button>
                 </div>
 
                 {/* Evidence Body */}
@@ -393,13 +400,13 @@ Live. Learn. Earn.
                             <>
                                 <button
                                     onClick={handleCopy}
-                                    className="flex-1 py-3 bg-surface border border-surface-border rounded-xl text-xs font-black uppercase text-foreground/40 hover:text-foreground hover:bg-foreground/10 transition-colors"
+                                    className="flex-1 py-3 bg-surface border border-surface-border rounded-xl text-xs font-black uppercase text-foreground/40 hover:text-foreground hover:bg-foreground/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                 >
                                     {copied ? '✅ Copied!' : 'Copy Evidence ID'}
                                 </button>
                                 <button
                                     onClick={() => setShowFormats(true)}
-                                    className="flex-1 py-3 bg-primary text-black rounded-xl text-xs font-black uppercase hover:opacity-90 transition-colors"
+                                    className="flex-1 py-3 bg-primary text-black rounded-xl text-xs font-black uppercase hover:opacity-90 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                 >
                                     Download Receipt
                                 </button>
@@ -408,20 +415,20 @@ Live. Learn. Earn.
                             <div className="flex-1 flex gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
                                 <button
                                     onClick={handleDownloadTxt}
-                                    className="flex-1 py-3 bg-foreground/5 text-foreground rounded-xl text-xs font-black uppercase hover:bg-foreground/10 transition-colors"
+                                    className="flex-1 py-3 bg-foreground/5 text-foreground rounded-xl text-xs font-black uppercase hover:bg-foreground/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                 >
                                     📄 TXT
                                 </button>
                                 <button
                                     onClick={handleDownloadImage}
                                     disabled={generating}
-                                    className="flex-1 py-3 bg-[#39FF14] text-black rounded-xl text-xs font-black uppercase hover:bg-[#32d911] transition-colors shadow-[0_0_15px_rgba(57,255,20,0.3)]"
+                                    className="flex-1 py-3 bg-[#39FF14] text-black rounded-xl text-xs font-black uppercase hover:bg-[#32d911] transition-colors shadow-[0_0_15px_rgba(57,255,20,0.3)] focus-visible:ring-2 focus-visible:ring-[#39FF14] focus-visible:ring-offset-2 focus-visible:outline-none"
                                 >
                                     {generating ? 'Wait...' : '🖼️ PNG'}
                                 </button>
                                 <button
                                     onClick={() => setShowFormats(false)}
-                                    className="w-12 py-3 bg-surface border border-surface-border rounded-xl flex items-center justify-center hover:bg-foreground/10"
+                                    className="w-12 py-3 bg-surface border border-surface-border rounded-xl flex items-center justify-center hover:bg-foreground/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     aria-label="Cancel"
                                 >
                                     ✕
@@ -606,13 +613,13 @@ export default function OrdersPage() {
                 <div className="flex bg-surface p-1 rounded-xl border border-surface-border shadow-sm">
                     <button
                         onClick={() => setActiveTab('ACTIVE')}
-                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeTab === 'ACTIVE' ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'text-foreground/40 hover:text-foreground'}`}
+                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${activeTab === 'ACTIVE' ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'text-foreground/40 hover:text-foreground'}`}
                     >
                         Active Acquisitions
                     </button>
                     <button
                         onClick={() => setActiveTab('ARCHIVE')}
-                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${activeTab === 'ARCHIVE' ? 'bg-foreground/5 text-foreground shadow-sm' : 'text-foreground/40 hover:text-foreground'}`}
+                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${activeTab === 'ARCHIVE' ? 'bg-foreground/5 text-foreground shadow-sm' : 'text-foreground/40 hover:text-foreground'}`}
                     >
                         Acquisition Archive
                     </button>
@@ -625,7 +632,7 @@ export default function OrdersPage() {
                         <div className="text-4xl mb-4">⚠️</div>
                         <h3 className="text-red-500 font-black uppercase tracking-widest mb-2">Signal Lost</h3>
                         <p className="text-foreground/40 text-xs mb-4">{error}</p>
-                        <button onClick={() => fetchOrders()} className="px-6 py-2 bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:opacity-90">
+                        <button onClick={() => fetchOrders()} className="px-6 py-2 bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:opacity-90 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:outline-none">
                             Retry Uplink
                         </button>
                     </div>

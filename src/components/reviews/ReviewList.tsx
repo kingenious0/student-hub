@@ -126,7 +126,8 @@ export default function ReviewList({ productId }: ReviewListProps) {
                     <button
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                         disabled={page <= 1}
-                        className="px-4 py-2 rounded-full border border-black/10 dark:border-white/10 text-xs font-black uppercase tracking-widest disabled:opacity-30 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        aria-label="Previous page"
+                        className="px-4 py-2 rounded-full border border-black/10 dark:border-white/10 text-xs font-black uppercase tracking-widest disabled:opacity-30 hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         Previous
                     </button>
@@ -136,7 +137,8 @@ export default function ReviewList({ productId }: ReviewListProps) {
                     <button
                         onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                         disabled={page >= totalPages}
-                        className="px-4 py-2 rounded-full border border-black/10 dark:border-white/10 text-xs font-black uppercase tracking-widest disabled:opacity-30 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                        aria-label="Next page"
+                        className="px-4 py-2 rounded-full border border-black/10 dark:border-white/10 text-xs font-black uppercase tracking-widest disabled:opacity-30 hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         Next
                     </button>

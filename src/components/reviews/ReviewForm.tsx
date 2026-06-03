@@ -11,19 +11,21 @@ interface ReviewFormProps {
     onReviewSubmitted: () => void;
 }
 
-const StarButton = ({ selected, hovered, onClick, onMouseEnter, onMouseLeave }: {
+const StarButton = ({ selected, hovered, onClick, onMouseEnter, onMouseLeave, star }: {
     selected: boolean;
     hovered: boolean;
     onClick: () => void;
     onMouseEnter: () => void;
     onMouseLeave: () => void;
+    star: number;
 }) => (
     <button
         type="button"
         onClick={onClick}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        className={`w-9 h-9 flex items-center justify-center transition-colors ${
+        aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+        className={`w-11 h-11 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
             hovered || selected ? 'text-yellow-400' : 'text-zinc-600 dark:text-zinc-500'
         }`}
     >
@@ -86,6 +88,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
                     {[1, 2, 3, 4, 5].map((star) => (
                         <StarButton
                             key={star}
+                            star={star}
                             selected={star <= rating}
                             hovered={star <= hoveredRating}
                             onClick={() => setRating(star)}
@@ -118,7 +121,7 @@ export default function ReviewForm({ productId, onReviewSubmitted }: ReviewFormP
                     type="submit"
                     disabled={isSubmitting || rating === 0}
                     size="sm"
-                    className="rounded-full"
+                    className="rounded-full focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                     {isSubmitting ? 'Submitting...' : 'Submit Review'}
                 </Button>

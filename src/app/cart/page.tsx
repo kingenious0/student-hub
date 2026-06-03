@@ -148,7 +148,8 @@ export default function CartPage() {
                                                                 <div className="flex items-center gap-2 bg-foreground/5 rounded-lg p-1">
                                                                     <button
                                                                         onClick={() => updateQuantity(item.id, Number(item.quantity) - 1)}
-                                                                        className="w-8 h-8 flex items-center justify-center bg-surface rounded-md shadow-sm hover:text-primary transition-colors font-bold"
+                                                                        aria-label="Decrease quantity"
+                                                                        className="w-11 h-11 flex items-center justify-center bg-surface rounded-md shadow-sm hover:text-primary transition-colors font-bold focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                                                     >
                                                                         <MinusIcon className="w-3 h-3" />
                                                                     </button>
@@ -157,15 +158,16 @@ export default function CartPage() {
                                                                     </div>
                                                                     <button
                                                                         onClick={() => updateQuantity(item.id, Number(item.quantity) + 1)}
-                                                                        className="w-8 h-8 flex items-center justify-center bg-surface rounded-md shadow-sm hover:text-primary transition-colors font-bold"
+                                                                        aria-label="Increase quantity"
+                                                                        className="w-11 h-11 flex items-center justify-center bg-surface rounded-md shadow-sm hover:text-primary transition-colors font-bold focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                                                     >
                                                                         <PlusIcon className="w-3 h-3" />
                                                                     </button>
                                                                 </div>
                                                                 <button
                                                                     onClick={() => removeFromCart(item.id)}
-                                                                    className="text-foreground/40 hover:text-destructive transition-colors p-2"
-                                                                    title="Remove Item"
+                                                                    aria-label="Remove item"
+                                                                    className="text-foreground/40 hover:text-destructive transition-colors w-11 h-11 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                                                 >
                                                                     <Trash2Icon className="w-4 h-4" />
                                                                 </button>
@@ -192,7 +194,7 @@ export default function CartPage() {
                                         <div className="grid grid-cols-2 gap-2 p-1 bg-foreground/5 rounded-lg">
                                             <button
                                                 onClick={() => setFulfillmentMethod('delivery')}
-                                                className={`flex items-center justify-center gap-2 py-3 rounded-md text-xs font-black uppercase tracking-wider transition-all ${fulfillmentMethod === 'delivery'
+                                                className={`flex items-center justify-center gap-2 py-3 rounded-md text-xs font-black uppercase tracking-wider transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${fulfillmentMethod === 'delivery'
                                                     ? 'bg-surface text-primary shadow-sm'
                                                     : 'text-foreground/40 hover:text-foreground'
                                                     }`}
@@ -201,7 +203,7 @@ export default function CartPage() {
                                             </button>
                                             <button
                                                 onClick={() => setFulfillmentMethod('pickup')}
-                                                className={`flex items-center justify-center gap-2 py-3 rounded-md text-xs font-black uppercase tracking-wider transition-all ${fulfillmentMethod === 'pickup'
+                                                className={`flex items-center justify-center gap-2 py-3 rounded-md text-xs font-black uppercase tracking-wider transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${fulfillmentMethod === 'pickup'
                                                     ? 'bg-surface text-primary shadow-sm'
                                                     : 'text-foreground/40 hover:text-foreground'
                                                     }`}
@@ -242,7 +244,7 @@ export default function CartPage() {
                                     <button
                                         onClick={handleCheckout}
                                         disabled={isCreatingOrder}
-                                        className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-black text-sm uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20 mb-6 disabled:opacity-50 disabled:grayscale"
+                                        className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-black text-sm uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20 mb-6 disabled:opacity-50 disabled:grayscale focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
                                         {isCreatingOrder ? 'Processing...' : `Pay Now`}
                                     </button>
@@ -286,7 +288,7 @@ export default function CartPage() {
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => setShowEmailModal(false)}
-                                        className="flex-1 py-4 rounded-xl bg-foreground/5 font-black text-xs uppercase hover:bg-foreground/10 transition-colors"
+                                        className="flex-1 py-4 rounded-xl bg-foreground/5 font-black text-xs uppercase hover:bg-foreground/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
                                         Cancel
                                     </button>
@@ -300,7 +302,7 @@ export default function CartPage() {
                                                 modal.alert('Please enter a valid email.', 'Invalid Email');
                                             }
                                         }}
-                                        className="flex-1 py-4 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase hover:brightness-110 transition-colors shadow-lg shadow-primary/20"
+                                        className="flex-1 py-4 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase hover:brightness-110 transition-colors shadow-lg shadow-primary/20 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
                                         Confirm
                                     </button>

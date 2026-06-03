@@ -197,7 +197,7 @@ export default function Navbar() {
                         <button
                             id="omni-mobile-menu"
                             onClick={() => setIsDrawerOpen(true)}
-                            className="lg:hidden p-1 hover:bg-surface rounded-lg transition-colors"
+                            className="lg:hidden p-3 hover:bg-surface rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                             aria-label="Open Menu"
                         >
                             <MenuIcon className="w-6 h-6 text-foreground" />
@@ -263,7 +263,7 @@ export default function Navbar() {
 
                             <button
                                 onClick={() => setCartDrawerOpen(true)}
-                                className="relative p-2 text-foreground hover:text-primary transition-colors group cursor-pointer bg-transparent border-0"
+                                className="relative p-3 text-foreground hover:text-primary transition-colors group cursor-pointer bg-transparent border-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                             >
                                 <ShoppingCartIcon className="w-6 h-6 group-hover:scale-110 transition-transform block" />
                                 {mounted && itemCount > 0 && (
@@ -292,10 +292,10 @@ export default function Navbar() {
                         </SignedIn>
 
                         <SignedOut>
-                            <Link href="/sign-in" id="omni-nav-signin" className="hidden md:block px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest transition-all omni-glow active:scale-95">
+                            <Link href="/sign-in" id="omni-nav-signin" className="hidden md:block px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest transition-all omni-glow active:scale-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                                 Sign In
                             </Link>
-                            <Link href="/sign-in" className="md:hidden p-2 bg-primary/10 text-primary rounded-lg">
+                            <Link href="/sign-in" className="md:hidden p-2 bg-primary/10 text-primary rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                                 <UserCircleIcon className="w-5 h-5" />
                             </Link>
                         </SignedOut>
@@ -349,7 +349,8 @@ export default function Navbar() {
                                     </div>
                                     <button
                                         onClick={() => setIsDrawerOpen(false)}
-                                        className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                                        className="p-3 hover:bg-black/10 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                        aria-label="Close menu"
                                     >
                                         <XIcon className="w-6 h-6 text-foreground" />
                                     </button>
@@ -375,7 +376,7 @@ export default function Navbar() {
                                         Hello, Guest
                                     </h2>
                                     <div className="mt-4">
-                                        <Link href="/sign-in" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest shadow-lg block text-center" onClick={() => setIsDrawerOpen(false)}>
+                                        <Link href="/sign-in" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest shadow-lg block text-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none" onClick={() => setIsDrawerOpen(false)}>
                                             Sign In / Sign Up
                                         </Link>
                                     </div>
@@ -468,7 +469,7 @@ function DrawerLink({ href, icon, label, setIsOpen, active, badge, live, classNa
             id={id}
             href={href}
             onClick={() => setIsOpen(false)}
-            className={`flex items-center justify-between p-3 rounded-xl transition-all ${active ? 'bg-surface border border-surface-border shadow-sm' : 'hover:bg-surface/50'} ${className}`}
+            className={`flex items-center justify-between p-3 rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${active ? 'bg-surface border border-surface-border shadow-sm' : 'hover:bg-surface/50'} ${className}`}
         >
             <div className="flex items-center gap-4">
                 <span className={`text-foreground/60 ${active ? 'text-foreground' : ''}`}>{icon}</span>
