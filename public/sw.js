@@ -3,7 +3,8 @@ const CACHE_NAME = 'omni-cache-v1';
 const PRECACHE_ASSETS = [
   '/',
   '/offline',
-  '/OMNI-LOGO.ico',
+  '/omni-icon.svg',
+  '/icon-192x192.png',
 ];
 
 self.addEventListener('install', function(event) {
@@ -47,7 +48,7 @@ self.addEventListener('push', function(event) {
   const options = {
     body: data.body || '',
     icon: '/icon-192x192.png',
-    badge: '/omni-icon.svg',
+    badge: '/icon-192x192.png',
     vibrate: [200, 100, 200],
     requireInteraction: true,
     silent: false,

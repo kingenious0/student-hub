@@ -213,22 +213,18 @@ export default function Navbar() {
                                 className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none"
                             >
                                 <img
-                                    src="/OMNI-LOGO.ico"
+                                    src="/omni-icon.svg"
                                     alt="OMNI"
-                                    className="h-14 w-auto transition-transform group-hover:scale-110 invert-on-light"
-                                    style={{ filter: 'var(--invert-filter)' }}
+                                    className="h-12 w-auto transition-transform group-hover:scale-110"
                                 />
-                                <span className="hidden lg:block font-black tracking-tighter text-lg">OMNI</span>
                             </div>
                         ) : (
                             <Link href="/" className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none">
                                 <img
-                                    src="/OMNI-LOGO.ico"
+                                    src="/omni-icon.svg"
                                     alt="OMNI"
-                                    className="h-14 w-auto transition-transform group-hover:scale-110 invert-on-light"
-                                    style={{ filter: 'var(--invert-filter)' }}
+                                    className="h-12 w-auto transition-transform group-hover:scale-110"
                                 />
-                                <span className="hidden lg:block font-black tracking-tighter text-lg">OMNI</span>
                             </Link>
                         )}
                     </div>
