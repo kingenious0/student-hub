@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
 import GlobalSearch from './GlobalSearch';
 import { useCartStore } from '@/lib/store/cart';
+import { useWishlistStore } from '@/lib/store/wishlist';
 import CartDrawer from './CartDrawer';
 import {
     MenuIcon,
@@ -32,6 +33,7 @@ export default function Navbar() {
     const router = useRouter();
     const { user, isLoaded: clerkLoaded } = useUser();
     const itemCount = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
+    const wishlistCount = useWishlistStore((state) => state.items.length);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -93,6 +95,7 @@ export default function Navbar() {
                 .then(res => res.json())
                 .then(data => setDbUser(data))
                 .catch(() => setDbUser(null));
+            useWishlistStore.getState().loadWishlist();
         } else if (clerkLoaded && !user) {
             setDbUser(null);
         }
@@ -242,7 +245,12 @@ export default function Navbar() {
                             <div className="hidden lg:flex items-center gap-4 mr-2">
                                 <Link href="/" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
                                 <Link href="/orders" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Orders</Link>
-                                <Link href="/wishlist" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Wishlist</Link>
+                                <Link href="/wishlist" className="relative text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">
+                                    Wishlist
+                                    {wishlistCount > 0 && (
+                                        <span className="absolute -top-2 -right-4 w-4 h-4 bg-primary text-primary-foreground text-[8px] font-black rounded-full flex items-center justify-center">{wishlistCount}</span>
+                                    )}
+                                </Link>
                                 {dbUser?.role === 'VENDOR' && (
                                     <Link 
                                         href="/dashboard/vendor" 
@@ -420,7 +428,7 @@ export default function Navbar() {
                                             </div>
                                         </div>
                                         <DrawerLink href="/orders" icon={<PackageIcon className="w-5 h-5" />} label="My Orders" setIsOpen={setIsDrawerOpen} active={isActive('/orders')} />
-                                        <DrawerLink href="/wishlist" icon={<HeartIcon className="w-5 h-5" />} label="Wishlist" setIsOpen={setIsDrawerOpen} active={isActive('/wishlist')} />
+                                        <DrawerLink href="/wishlist" icon={<HeartIcon className="w-5 h-5" />} label="Wishlist" setIsOpen={setIsDrawerOpen} active={isActive('/wishlist')} badge={wishlistCount} />
                                         <DrawerLink href="/security-setup" icon={<Shield className="w-5 h-5 text-blue-500" />} label="OMNI Security" setIsOpen={setIsDrawerOpen} active={isActive('/security-setup')} />
                                         <DrawerLink href="/settings" icon={<Settings className="w-5 h-5" />} label="Settings" setIsOpen={setIsDrawerOpen} active={isActive('/settings')} />
                                     </div>

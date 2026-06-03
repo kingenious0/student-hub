@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { sendSMS } from '@/lib/sms/wigal';
+import { sendPushNotification } from '@/lib/notifications/push';
 
 export async function POST(
     request: NextRequest,
@@ -69,15 +70,32 @@ export async function POST(
 
         });
 
-        // Send Notification
+        // Send Notifications
         if (order.student?.phoneNumber) {
             const primaryItem = order.items?.[0];
-            const itemTitle = primaryItem ? primaryItem.product.title : 'Order';
+            const itemTitle = primaryItem?.product?.title || 'Order';
             const displayTitle = order.items.length > 1 ? `${itemTitle} +${order.items.length - 1}` : itemTitle;
 
             await sendSMS(
                 order.student.phoneNumber,
                 `OMNI: Order Completed. Delivery confirmed for ${displayTitle}. Thank you for trading.`
+            );
+        }
+
+        const studentPushSubs = await prisma.pushSubscription.findMany({
+            where: { userId: order.studentId }
+        });
+        if (studentPushSubs.length > 0) {
+            const primaryItem = order.items?.[0];
+            const itemTitle = primaryItem?.product?.title || 'Order';
+            const displayTitle = order.items.length > 1 ? `${itemTitle} +${order.items.length - 1} more` : itemTitle;
+            await Promise.allSettled(
+                studentPushSubs.map(sub =>
+                    sendPushNotification(
+                        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+                        { title: '✅ Order Completed!', body: `Your order for ${displayTitle} is complete.`, url: `/orders/${order.id}/track` }
+                    ).catch(() => {})
+                )
             );
         }
 

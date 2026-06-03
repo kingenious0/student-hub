@@ -14,6 +14,7 @@ import {
     MapPin
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -28,6 +29,7 @@ interface Order {
     fulfillmentNote: string | null;
     items: Array<{
         product: {
+            id: string;
             title: string;
             imageUrl: string | null;
             price: number;
@@ -247,6 +249,36 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                             )}
                         </CardContent>
                     </Card>
+
+                    {order.status === 'COMPLETED' && order.items.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Rate Your Experience</CardTitle>
+                                <CardDescription>Let others know what you think about these items.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {order.items.map((item, idx) => (
+                                    <Link
+                                        key={idx}
+                                        href={`/products/${item.product.id}`}
+                                        className="flex items-center justify-between p-3 rounded-xl hover:bg-surface/50 transition-all group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-surface overflow-hidden flex-shrink-0">
+                                                {item.product.imageUrl ? (
+                                                    <img src={item.product.imageUrl} alt={item.product.title} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-foreground/20 text-xs font-black">?</div>
+                                                )}
+                                            </div>
+                                            <span className="text-sm font-bold text-foreground/80">{item.product.title} ×{item.quantity}</span>
+                                        </div>
+                                        <span className="text-xs font-black text-primary uppercase tracking-wider group-hover:underline">Write Review →</span>
+                                    </Link>
+                                ))}
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
 

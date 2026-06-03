@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { ensureUserExists } from '@/lib/auth/sync';
+import { sendPushNotification } from '@/lib/notifications/push';
 
 interface ProcessedCartItem {
     id: string;
@@ -271,6 +272,28 @@ export async function POST(request: NextRequest) {
                 couponCode
             );
         });
+
+        // Send push notifications to vendors
+        if (vendorGroups && Object.keys(vendorGroups).length > 0) {
+            const vendorIds = Object.keys(vendorGroups);
+            const vendorPushSubs = await prisma.pushSubscription.findMany({
+                where: { userId: { in: vendorIds } }
+            });
+            if (vendorPushSubs.length > 0) {
+                const firstItem = cartItems[0];
+                const firstProduct = products.find(p => p.id === firstItem?.id);
+                const itemTitle = firstProduct?.title || 'New Order';
+                const displayTitle = cartItems.length > 1 ? `${itemTitle} +${cartItems.length - 1} more` : itemTitle;
+                await Promise.allSettled(
+                    vendorPushSubs.map(sub =>
+                        sendPushNotification(
+                            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+                            { title: '🛒 New Order!', body: `You have a new order: ${displayTitle}`, url: '/dashboard/vendor' }
+                        ).catch(() => {})
+                    )
+                );
+            }
+        }
 
         return NextResponse.json({
             success: true,
