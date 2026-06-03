@@ -35,28 +35,53 @@ export default function WithdrawModal({ isOpen, onClose, maxAmount, onSuccess }:
 
     if (!isOpen) return null;
 
+    const NetworkLogo = ({ network }: { network: string }) => {
+        switch (network) {
+            case 'MTN':
+                return (
+                    <svg viewBox="0 0 40 40" className="w-8 h-8">
+                        <rect width="40" height="40" rx="8" fill="#FBBF24" />
+                        <text x="50%" y="52%" dominantBaseline="central" textAnchor="middle" fill="#1A1A2E" fontFamily="Arial" fontSize="15" fontWeight="900" letterSpacing="-0.5">MTN</text>
+                    </svg>
+                );
+            case 'TELECEL':
+                return (
+                    <svg viewBox="0 0 40 40" className="w-8 h-8">
+                        <rect width="40" height="40" rx="20" fill="#E11D48" />
+                        <text x="50%" y="52%" dominantBaseline="central" textAnchor="middle" fill="white" fontFamily="Arial" fontSize="9" fontWeight="800" letterSpacing="0.5">TEL</text>
+                    </svg>
+                );
+            case 'AT':
+                return (
+                    <svg viewBox="0 0 40 40" className="w-8 h-8">
+                        <rect width="40" height="40" rx="8" fill="#0EA5E9" />
+                        <text x="50%" y="52%" dominantBaseline="central" textAnchor="middle" fill="white" fontFamily="Arial" fontSize="13" fontWeight="900">AT</text>
+                    </svg>
+                );
+            default:
+                return null;
+        }
+    };
+
     const networks = [
         { 
             id: 'MTN', 
             name: 'MTN MoMo', 
-            badge: '🟡',
-            logoBg: 'bg-amber-500',
+            logo: <NetworkLogo network="MTN" />,
             activeStyles: 'border-amber-500 bg-amber-500/10 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.15)]',
             inactiveStyles: 'border-surface-border bg-background/50 hover:border-amber-500/50 hover:bg-amber-500/5 text-foreground/70'
         },
         { 
             id: 'TELECEL', 
             name: 'Telecel', 
-            badge: '🔴',
-            logoBg: 'bg-rose-600',
+            logo: <NetworkLogo network="TELECEL" />,
             activeStyles: 'border-rose-500 bg-rose-500/10 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.15)]',
             inactiveStyles: 'border-surface-border bg-background/50 hover:border-rose-500/50 hover:bg-rose-500/5 text-foreground/70'
         },
         { 
             id: 'AT', 
             name: 'AT Money', 
-            badge: '🔵',
-            logoBg: 'bg-sky-500',
+            logo: <NetworkLogo network="AT" />,
             activeStyles: 'border-sky-500 bg-sky-500/10 text-sky-500 shadow-[0_0_15px_rgba(14,165,233,0.15)]',
             inactiveStyles: 'border-surface-border bg-background/50 hover:border-sky-500/50 hover:bg-sky-500/5 text-foreground/70'
         }
@@ -178,8 +203,8 @@ export default function WithdrawModal({ isOpen, onClose, maxAmount, onSuccess }:
                                             isActive ? net.activeStyles : net.inactiveStyles
                                         }`}
                                     >
-                                        <div className={`w-8 h-8 rounded-full ${net.logoBg} flex items-center justify-center text-white text-xs mb-1.5 shadow-sm`}>
-                                            {net.badge}
+                                        <div className="mb-1.5 shadow-sm">
+                                            {net.logo}
                                         </div>
                                         <span className="text-[10px] font-black tracking-tight uppercase leading-none">{net.name}</span>
                                         {isActive && (
