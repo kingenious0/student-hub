@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import { SearchIcon, ShoppingCartIcon, ChevronRightIcon } from "@/components/ui/Icons";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -14,6 +14,7 @@ import * as React from "react";
 import { useScroll, useTransform } from "framer-motion";
 
 export default function Home() {
+  const { user, isLoaded } = useUser();
   const heroRef = React.useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
   
@@ -224,18 +225,20 @@ export default function Home() {
       <footer className="bg-surface border-t border-surface-border mt-20">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="max-w-3xl mx-auto mb-8 md:mb-12">
-            <Link href="/become-vendor" className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-emerald-600 to-teal-700 text-primary-foreground p-8 md:p-12 transition-all hover:scale-[1.02] active:scale-95 block shadow-xl border border-primary/20">
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <div className="text-5xl mb-4 animate-bounce" style={{ animationDuration: '3s' }}>🏪</div>
-                <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tight mb-2">Sell on Omni</h3>
-                <p className="text-primary-foreground/80 text-xs md:text-lg font-medium mb-6 max-w-lg leading-relaxed">
-                  Open your shop, reach over 10,000+ campus students daily, and receive secure escrow payouts directly to your MoMo wallet instantly.
-                </p>
-                <span className="inline-block px-8 py-4 bg-primary-foreground text-primary font-black uppercase text-xs tracking-widest rounded-2xl group-hover:scale-105 transition-transform shadow-2xl">
-                  Start Selling Now →
-                </span>
-              </div>
-            </Link>
+            {(!isLoaded || user?.publicMetadata?.role !== 'VENDOR') && (
+              <Link href="/become-vendor" className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-emerald-600 to-teal-700 text-primary-foreground p-8 md:p-12 transition-all hover:scale-[1.02] active:scale-95 block shadow-xl border border-primary/20">
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="text-5xl mb-4 animate-bounce" style={{ animationDuration: '3s' }}>🏪</div>
+                  <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tight mb-2">Sell on Omni</h3>
+                  <p className="text-primary-foreground/80 text-xs md:text-lg font-medium mb-6 max-w-lg leading-relaxed">
+                    Open your shop, reach over 10,000+ campus students daily, and receive secure escrow payouts directly to your MoMo wallet instantly.
+                  </p>
+                  <span className="inline-block px-8 py-4 bg-primary-foreground text-primary font-black uppercase text-xs tracking-widest rounded-2xl group-hover:scale-105 transition-transform shadow-2xl">
+                    Start Selling Now →
+                  </span>
+                </div>
+              </Link>
+            )}
           </div>
 
           {/* Footer Links */}

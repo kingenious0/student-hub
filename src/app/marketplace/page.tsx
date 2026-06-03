@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EnhancedProductCard from '@/components/marketplace/EnhancedProductCard';
 import { SearchIcon } from '@/components/ui/Icons';
@@ -47,46 +47,55 @@ const categories = [
 export default function MarketplacePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [searchQuery, setSearchQuery] = useState('');
-  const [visibleCount, setVisibleCount] = useState(20);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [total, setTotal] = useState(0);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory, sortBy]);
+  const fetchProducts = useCallback(async (pageNum: number, reset: boolean) => {
+    if (reset) { setLoading(true); setProducts([]); }
+    else { setLoadingMore(true); }
 
-  const fetchProducts = async () => {
-    setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (selectedCategory !== 'all') {
-        params.append('category', selectedCategory);
-      }
+      if (selectedCategory !== 'all') params.append('category', selectedCategory);
       params.append('sort', sortBy);
-      params.append('pageSize', '100');
+      params.append('page', String(pageNum));
+      params.append('pageSize', '20');
+      if (searchQuery) params.append('q', searchQuery);
 
       const res = await fetch(`/api/products?${params.toString()}`);
       const data = await res.json();
       if (data.success) {
-        setProducts(data.products);
+        if (reset) {
+          setProducts(data.products);
+        } else {
+          setProducts(prev => [...prev, ...data.products]);
+        }
+        setHasMore(data.pagination?.hasMore || false);
+        setTotal(data.pagination?.total || 0);
       }
     } catch (error) {
       console.error('Failed to fetch products:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  };
+  }, [selectedCategory, sortBy, searchQuery]);
 
-  const filteredProducts = products.filter(product => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      product.title.toLowerCase().includes(query) ||
-      product.description.toLowerCase().includes(query) ||
-      product.category.name.toLowerCase().includes(query)
-    );
-  });
+  useEffect(() => {
+    setPage(1);
+    fetchProducts(1, true);
+  }, [fetchProducts]);
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchProducts(nextPage, false);
+  };
 
   return (
     <div className="min-h-screen bg-background pt-32 pb-20">
@@ -170,7 +179,7 @@ export default function MarketplacePage() {
         {/* Results Count */}
         <div className="flex items-center justify-between mb-6 px-2">
           <p className="text-sm font-black uppercase tracking-wider text-foreground/60">
-            {loading ? 'Loading...' : `${filteredProducts.length} Products Found`}
+            {loading ? 'Loading...' : `${total} Products Found`}
           </p>
         </div>
 
@@ -181,7 +190,7 @@ export default function MarketplacePage() {
               <div key={i} className="h-96 bg-surface/50 rounded-3xl animate-pulse" />
             ))}
           </div>
-        ) : filteredProducts.length === 0 ? (
+        ) : products.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4 opacity-20">📦</div>
             <h3 className="text-2xl font-black uppercase tracking-tight text-foreground/40 mb-2">
@@ -205,7 +214,7 @@ export default function MarketplacePage() {
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               <AnimatePresence>
-                {filteredProducts.slice(0, visibleCount).map((product, idx) => (
+                {products.map((product, idx) => (
                   <motion.div
                     key={product.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -230,13 +239,14 @@ export default function MarketplacePage() {
             </div>
 
             {/* Load More */}
-            {filteredProducts.length > visibleCount && (
+            {hasMore && (
               <div className="mt-12 flex justify-center">
                 <button
-                  onClick={() => setVisibleCount(prev => prev + 20)}
-                  className="px-12 py-5 bg-surface border-2 border-surface-border rounded-2xl font-black text-sm uppercase tracking-widest hover:border-primary hover:text-primary transition-all shadow-xl active:scale-95"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="px-12 py-5 bg-surface border-2 border-surface-border rounded-2xl font-black text-sm uppercase tracking-widest hover:border-primary hover:text-primary transition-all shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Load More Products
+                  {loadingMore ? 'Loading...' : 'Load More Products'}
                 </button>
               </div>
             )}

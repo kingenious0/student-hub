@@ -358,14 +358,7 @@ export default function Navbar() {
                                     <p className="text-xs font-bold text-foreground/60 uppercase tracking-widest mt-1">
                                         {dbUser?.role || 'Member'} • {dbUser?.onboarded ? 'Verified' : 'Guest'}
                                     </p>
-                                    <div className="flex items-center gap-2 mt-3 bg-surface/50 p-2 rounded-lg w-fit border border-surface-border/50">
-                                        <MapPinIcon className="w-3 h-3 text-primary" />
-                                        <span className="text-[10px] font-bold text-foreground/80 uppercase tracking-wide">
-                                            {dbUser?.university && UNIVERSITY_REGISTRY[dbUser.university as keyof typeof UNIVERSITY_REGISTRY]
-                                                ? UNIVERSITY_REGISTRY[dbUser.university as keyof typeof UNIVERSITY_REGISTRY].name
-                                                : (dbUser?.university || 'Select Campus')}
-                                        </span>
-                                    </div>
+
                                 </SignedIn>
                                 <SignedOut>
                                     <h2 className="text-xl font-black text-foreground uppercase tracking-tight">
