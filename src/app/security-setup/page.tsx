@@ -208,30 +208,30 @@ export default function SecuritySetupPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center space-y-6"
           >
-            <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto">
-              <Shield className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <Shield className="w-10 h-10 text-primary" />
             </div>
             <div>
               <h2 className="text-3xl font-bold mb-2">Omni Vault Protection</h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-foreground/60 font-bold">
                 Replace passwords with secure device biometrics
               </p>
             </div>
             <div className="grid gap-4 max-w-md mx-auto text-left">
-              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-surface-border">
-                <Fingerprint className="w-6 h-6 text-blue-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-4 bg-foreground/5 rounded-2xl border border-surface-border">
+                <Fingerprint className="w-6 h-6 text-primary mt-0.5" />
                 <div>
-                  <h3 className="font-semibold mb-1 italic">Biometric Identity</h3>
-                  <p className="text-[11px] text-gray-600 dark:text-gray-400 uppercase tracking-tight">
+                  <h3 className="font-bold mb-1 italic">Biometric Identity</h3>
+                  <p className="text-[11px] text-foreground/40 font-bold uppercase tracking-tight">
                     Use your phone's fingerprint or FaceID. Biometric data never leaves your device.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-surface-border">
-                <Lock className="w-6 h-6 text-blue-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-4 bg-foreground/5 rounded-2xl border border-surface-border">
+                <Lock className="w-6 h-6 text-primary mt-0.5" />
                 <div>
-                  <h3 className="font-semibold mb-1 italic">90-Strong Encryption</h3>
-                  <p className="text-[11px] text-gray-600 dark:text-gray-400 uppercase tracking-tight">
+                  <h3 className="font-bold mb-1 italic">90-Strong Encryption</h3>
+                  <p className="text-[11px] text-foreground/40 font-bold uppercase tracking-tight">
                     Endpoints are secured using hardware-level cryptographic keys.
                   </p>
                 </div>
@@ -438,8 +438,8 @@ export default function SecuritySetupPage() {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="bg-white p-6 rounded-[2rem] border-2 border-surface-border dark:bg-black">
-                  <img src={qrCodeUrl} alt="2FA QR Code" className="mx-auto w-64 h-64 mix-blend-multiply dark:mix-blend-normal" />
+                <div className="bg-background p-6 rounded-[2rem] border-2 border-surface-border">
+                  <img src={qrCodeUrl} alt="2FA QR Code" className="mx-auto w-64 h-64" />
                   <div className="mt-4 p-3 bg-surface rounded-xl font-mono text-[10px] text-center break-all text-foreground/40 uppercase tracking-tighter">
                     BACKUP KEY: {secret}
                   </div>

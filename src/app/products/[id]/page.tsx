@@ -123,12 +123,12 @@ export default function ProductDetailsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#050505] transition-colors duration-500 pb-32">
+        <div className="min-h-screen bg-[#FAFAFA] bg-[#050505] transition-colors duration-500 pb-32">
             {/* Minimalist Sticky Header */}
             <motion.div
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
-                className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-black/5 dark:border-white/5"
+                className="sticky top-0 z-50 bg-white/80 bg-foreground/10 backdrop-blur-xl border-b border-black/5 border-foreground/5"
             >
                 <div className="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-6">
@@ -136,11 +136,11 @@ export default function ProductDetailsPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => router.back()}
-                            className="rounded-full hover:bg-black/5 dark:hover:bg-white/10"
+                            className="rounded-full hover:bg-black/5 hover:bg-foreground/10"
                         >
                             <span className="text-xl">←</span>
                         </Button>
-                        <div className="h-6 w-px bg-black/10 dark:bg-white/10 hidden md:block"></div>
+                        <div className="h-6 w-px bg-foreground/10 hidden md:block"></div>
                         <span className="font-bold text-sm md:text-base tracking-tight opacity-0 md:opacity-100 transition-opacity">
                             {product.title}
                         </span>
@@ -168,12 +168,12 @@ export default function ProductDetailsPage() {
                     {/* LEFT COLUMN: Immersive Gallery */}
                     <div className="relative">
                         <div className="sticky top-32 space-y-8">
-                            <div className="relative rounded-[2rem] overflow-hidden bg-white dark:bg-zinc-900 shadow-2xl shadow-black/5 dark:shadow-white/5 border border-black/5 dark:border-white/5 group">
+                            <div className="relative rounded-[2rem] overflow-hidden bg-surface shadow-2xl shadow-foreground/5 border border-foreground/5 group" style={{ maxHeight: '70vh' }}>
                                 <ImageGallery
                                     items={galleryImages}
                                     showPlayButton={false}
-                                    showFullscreenButton={true}
-                                    showNav={true}
+                                    showFullscreenButton={false}
+                                    showNav={galleryImages.length > 1}
                                     autoPlay={false}
                                     infinite={true}
                                     showThumbnails={galleryImages.length > 1}
@@ -197,7 +197,7 @@ export default function ProductDetailsPage() {
 
                         {/* Breadcrumbs & Badges */}
                         <div className="flex flex-wrap items-center gap-3 mb-6">
-                            <Link href={`/category/${product.categoryId}`} className="px-3 py-1 rounded-full border border-black/10 dark:border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all">
+                            <Link href={`/category/${product.categoryId}`} className="px-3 py-1 rounded-full border border-black/10 border-foreground/10 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white hover:bg-foreground hover:text-background transition-all">
                                 {product.category?.name || 'Collection'}
                             </Link>
                             {product.hotspot && (
@@ -214,12 +214,12 @@ export default function ProductDetailsPage() {
                         </div>
 
                         {/* Product Title */}
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-black dark:text-white tracking-tighter leading-[0.9] mb-6">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tighter leading-[0.9] mb-6">
                             {product.title}
                         </h1>
 
                         {/* Ratings & Vendor */}
-                        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-black/5 dark:border-white/5">
+                        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-surface-border">
                             <div className="flex items-center gap-2">
                                 <div className="flex text-primary">
                                     {[...Array(5)].map((_, i) => (
@@ -228,7 +228,7 @@ export default function ProductDetailsPage() {
                                 </div>
                                 <span className="text-sm font-bold opacity-60">({reviewCount} verified reviews)</span>
                             </div>
-                            <div className="h-4 w-px bg-black/10 dark:bg-white/10"></div>
+                            <div className="h-4 w-px bg-foreground/10"></div>
                             <div className="flex items-center gap-2 text-sm">
                                 <span className="opacity-60">Sold by</span>
                                 <Link
@@ -239,7 +239,7 @@ export default function ProductDetailsPage() {
                                 </Link>
                                 {product.vendor.phoneNumber && (
                                     <>
-                                        <span className="h-4 w-px bg-black/10 dark:bg-white/10"></span>
+                                        <span className="h-4 w-px bg-foreground/10"></span>
                                         <a
                                             href={`tel:${product.vendor.phoneNumber}`}
                                             className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-full transition-all"
@@ -257,11 +257,11 @@ export default function ProductDetailsPage() {
                         {/* Price Block */}
                         <div className="mb-8">
                             <div className="flex items-baseline gap-4">
-                                <span className="text-6xl font-black tracking-tighter text-black dark:text-white">
+                                <span className="text-6xl font-black tracking-tighter text-foreground">
                                     ₵{currentPrice.toFixed(2)}
                                 </span>
                                 {isOnSale && originalPrice && (
-                                    <span className="text-xl font-medium text-black/40 dark:text-white/40 line-through decoration-2 decoration-red-500/50">
+                                    <span className="text-xl font-bold text-foreground/40 line-through decoration-2 decoration-red-500/50">
                                         ₵{originalPrice.toFixed(2)}
                                     </span>
                                 )}
@@ -274,7 +274,7 @@ export default function ProductDetailsPage() {
                         </div>
 
                         {/* Action Module */}
-                        <div className="p-1 rounded-[2rem] bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900 dark:to-black border border-black/5 dark:border-white/5 shadow-xl shadow-black/5 dark:shadow-white/5 mb-10">
+                        <div className="p-1 rounded-[2rem] bg-gradient-to-b from-white to-zinc-50 from-surface to-background border border-black/5 border-foreground/5 shadow-xl shadow-black/5 shadow-foreground/5 mb-10">
                             <div className="p-6 md:p-8">
                                 {/* Stock Status Text */}
                                 <div className="mb-6 flex items-center justify-between">
@@ -302,11 +302,11 @@ export default function ProductDetailsPage() {
                                 <div className="space-y-4">
                                     <div className="flex gap-4">
                                         {/* Quantity Pill */}
-                                        <div className="flex items-center bg-black/5 dark:bg-white/5 rounded-full p-1 border border-black/5 dark:border-white/5 h-16 w-40">
+                                        <div className="flex items-center bg-black/5 bg-foreground/5 rounded-full p-1 border border-black/5 border-foreground/5 h-16 w-40">
                                             <button
                                                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                                 disabled={quantity <= 1 || isOutOfStock}
-                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white dark:hover:bg-zinc-800 rounded-full transition-all disabled:opacity-30"
+                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30"
                                             >
                                                 −
                                             </button>
@@ -314,7 +314,7 @@ export default function ProductDetailsPage() {
                                             <button
                                                 onClick={() => setQuantity(quantity + 1)}
                                                 disabled={isOutOfStock}
-                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white dark:hover:bg-zinc-800 rounded-full transition-all disabled:opacity-30"
+                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30"
                                             >
                                                 +
                                             </button>
@@ -333,7 +333,7 @@ export default function ProductDetailsPage() {
                                             }}
                                             className={`w-16 h-16 rounded-full border flex items-center justify-center transition-all flex-shrink-0 ${isInWishlist(product.id)
                                                     ? 'bg-red-500/10 border-red-500/30 text-red-500'
-                                                    : 'bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 text-foreground/40 hover:text-red-500 hover:border-red-500/30'
+                                                    : 'bg-black/5 bg-foreground/5 border-black/5 border-foreground/5 text-foreground/40 hover:text-red-500 hover:border-red-500/30'
                                                 }`}
                                         >
                                             <HeartIcon className={`w-6 h-6 transition-all ${isInWishlist(product.id) ? 'fill-current scale-110' : ''}`} />
@@ -343,25 +343,31 @@ export default function ProductDetailsPage() {
                                         <button
                                             onClick={handleAddToCart}
                                             disabled={isOutOfStock || isGhostAdmin}
-                                            className="flex-1 h-16 bg-black dark:bg-white text-white dark:text-black rounded-full font-black text-sm md:text-base uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-black/20 dark:shadow-white/20 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3"
+                                            className="flex-1 h-16 bg-primary text-black rounded-full font-black text-sm md:text-base uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-black/20 shadow-primary/20 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3"
                                         >
                                             <div className="w-1 h-1 rounded-full bg-current"></div>
                                             {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
                                         </button>
                                     </div>
 
-                                    {/* Quick Buy Button */}
+                                    {/* Instant Checkout */}
                                     <button
-                                        onClick={handleAddToCart}
+                                        onClick={() => {
+                                            if (!user) {
+                                                router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
+                                                return;
+                                            }
+                                            router.push(`/checkout/${product.id}?quantity=${quantity}`);
+                                        }}
                                         disabled={isOutOfStock || isGhostAdmin}
-                                        className="w-full h-14 rounded-full border-2 border-black/10 dark:border-white/10 font-bold uppercase tracking-widest text-xs hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                                        className="w-full h-14 rounded-full border-2 border-primary/30 bg-primary/5 font-black uppercase tracking-widest text-xs text-primary hover:bg-primary/10 hover:border-primary/50 transition-all"
                                     >
                                         Instant Checkout
                                     </button>
                                 </div>
 
                                 {/* Trust Indicators */}
-                                <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-dashed border-black/10 dark:border-white/10">
+                                <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-dashed border-black/10 border-foreground/10">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
                                             <ZapIcon className="w-5 h-5" />
@@ -387,12 +393,12 @@ export default function ProductDetailsPage() {
                         {/* Content Tabs */}
                         <div className="mt-8">
                             <Tabs defaultValue="details" className="w-full">
-                                <TabsList className="w-full bg-transparent border-b border-black/5 dark:border-white/5 p-0 h-auto gap-8 justify-start rounded-none">
+                                <TabsList className="w-full bg-transparent border-b border-surface-border p-0 h-auto gap-8 justify-start rounded-none">
                                     {['details', 'specs', 'reviews'].map(tab => (
                                         <TabsTrigger
                                             key={tab}
                                             value={tab}
-                                            className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-4 font-black text-xs uppercase tracking-widest text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors shadow-none"
+                                            className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-4 font-black text-xs uppercase tracking-widest text-foreground/40 hover:text-foreground transition-colors shadow-none"
                                         >
                                             {tab}
                                         </TabsTrigger>
@@ -404,7 +410,7 @@ export default function ProductDetailsPage() {
                                         <motion.div
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            className="prose prose-lg prose-neutral dark:prose-invert max-w-none leading-relaxed font-light"
+                                            className="prose prose-lg prose-neutral prose-invert max-w-none leading-relaxed font-light"
                                             dangerouslySetInnerHTML={{ __html: product.description || '<p class="opacity-50 italic">No description available.</p>' }}
                                         />
                                     </TabsContent>
@@ -415,16 +421,16 @@ export default function ProductDetailsPage() {
                                             animate={{ opacity: 1, y: 0 }}
                                             className="grid grid-cols-1 md:grid-cols-2 gap-4"
                                         >
-                                            <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 flex justify-between items-center">
+                                            <div className="p-4 rounded-xl bg-black/5 bg-foreground/5 flex justify-between items-center">
                                                 <span className="font-bold text-xs uppercase tracking-widest opacity-50">Condition</span>
                                                 <span className="font-medium">New</span>
                                             </div>
-                                            <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 flex justify-between items-center">
+                                            <div className="p-4 rounded-xl bg-black/5 bg-foreground/5 flex justify-between items-center">
                                                 <span className="font-bold text-xs uppercase tracking-widest opacity-50">Category</span>
                                                 <span className="font-medium">{product.category?.name}</span>
                                             </div>
                                             {product.details && Object.entries(product.details).map(([key, value]) => (
-                                                <div key={key} className="p-4 rounded-xl bg-black/5 dark:bg-white/5 flex justify-between items-center">
+                                                <div key={key} className="p-4 rounded-xl bg-black/5 bg-foreground/5 flex justify-between items-center">
                                                     <span className="font-bold text-xs uppercase tracking-widest opacity-50 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
                                                     <span className="font-medium">{String(value)}</span>
                                                 </div>
@@ -434,7 +440,7 @@ export default function ProductDetailsPage() {
 
                                     <TabsContent key="reviews" value="reviews" className="mt-8 space-y-8 focus:outline-none">
                                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6 rounded-2xl bg-black/5 bg-foreground/5 border border-black/5 border-foreground/5">
                                                 <div className="flex items-center gap-5">
                                                     <span className="text-5xl font-black tabular-nums text-foreground">{rating.toFixed(1)}</span>
                                                     <div className="flex flex-col gap-1">
@@ -452,7 +458,7 @@ export default function ProductDetailsPage() {
 
                                             <ReviewList key={reviewListKey} productId={params.id as string} />
 
-                                            <div className="border-t border-black/5 dark:border-white/5 pt-8">
+                                            <div className="border-t border-black/5 border-foreground/5 pt-8">
                                                 {user ? (
                                                     <>
                                                         {showReviewForm ? (
@@ -474,7 +480,7 @@ export default function ProductDetailsPage() {
                                                         )}
                                                     </>
                                                 ) : (
-                                                    <div className="text-center py-8 rounded-2xl border border-dashed border-black/10 dark:border-white/10">
+                                                    <div className="text-center py-8 rounded-2xl border border-dashed border-black/10 border-foreground/10">
                                                         <p className="text-sm font-medium text-foreground/50 mb-4">Sign in to leave a review</p>
                                                         <Button
                                                             onClick={() => openSignIn()}
@@ -498,13 +504,38 @@ export default function ProductDetailsPage() {
 
             {/* Global Style overrides for Gallery */}
             <style jsx global>{`
-                .premium-gallery .image-gallery-content .image-gallery-slide .image-gallery-image {
-                    max-height: 600px;
-                    object-fit: contain; /* or cover for cleaner look depending on aspect ratio */
-                    padding: 2rem;
+                .premium-gallery {
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .premium-gallery .image-gallery-content {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    flex: 1;
+                }
+                .premium-gallery .image-gallery-slide-wrapper {
+                    flex: 1;
+                    min-height: 0;
+                }
+                .premium-gallery .image-gallery-swipe {
+                    height: 100%;
+                }
+                .premium-gallery .image-gallery-slides {
+                    height: 100%;
+                }
+                .premium-gallery .image-gallery-slide {
+                    height: 100%;
+                }
+                .premium-gallery .image-gallery-slide .image-gallery-image {
+                    height: 100%;
+                    object-fit: contain;
+                    padding: 1.5rem;
                     background: transparent;
                 }
-                .premium-gallery .image-gallery-thumbnail.active, .premium-gallery .image-gallery-thumbnail:hover {
+                .premium-gallery .image-gallery-thumbnail.active,
+                .premium-gallery .image-gallery-thumbnail:hover {
                     border: 2px solid currentColor;
                     border-radius: 8px;
                     opacity: 1;
@@ -517,6 +548,9 @@ export default function ProductDetailsPage() {
                 .premium-gallery .image-gallery-icon {
                     color: white;
                     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+                }
+                .premium-gallery .image-gallery-thumbnails-wrapper {
+                    flex-shrink: 0;
                 }
             `}</style>
         </div>

@@ -51,7 +51,7 @@ export default function Home() {
         className="relative pt-32 pb-24 px-4 overflow-hidden group/hero z-10"
       >
         {/* Premium Dark Minimalist Background - Apple/Stripe Aesthetic */}
-        <div className="absolute inset-0 bg-[#09090b]">
+        <div className="absolute inset-0 bg-[#050505]">
            {/* Single Elegant Static Radial Glow - 0% CPU/GPU overhead, highly sophisticated */}
            <div className="absolute top-[-20%] left-[15%] w-[70%] h-[80%] rounded-full bg-gradient-to-br from-orange-500/15 via-rose-600/10 to-transparent blur-[130px] pointer-events-none" />
            <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3D%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22noiseFilter%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.65%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23noiseFilter)%22%2F%3E%3C%2Fsvg%3E')] opacity-[0.08] mix-blend-overlay pointer-events-none" />
@@ -212,7 +212,7 @@ export default function Home() {
               <RefreshButton />
            </motion.div>
            
-           <Suspense fallback={<div className="h-[600px] w-full glass rounded-[3rem] animate-pulse" />}>
+            <Suspense fallback={<div className="h-[600px] w-full bg-surface rounded-[3rem] animate-pulse border border-surface-border" />}>
               <SmartFeed />
            </Suspense>
         </section>
@@ -224,14 +224,14 @@ export default function Home() {
       <footer className="bg-surface border-t border-surface-border mt-20">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="max-w-3xl mx-auto mb-8 md:mb-12">
-            <Link href="/become-vendor" className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white p-8 md:p-12 transition-all hover:scale-[1.02] active:scale-95 block shadow-xl border border-white/10">
+            <Link href="/become-vendor" className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-emerald-600 to-teal-700 text-primary-foreground p-8 md:p-12 transition-all hover:scale-[1.02] active:scale-95 block shadow-xl border border-primary/20">
               <div className="relative z-10 flex flex-col items-center text-center">
                 <div className="text-5xl mb-4 animate-bounce" style={{ animationDuration: '3s' }}>🏪</div>
                 <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tight mb-2">Sell on Omni</h3>
-                <p className="text-white/80 text-xs md:text-lg font-medium mb-6 max-w-lg leading-relaxed">
+                <p className="text-primary-foreground/80 text-xs md:text-lg font-medium mb-6 max-w-lg leading-relaxed">
                   Open your shop, reach over 10,000+ campus students daily, and receive secure escrow payouts directly to your MoMo wallet instantly.
                 </p>
-                <span className="inline-block px-8 py-4 bg-white text-indigo-600 font-black uppercase text-xs tracking-widest rounded-2xl group-hover:scale-105 transition-transform shadow-2xl">
+                <span className="inline-block px-8 py-4 bg-primary-foreground text-primary font-black uppercase text-xs tracking-widest rounded-2xl group-hover:scale-105 transition-transform shadow-2xl">
                   Start Selling Now →
                 </span>
               </div>
@@ -366,11 +366,11 @@ function FlashDealCard({
   return (
     <motion.div 
       whileHover={{ y: -8 }}
-      className="bg-white dark:bg-surface rounded-3xl p-4 transition-all hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] cursor-pointer border border-surface-border group"
+      className="bg-surface rounded-3xl p-4 transition-all hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] cursor-pointer border border-surface-border group"
     >
       {/* Discount Badge */}
-      <div className="relative aspect-square bg-gray-100 dark:bg-black rounded-2xl mb-4 flex items-center justify-center overflow-hidden">
-        <div className="absolute top-2 left-2 bg-rose-600 text-white px-3 py-1 rounded-full text-[10px] font-black z-10 shadow-lg">
+      <div className="relative aspect-square bg-background rounded-2xl mb-4 flex items-center justify-center overflow-hidden">
+        <div className="absolute top-2 left-2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-[10px] font-black z-10 shadow-lg">
           -{discount}%
         </div>
         
@@ -388,19 +388,19 @@ function FlashDealCard({
 
       {/* Price */}
       <div className="flex items-baseline gap-2 mb-3">
-        <span className="text-xl font-black text-rose-600">₵{price}</span>
+        <span className="text-xl font-black text-primary">₵{price}</span>
         <span className="text-xs text-foreground/30 line-through font-bold">₵{originalPrice}</span>
       </div>
 
       {/* Stock Indicator */}
-      <div className="h-1.5 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden mb-2">
+      <div className="h-1.5 w-full bg-foreground/10 rounded-full overflow-hidden mb-2">
          <motion.div 
            initial={{ width: 0 }}
            animate={{ width: `${(stock/20)*100}%` }}
-           className={`h-full ${isLowStock ? 'bg-orange-500' : 'bg-emerald-500'}`}
+           className={`h-full ${isLowStock ? 'bg-destructive' : 'bg-primary'}`}
          />
       </div>
-      <p className={`text-[9px] font-black uppercase tracking-widest ${isLowStock ? 'text-orange-500' : 'text-foreground/40'}`}>
+      <p className={`text-[9px] font-black uppercase tracking-widest ${isLowStock ? 'text-destructive' : 'text-foreground/40'}`}>
         {isLowStock ? `Only ${stock} left` : 'In Stock'}
       </p>
     </motion.div>
@@ -482,29 +482,29 @@ function FlashSalesSection() {
         </motion.div>
       </div>
 
-      <div className="bg-[#0a0a0a] rounded-[3rem] p-8 md:p-12 text-white relative overflow-hidden">
+      <div className="bg-surface rounded-[3rem] p-8 md:p-12 text-foreground relative overflow-hidden border border-surface-border">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12 relative z-10">
           <div className="flex items-center gap-5">
-            <div className="w-14 h-14 bg-rose-600 rounded-2xl flex items-center justify-center text-3xl animate-pulse shadow-[0_0_30px_rgba(225,29,72,0.4)]">
+            <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center text-3xl animate-pulse shadow-[0_0_30px_var(--primary-glow)]">
               ⚡
             </div>
             <div>
               <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic leading-none mb-2">
-                Flash <span className="text-rose-600">Sales</span>
+                Flash <span className="text-primary">Sales</span>
               </h2>
               <div className="flex items-center gap-2">
-                 <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-                 </span>
-                 <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">Live Promotions</p>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                  </span>
+                  <p className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">Live Promotions</p>
               </div>
             </div>
           </div>
 
           {/* LIVE Countdown Timer */}
-          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl rounded-3xl p-4 border border-white/10">
+          <div className="flex items-center gap-4 bg-foreground/5 backdrop-blur-xl rounded-3xl p-4 border border-surface-border">
             <div className="flex items-center gap-3">
               {[
                 { val: timeLeft.hours, label: 'h' },
@@ -529,10 +529,10 @@ function FlashSalesSection() {
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white/20 rounded-2xl p-4 animate-pulse">
-              <div className="aspect-square bg-white/30 rounded-xl mb-3"></div>
-              <div className="h-4 bg-white/30 rounded mb-2"></div>
-              <div className="h-6 bg-white/30 rounded"></div>
+            <div key={i} className="bg-foreground/10 rounded-2xl p-4 animate-pulse">
+              <div className="aspect-square bg-foreground/20 rounded-xl mb-3"></div>
+              <div className="h-4 bg-foreground/20 rounded mb-2"></div>
+              <div className="h-6 bg-foreground/20 rounded"></div>
             </div>
           ))}
         </div>
@@ -542,11 +542,11 @@ function FlashSalesSection() {
             <Link
               key={sale.id}
               href={`/products/${sale.product.id}`}
-              className="bg-white rounded-2xl p-4 hover:scale-105 transition-transform cursor-pointer"
+              className="bg-surface rounded-2xl p-4 hover:scale-105 transition-transform cursor-pointer border border-surface-border"
             >
               {/* Discount Badge */}
-              <div className="relative aspect-square bg-gray-100 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
-                <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-lg text-xs font-black z-10">
+              <div className="relative aspect-square bg-background rounded-xl mb-3 flex items-center justify-center overflow-hidden">
+                <div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded-lg text-xs font-black z-10">
                   -{sale.discountPercent}%
                 </div>
                 {sale.product.imageUrl ? (
@@ -563,33 +563,33 @@ function FlashSalesSection() {
               </div>
 
               {/* Product Info */}
-              <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2">
+              <h3 className="text-sm font-bold text-foreground mb-2 line-clamp-2">
                 {sale.product.title}
               </h3>
 
               {/* Price */}
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-xl font-black text-orange-600">
+                <span className="text-xl font-black text-primary">
                   ₵{sale.salePrice.toFixed(2)}
                 </span>
-                <span className="text-xs text-gray-400 line-through">
+                <span className="text-xs text-foreground/30 line-through font-bold">
                   ₵{sale.originalPrice.toFixed(2)}
                 </span>
               </div>
 
               {/* Stock Indicator */}
               {sale.stockRemaining <= 5 && sale.stockRemaining > 0 && (
-                <div className="text-xs font-bold text-orange-600 animate-pulse">
+                <div className="text-xs font-bold text-primary animate-pulse">
                   Only {sale.stockRemaining} left!
                 </div>
               )}
               {sale.stockRemaining > 5 && (
-                <div className="text-xs text-green-600 font-bold">
+                <div className="text-xs text-foreground/50 font-bold">
                   In Stock
                 </div>
               )}
               {sale.stockRemaining === 0 && (
-                <div className="text-xs text-red-600 font-bold">
+                <div className="text-xs text-destructive font-bold">
                   Sold Out
                 </div>
               )}
@@ -602,7 +602,7 @@ function FlashSalesSection() {
       <div className="text-center">
         <Link
           href="/deals"
-          className="inline-block bg-white text-orange-600 px-8 py-3 rounded-full font-black uppercase text-sm tracking-widest hover:scale-105 active:scale-95 transition-transform shadow-lg"
+          className="inline-block bg-primary text-primary-foreground px-8 py-3 rounded-full font-black uppercase text-sm tracking-widest hover:scale-105 active:scale-95 transition-transform shadow-lg"
         >
           See All Flash Deals →
         </Link>

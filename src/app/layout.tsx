@@ -19,7 +19,6 @@ import { CartProvider } from "@/context/CartContext";
 import { SecurityProvider } from "@/context/SecurityContext";
 import "./globals.css";
 import WelcomeModal from "@/components/alpha/WelcomeModal";
-import InsightUplink from "@/components/alpha/InsightUplink";
 import GlobalMaintenanceGuard from "@/components/admin/GlobalMaintenanceGuard";
 import PushNotificationProvider from "@/components/providers/PushNotificationProvider";
 
@@ -90,7 +89,6 @@ export default function RootLayout({
                           <Footer />
                           <GhostEditToggle />
                           <WelcomeModal />
-                          <InsightUplink />
                           <PushNotificationProvider />
                         </GlobalMaintenanceGuard>
                         <Toaster richColors position="top-center" theme="dark" />
