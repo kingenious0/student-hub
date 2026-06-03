@@ -1,22 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { SignedIn, SignedOut, useUser, useClerk } from '@clerk/nextjs';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { useCartStore } from '@/lib/store/cart';
 import { useWishlistStore } from '@/lib/store/wishlist';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import ImageGallery from 'react-image-gallery';
-import 'react-image-gallery/styles/css/image-gallery.css'; // Ensure CSS is imported
+import 'react-image-gallery/styles/css/image-gallery.css';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ZapIcon, MapPinIcon, CheckCircleIcon, ClockIcon, HeartIcon } from '@/components/ui/Icons';
+import { ZapIcon, MapPinIcon, CheckCircleIcon, HeartIcon } from '@/components/ui/Icons';
 import ReviewList from '@/components/reviews/ReviewList';
 import ReviewForm from '@/components/reviews/ReviewForm';
-import { cn } from '@/lib/utils';
+import ProductRecommendations from '@/components/marketplace/ProductRecommendations';
 import Link from 'next/link';
 
 // Custom Star Icon
@@ -34,15 +33,21 @@ export default function ProductDetailsPage() {
     const addToCart = useCartStore((state) => state.addToCart);
     const cartItems = useCartStore((state) => state.items);
     const [quantity, setQuantity] = useState(1);
-    const [isGhostAdmin, setIsGhostAdmin] = useState(false);
     const { isInWishlist, addItem, removeItem } = useWishlistStore();
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [reviewListKey, setReviewListKey] = useState(0);
+    const viewTrackedRef = useRef(false);
 
     // Initial Auth Check
+    const isGhostAdmin = typeof window !== 'undefined' && localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
+
+    // Track product view
     useEffect(() => {
-        setIsGhostAdmin(localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true');
-    }, []);
+        if (params.id && !viewTrackedRef.current) {
+            viewTrackedRef.current = true;
+            fetch(`/api/products/${params.id}/view`, { method: 'POST' }).catch(() => {});
+        }
+    }, [params.id]);
 
     // TanStack Query for caching and instant load
     const { data: product, isLoading, error } = useQuery({
@@ -220,7 +225,7 @@ export default function ProductDetailsPage() {
                         </h1>
 
                         {/* Ratings & Vendor */}
-                        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-surface-border">
+                        <div className="flex items-center gap-6 mb-6 pb-6 border-b border-surface-border flex-wrap">
                             <div className="flex items-center gap-2">
                                 <div className="flex text-primary">
                                     {[...Array(5)].map((_, i) => (
@@ -253,6 +258,33 @@ export default function ProductDetailsPage() {
                                     </>
                                 )}
                             </div>
+                        </div>
+
+                        {/* Social Proof Badges */}
+                        <div className="flex items-center gap-4 mb-6 flex-wrap">
+                            {product.viewCount > 0 && (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground/5 text-foreground/60 text-[10px] font-bold uppercase tracking-wider">
+                                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    {product.viewCount} views
+                                </div>
+                            )}
+                            {product.salesCount > 0 && (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
+                                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    {product.salesCount} sold
+                                </div>
+                            )}
+                            {!isOutOfStock && product.stockQuantity !== undefined && product.stockQuantity > 10 && (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-wider">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                    In Stock
+                                </div>
+                            )}
                         </div>
 
                         {/* Price Block */}
@@ -505,6 +537,25 @@ export default function ProductDetailsPage() {
                     </div>
                 </div>
             </main>
+
+            {/* Cross-sell & Upsell Sections */}
+            <div className="max-w-7xl mx-auto px-4 md:px-8">
+                <ProductRecommendations
+                    productId={params.id as string}
+                    type="category"
+                    title="Similar Items"
+                />
+                <ProductRecommendations
+                    productId={params.id as string}
+                    type="vendor"
+                    title="More from this Vendor"
+                />
+                <ProductRecommendations
+                    productId={params.id as string}
+                    type="bought-together"
+                    title="Frequently Bought Together"
+                />
+            </div>
 
             {/* Global Style overrides for Gallery */}
             <style jsx global>{`

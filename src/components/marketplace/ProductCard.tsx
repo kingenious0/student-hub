@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useModal } from '@/context/ModalContext';
 import { motion } from 'framer-motion';
-import { ZapIcon, MapPinIcon, PlusIcon } from '@/components/ui/Icons';
+import { MapPinIcon, PlusIcon } from '@/components/ui/Icons';
 import { useCartStore } from '@/lib/store/cart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,9 +27,10 @@ interface Product {
     category: { name: string; icon: string | null };
     vendor: { name: string; currentHotspot: string | null };
     hotspot: string | null;
-    // New Fields
     averageRating?: number;
     totalReviews?: number;
+    viewCount?: number;
+    salesCount?: number;
     isInStock?: boolean;
     stockQuantity?: number;
     flashSale?: {
@@ -220,6 +221,27 @@ export default function ProductCard({
                         <span className="text-[10px] text-muted-foreground font-medium">({reviewCount})</span>
                     </div>
                 )}
+
+                {/* Social Proof */}
+                <div className="flex items-center gap-2 pt-0.5">
+                    {(product.viewCount ?? 0) > 50 && (
+                        <span className="text-[9px] font-bold text-foreground/40 uppercase tracking-wider flex items-center gap-1">
+                            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            {product.viewCount}
+                        </span>
+                    )}
+                    {(product.salesCount ?? 0) > 0 && (
+                        <span className="text-[9px] font-bold text-primary/60 uppercase tracking-wider flex items-center gap-1">
+                            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            {product.salesCount}
+                        </span>
+                    )}
+                </div>
 
                 {/* Price */}
                 <div className="flex items-baseline gap-2 pt-1">
