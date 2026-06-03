@@ -106,53 +106,24 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col items-center text-center">
-            {/* Tagline */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-2xl px-6 py-2.5 rounded-full border border-white/10 mb-8"
-            >
-              <div className="flex -space-x-3">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="w-7 h-7 rounded-full border-2 border-[#0a0a0a] bg-gray-800 overflow-hidden shadow-xl">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+50}`} alt="user" />
-                  </div>
-                ))}
-              </div>
-              <span className="text-white text-xs font-black uppercase tracking-[0.2em]">Verified Campus Vibes</span>
-            </motion.div>
-
             {/* Main Headline */}
             <motion.div
               style={{ y: contentY, opacity, willChange: 'transform, opacity' }}
-              className="mb-8 relative"
+              className="mb-8 relative w-full px-4"
             >
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-[12vw] md:text-[12rem] font-black text-white tracking-tighter leading-[0.75] italic uppercase select-none"
+                className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter leading-none italic uppercase select-none"
                 style={{ 
                   textShadow: '0 8px 24px rgba(0,0,0,0.2)', 
                   willChange: 'transform, opacity' 
                 }}
               >
-                Campus<br className="md:hidden" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">Market</span>
+                Campus<br className="sm:hidden" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30"> Market</span>
               </motion.h1>
-              
-              {/* Premium Static tilted badge - Animates smoothly only on hover, hidden on mobile to prevent title obstruction */}
-              <motion.div 
-                initial={{ opacity: 0, scale: 0, rotate: -6 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", delay: 0.8 }}
-                whileHover={{ scale: 1.1, rotate: -2 }}
-                className="hidden md:block absolute md:top-0 md:right-0 bg-[#39FF14] text-black px-6 py-3 rounded-2xl font-black text-2xl md:text-4xl shadow-[0_8px_20px_rgba(57,255,20,0.25)] border-4 border-black z-20 cursor-default transition-all duration-300 -rotate-6"
-                style={{ willChange: 'transform' }}
-              >
-                60% OFF
-              </motion.div>
             </motion.div>
 
             {/* Description */}
@@ -160,7 +131,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="text-white/40 text-xl md:text-3xl font-bold mb-14 max-w-2xl leading-none tracking-tight"
+              className="text-white/40 text-lg md:text-2xl font-bold mb-14 max-w-2xl leading-normal tracking-tight px-4"
             >
               The peer-to-peer digital hub powering the <span className="text-white">USTED</span> student economy. Buy, sell, and trade safely.
             </motion.p>

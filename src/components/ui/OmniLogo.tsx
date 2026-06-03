@@ -87,7 +87,7 @@ export function OmniLogo({ className, showTagline = true, size = 'md', onClick, 
                         isDark ? 'text-white' : 'text-black'
                     )}
                 >
-                    OMNI
+                    MARKETPLACE
                 </span>
                 {showTagline && (
                     <span className={cn('font-semibold uppercase tracking-[0.3em] text-emerald-500', s.tagline)}>
