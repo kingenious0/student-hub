@@ -242,23 +242,26 @@ export default function SettingsPage() {
                   active={formData.notifications.newReleases}
                   onChange={(v) => setFormData({...formData, notifications: {...formData.notifications, newReleases: v}})}
                />
-               <GridToggle 
-                  title="Push Alerts"
-                  desc="Receive push notifications even when you're not on OMNI"
-                  active={formData.notifications.pushEnabled}
-                  onChange={async (v) => {
-                    setFormData({...formData, notifications: {...formData.notifications, pushEnabled: v}});
-                    if (v) {
-                      const ok = await subscribeUserToPush();
-                      if (!ok) {
-                        setFormData({...formData, notifications: {...formData.notifications, pushEnabled: false}});
-                        toast.error('Failed to enable push notifications');
-                      }
-                    } else {
-                      await unsubscribeUser();
-                    }
-                  }}
-               />
+                <GridToggle 
+                   title="Push Alerts"
+                   desc="Receive push notifications even when you're not on OMNI"
+                   active={formData.notifications.pushEnabled}
+                   onChange={async (v) => {
+                     setFormData({...formData, notifications: {...formData.notifications, pushEnabled: v}});
+                     if (v) {
+                       const ok = await subscribeUserToPush();
+                       if (ok) {
+                         localStorage.setItem('omni-push-enabled', 'true');
+                       } else {
+                         setFormData({...formData, notifications: {...formData.notifications, pushEnabled: false}});
+                         toast.error('Failed to enable push notifications');
+                       }
+                     } else {
+                       await unsubscribeUser();
+                       localStorage.removeItem('omni-push-enabled');
+                     }
+                   }}
+                />
                <GridToggle 
                   title="Security Hardening"
                   desc="Alerts for new logins or biometric resets"

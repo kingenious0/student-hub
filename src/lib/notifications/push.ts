@@ -22,8 +22,11 @@ export async function sendPushNotification(
   payload: PushPayload
 ) {
   ensureInit();
-  return webpush.sendNotification(
-    subscription,
-    JSON.stringify(payload)
-  );
+  try {
+    await webpush.sendNotification(subscription, JSON.stringify(payload));
+    return { sent: true };
+  } catch (err) {
+    const isGone = err?.statusCode === 410 || err?.statusCode === 404;
+    return { sent: false, expired: isGone, endpoint: subscription.endpoint };
+  }
 }

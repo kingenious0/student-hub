@@ -62,8 +62,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                // Unwrap params (Next.js 15 requirement, though usually sync in client components but good practice)
-                const { id } = await params; // Just to be safe if it's a promise in future
+                const { id } = await params;
                 const res = await fetch(`/api/orders/${id}`);
                 if (!res.ok) throw new Error('Failed to load order');
                 const data = await res.json();
@@ -74,7 +73,20 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                 setLoading(false);
             }
         };
+
         fetchOrder();
+
+        const interval = setInterval(fetchOrder, 10000);
+
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') fetchOrder();
+        };
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener('visibilitychange', handleVisibility);
+        };
     }, [params]);
 
     if (loading) return (

@@ -284,14 +284,18 @@ export async function POST(request: NextRequest) {
                 const firstProduct = products.find(p => p.id === firstItem?.id);
                 const itemTitle = firstProduct?.title || 'New Order';
                 const displayTitle = cartItems.length > 1 ? `${itemTitle} +${cartItems.length - 1} more` : itemTitle;
-                await Promise.allSettled(
+                const results = await Promise.all(
                     vendorPushSubs.map(sub =>
                         sendPushNotification(
                             { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
                             { title: '🛒 New Order!', body: `You have a new order: ${displayTitle}`, url: '/dashboard/vendor' }
-                        ).catch(() => {})
+                        )
                     )
                 );
+                const expired = results.filter(r => r.expired).map(r => r.endpoint);
+                if (expired.length > 0) {
+                    await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: expired } } });
+                }
             }
         }
 

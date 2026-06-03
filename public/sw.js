@@ -47,7 +47,10 @@ self.addEventListener('push', function(event) {
   const options = {
     body: data.body || '',
     icon: '/icon-192x192.png',
-    badge: '/icon-192x192.png',
+    badge: '/omni-icon.svg',
+    vibrate: [200, 100, 200],
+    requireInteraction: true,
+    silent: false,
     data: { url: data.url || '/' }
   };
   event.waitUntil(self.registration.showNotification(data.title || 'OMNI', options));

@@ -64,6 +64,7 @@ export async function POST(
                 data: {
                     status: 'COMPLETED',
                     escrowStatus: 'RELEASED',
+                    releaseKey: null,
                 }
             });
 
@@ -89,14 +90,18 @@ export async function POST(
             const primaryItem = order.items?.[0];
             const itemTitle = primaryItem?.product?.title || 'Order';
             const displayTitle = order.items.length > 1 ? `${itemTitle} +${order.items.length - 1} more` : itemTitle;
-            await Promise.allSettled(
+            const results = await Promise.all(
                 studentPushSubs.map(sub =>
                     sendPushNotification(
                         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
                         { title: '✅ Order Completed!', body: `Your order for ${displayTitle} is complete.`, url: `/orders/${order.id}/track` }
-                    ).catch(() => {})
+                    )
                 )
             );
+            const expired = results.filter(r => r.expired).map(r => r.endpoint);
+            if (expired.length > 0) {
+                await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: expired } } });
+            }
         }
 
         return NextResponse.json({ success: true, message: 'Order Completed' });
