@@ -661,27 +661,35 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                     </Button>
 
                     {/* Fee Transparency Card */}
-                    <div className="p-4 rounded-2xl border border-surface-border bg-surface/40 space-y-3">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 flex items-center gap-1">
-                            <BadgeCheck className="w-3 h-3" /> Platform Fee — Industry Lowest
-                        </p>
-                        <p className="text-xs text-foreground/60 leading-relaxed">
-                            We take only <span className="font-black text-foreground">5%</span> per sale — so you keep <span className="font-black text-emerald-400">95%</span> of every order.
-                        </p>
-                        <div className="space-y-1.5">
+                    <div className="p-4 rounded-2xl border border-surface-border bg-surface/40 space-y-4">
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 flex items-center gap-1 mb-1">
+                                <BadgeCheck className="w-3 h-3" /> Platform Fee — Industry Lowest
+                            </p>
+                            <p className="text-xs text-foreground/60 leading-relaxed">
+                                We take only <span className="font-black text-foreground">5%</span> per sale — so you keep <span className="font-black text-emerald-400">95%</span> of every order.
+                            </p>
+                        </div>
+                        <div className="space-y-2">
                             {[
-                                { name: 'Fiverr', fee: '20%', color: 'text-red-400' },
-                                { name: 'Amazon', fee: '15%', color: 'text-orange-400' },
-                                { name: 'Etsy', fee: '6.5%', color: 'text-yellow-400' },
-                                { name: 'StudentHub ✓', fee: '5%', color: 'text-emerald-400' },
+                                { name: 'Fiverr', fee: 20, color: 'bg-red-400/80', textColor: 'text-red-400' },
+                                { name: 'Amazon', fee: 15, color: 'bg-orange-400/80', textColor: 'text-orange-400' },
+                                { name: 'Etsy', fee: 6.5, color: 'bg-yellow-400/80', textColor: 'text-yellow-400' },
+                                { name: 'OMNI', fee: 5, color: 'bg-emerald-400', textColor: 'text-emerald-400', isOurs: true },
                             ].map(p => (
-                                <div key={p.name} className="flex justify-between items-center text-[11px]">
-                                    <span className="text-foreground/50 font-medium">{p.name}</span>
-                                    <span className={`font-black ${p.color}`}>{p.fee}</span>
+                                <div key={p.name} className="flex items-center gap-3">
+                                    <span className={`w-14 text-[10px] font-bold ${p.textColor} shrink-0`}>{p.name}</span>
+                                    <div className="flex-1 h-5 bg-zinc-200 dark:bg-zinc-800 rounded-md overflow-hidden relative">
+                                        <div
+                                            className={`h-full rounded-md ${p.color} transition-all`}
+                                            style={{ width: `${(p.fee / 20) * 100}%`, maxWidth: '100%' }}
+                                        />
+                                    </div>
+                                    <span className={`w-10 text-right text-[10px] font-black ${p.textColor}`}>{p.fee}%</span>
                                 </div>
                             ))}
                         </div>
-                        <p className="text-[10px] text-foreground/30 leading-relaxed">
+                        <p className="text-[10px] text-foreground/30 leading-relaxed border-t border-surface-border pt-3">
                             Tip: Want to net exactly ₵100? List at ₵106 and pocket ₵100.70 after fee.
                         </p>
                     </div>

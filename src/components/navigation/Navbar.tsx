@@ -27,6 +27,7 @@ import {
     ClockIcon
 } from '@/components/ui/Icons';
 import { Shield, Settings } from 'lucide-react';
+import { OmniLogo } from '@/components/ui/OmniLogo';
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -208,23 +209,12 @@ export default function Navbar() {
                             (user?.publicMetadata?.role as string)?.toUpperCase() === 'ADMIN' ||
                             dbUser?.role?.toUpperCase() === 'GOD_MODE' ||
                             dbUser?.role?.toUpperCase() === 'ADMIN') ? (
-                            <div
-                                onClick={handleLogoClick}
-                                className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none"
-                            >
-                                <img
-                                    src="/omni-icon.svg"
-                                    alt="OMNI"
-                                    className="h-12 w-auto transition-transform group-hover:scale-110"
-                                />
+                            <div onClick={handleLogoClick} className="flex-shrink-0">
+                                <OmniLogo size="md" showTagline={false} className="transition-transform hover:scale-110" />
                             </div>
                         ) : (
-                            <Link href="/" className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none">
-                                <img
-                                    src="/omni-icon.svg"
-                                    alt="OMNI"
-                                    className="h-12 w-auto transition-transform group-hover:scale-110"
-                                />
+                            <Link href="/" className="flex-shrink-0">
+                                <OmniLogo size="md" showTagline={false} className="transition-transform hover:scale-110" />
                             </Link>
                         )}
                     </div>

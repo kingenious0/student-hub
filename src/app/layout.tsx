@@ -67,6 +67,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" data-theme="omni" suppressHydrationWarning>
         <head>
+          <link rel="preload" href="/omni-icon.svg" as="image" />
           <meta name="theme-color" content="#050505" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

@@ -3,6 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { OmniLogo } from '@/components/ui/OmniLogo'
 
 export default function Footer() {
     const pathname = usePathname()
@@ -33,13 +34,10 @@ export default function Footer() {
                 
                 {/* Brand & Copyright */}
                 <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-                    <div className="flex items-center gap-2">
-                        <img src="/OMNI-LOGO.ico" alt="OMNI" className="h-6 w-auto invert-on-light" />
-                        <span className="text-sm font-black tracking-tighter uppercase italic">OMNI</span>
-                    </div>
+                    <OmniLogo size="sm" showTagline={false} />
                     <span className="hidden sm:inline text-foreground/20">•</span>
                     <span className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em]">
-                        © {new Date().getFullYear()} OMNI ECOSYSTEM • ALPHA SECTOR 01
+                        © {new Date().getFullYear()} OMNI Marketplace
                     </span>
                 </div>
 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
 import { useModal } from '@/context/ModalContext';
+import { OmniLogo } from '@/components/ui/OmniLogo';
 import { toast } from 'sonner';
 
 export default function OnboardingPage() {
@@ -89,7 +90,7 @@ export default function OnboardingPage() {
                 >
                     {/* Logo */}
                     <div className="flex justify-center mb-6">
-                        <img src="/omni-icon.svg" alt="OMNI" className="h-24 md:h-28 w-auto" />
+                        <OmniLogo size="xl" showTagline={true} />
                     </div>
 
                     {/* Header */}

@@ -189,7 +189,7 @@ export default function MaintenanceLockdown({
                 {/* Footer Metadata */}
                 <div className="pt-6">
                     <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.4em] font-mono">
-                        OMNI SECURE ECOSYSTEM • NODE SHIELD v3.2.0 • ALPHA SECTOR 01
+                        OMNI SECURE ECOSYSTEM • NODE SHIELD v3.2.0
                     </p>
                 </div>
             </div>

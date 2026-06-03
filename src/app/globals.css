@@ -499,11 +499,18 @@ body {
 }
 
 /* ========================================
-   🌓 LOGO AUTO-INVERT
+   🌊 CSS-ONLY FLOATING ANIMATION (zero JS)
    ======================================== */
 
-html:not([data-theme='omni']) .invert-on-light {
-  filter: brightness(0);
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-20px) rotate(5deg); }
+  50% { transform: translateY(-10px) rotate(-5deg); }
+  75% { transform: translateY(-25px) rotate(3deg); }
+}
+
+.animate-float {
+  animation: float var(--float-duration, 6s) ease-in-out infinite;
 }
 
 /* ========================================
