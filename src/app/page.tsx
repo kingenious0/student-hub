@@ -132,14 +132,14 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-[12vw] md:text-[14rem] font-black text-white tracking-tighter leading-[0.75] italic uppercase select-none"
+                className="text-[12vw] md:text-[12rem] font-black text-white tracking-tighter leading-[0.75] italic uppercase select-none"
                 style={{ 
                   textShadow: '0 8px 24px rgba(0,0,0,0.2)', 
                   willChange: 'transform, opacity' 
                 }}
               >
-                Zero<br className="md:hidden" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">Limits</span>
+                Campus<br className="md:hidden" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">Market</span>
               </motion.h1>
               
               {/* Premium Static tilted badge - Animates smoothly only on hover, hidden on mobile to prevent title obstruction */}
@@ -162,7 +162,7 @@ export default function Home() {
               transition={{ delay: 0.6 }}
               className="text-white/40 text-xl md:text-3xl font-bold mb-14 max-w-2xl leading-none tracking-tight"
             >
-              The digital hub for the <span className="text-white">USTED</span> underground economy.
+              The peer-to-peer digital hub powering the <span className="text-white">USTED</span> student economy. Buy, sell, and trade safely.
             </motion.p>
 
             {/* CTA Button with Liquid Gradient */}

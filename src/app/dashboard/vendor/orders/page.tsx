@@ -401,125 +401,127 @@ export default function VendorOrdersPage() {
                     ))}
                 </div>
 
-                <Card>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[100px]">Order ID</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Customer</TableHead>
-                                <TableHead>Items</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {paginated.length === 0 ? (
+                <Card className="overflow-visible">
+                    <div className="min-h-[350px]">
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                                        No orders found.
-                                    </TableCell>
+                                    <TableHead className="w-[100px]">Order ID</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Customer</TableHead>
+                                    <TableHead>Items</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Total</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            ) : (
-                                paginated.map((order) => {
-                                    const { displayTitle, imageUrl } = getOrderDisplay(order);
-                                    return (
-                                        <TableRow key={order.id}>
-                                            <TableCell className="font-mono text-xs font-medium">#{order.id.slice(0, 8)}</TableCell>
-                                            <TableCell className="text-muted-foreground text-xs">{formatDate(order.createdAt)}</TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-sm">{order.student.name}</span>
-                                                    <span className="text-xs text-muted-foreground">{order.student.email}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    {imageUrl && (
-                                                        <div className="w-8 h-8 rounded-md bg-muted overflow-hidden flex-shrink-0">
-                                                            <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-                                                        </div>
-                                                    )}
-                                                    <span className="text-sm truncate max-w-[200px]" title={displayTitle}>{displayTitle}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>{getStatusBadge(order.status)}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex flex-col items-end">
-                                                    <span className="font-bold text-sm">₵{order.amount.toFixed(2)}</span>
-                                                    <span className="text-[10px] text-emerald-400 font-medium">(Payout: ₵{(order.amount * 0.95).toFixed(2)})</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    {order.status === 'PAID' && (
-                                                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium" onClick={() => handleMarkReady(order.id)}>
-                                                            Accept
-                                                        </Button>
-                                                    )}
-                                                    {order.status === 'PREPARING' && (
-                                                        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium" onClick={() => handleMarkReady(order.id)}>
-                                                            Mark Ready
-                                                        </Button>
-                                                    )}
-                                                    {order.status === 'READY' && (
-                                                        <div className="flex items-center gap-2">
-                                                            <Input 
-                                                                className="w-24 h-8 text-center text-xs bg-slate-900 border-emerald-500/30 text-white placeholder-slate-500 focus-visible:ring-emerald-500" 
-                                                                placeholder="Release PIN" 
-                                                                maxLength={6}
-                                                                value={releaseKeyInput[order.id] || ''}
-                                                                onChange={(e) => setReleaseKeyInput({ ...releaseKeyInput, [order.id]: e.target.value })}
-                                                             />
-                                                             <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 animate-pulse" onClick={() => handleCompleteDelivery(order.id)}>
-                                                                 Verify PIN
-                                                             </Button>
-                                                         </div>
-                                                     )}
-                                                     {order.status === 'PICKED_UP' && (
-                                                         <div className="flex items-center gap-2">
-                                                             <Input 
-                                                                 className="w-24 h-8 text-center text-xs bg-slate-900 border-emerald-500/30 text-white placeholder-slate-500 focus-visible:ring-emerald-500" 
-                                                                 placeholder="Release PIN" 
-                                                                 maxLength={6}
-                                                                 value={releaseKeyInput[order.id] || ''}
-                                                                 onChange={(e) => setReleaseKeyInput({ ...releaseKeyInput, [order.id]: e.target.value })}
-                                                             />
-                                                             <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 animate-pulse" onClick={() => handleCompleteDelivery(order.id)}>
-                                                                 Verify PIN
-                                                             </Button>
-                                                         </div>
-                                                     )}
-                                                     
-                                                     <DropdownMenu>
-                                                         <DropdownMenuTrigger asChild>
-                                                             <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                                 <MoreHorizontal className="h-4 w-4" />
-                                                             </Button>
-                                                         </DropdownMenuTrigger>
-                                                         <DropdownMenuContent align="end">
-                                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                             <DropdownMenuItem onClick={() => router.push(`/dashboard/vendor/orders/${order.id}`)}>
-                                                                 View Details
-                                                             </DropdownMenuItem>
-                                                             <DropdownMenuItem onClick={() => handleContactCustomer(order)}>
-                                                                 Contact Customer
-                                                             </DropdownMenuItem>
-                                                             <DropdownMenuSeparator />
-                                                             <DropdownMenuItem className="text-destructive" onClick={() => handleReportIssue(order)}>
-                                                                 Report Issue
-                                                             </DropdownMenuItem>
-                                                         </DropdownMenuContent>
-                                                     </DropdownMenu>
-                                                 </div>
-                                             </TableCell>
-                                        </TableRow>
-                                    );
-                                })
-                            )}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {paginated.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                                            No orders found.
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    paginated.map((order) => {
+                                        const { displayTitle, imageUrl } = getOrderDisplay(order);
+                                        return (
+                                            <TableRow key={order.id}>
+                                                <TableCell className="font-mono text-xs font-medium">#{order.id.slice(0, 8)}</TableCell>
+                                                <TableCell className="text-muted-foreground text-xs">{formatDate(order.createdAt)}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-medium text-sm">{order.student.name}</span>
+                                                        <span className="text-xs text-muted-foreground">{order.student.email}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        {imageUrl && (
+                                                            <div className="w-8 h-8 rounded-md bg-muted overflow-hidden flex-shrink-0">
+                                                                <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                                                            </div>
+                                                        )}
+                                                        <span className="text-sm truncate max-w-[200px]" title={displayTitle}>{displayTitle}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>{getStatusBadge(order.status)}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="font-bold text-sm">₵{order.amount.toFixed(2)}</span>
+                                                        <span className="text-[10px] text-emerald-400 font-medium">(Payout: ₵{(order.amount * 0.95).toFixed(2)})</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        {order.status === 'PAID' && (
+                                                            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium" onClick={() => handleMarkReady(order.id)}>
+                                                                Accept
+                                                            </Button>
+                                                        )}
+                                                        {order.status === 'PREPARING' && (
+                                                            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium" onClick={() => handleMarkReady(order.id)}>
+                                                                Mark Ready
+                                                            </Button>
+                                                        )}
+                                                        {order.status === 'READY' && (
+                                                            <div className="flex items-center gap-2">
+                                                                <Input 
+                                                                    className="w-24 h-8 text-center text-xs bg-slate-900 border-emerald-500/30 text-white placeholder-slate-500 focus-visible:ring-emerald-500" 
+                                                                    placeholder="Release PIN" 
+                                                                    maxLength={6}
+                                                                    value={releaseKeyInput[order.id] || ''}
+                                                                    onChange={(e) => setReleaseKeyInput({ ...releaseKeyInput, [order.id]: e.target.value })}
+                                                                 />
+                                                                 <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 animate-pulse" onClick={() => handleCompleteDelivery(order.id)}>
+                                                                     Verify PIN
+                                                                 </Button>
+                                                             </div>
+                                                         )}
+                                                         {order.status === 'PICKED_UP' && (
+                                                             <div className="flex items-center gap-2">
+                                                                 <Input 
+                                                                     className="w-24 h-8 text-center text-xs bg-slate-900 border-emerald-500/30 text-white placeholder-slate-500 focus-visible:ring-emerald-500" 
+                                                                     placeholder="Release PIN" 
+                                                                     maxLength={6}
+                                                                     value={releaseKeyInput[order.id] || ''}
+                                                                     onChange={(e) => setReleaseKeyInput({ ...releaseKeyInput, [order.id]: e.target.value })}
+                                                                 />
+                                                                 <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 animate-pulse" onClick={() => handleCompleteDelivery(order.id)}>
+                                                                     Verify PIN
+                                                                 </Button>
+                                                             </div>
+                                                         )}
+                                                         
+                                                         <DropdownMenu>
+                                                             <DropdownMenuTrigger asChild>
+                                                                 <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                     <MoreHorizontal className="h-4 w-4" />
+                                                                 </Button>
+                                                             </DropdownMenuTrigger>
+                                                             <DropdownMenuContent align="end">
+                                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                                 <DropdownMenuItem onClick={() => router.push(`/dashboard/vendor/orders/${order.id}`)}>
+                                                                     View Details
+                                                                 </DropdownMenuItem>
+                                                                 <DropdownMenuItem onClick={() => handleContactCustomer(order)}>
+                                                                     Contact Customer
+                                                                 </DropdownMenuItem>
+                                                                 <DropdownMenuSeparator />
+                                                                 <DropdownMenuItem className="text-destructive" onClick={() => handleReportIssue(order)}>
+                                                                     Report Issue
+                                                                 </DropdownMenuItem>
+                                                             </DropdownMenuContent>
+                                                         </DropdownMenu>
+                                                     </div>
+                                                 </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </Card>
 
                 {/* Pagination */}
@@ -565,7 +567,7 @@ export default function VendorOrdersPage() {
                             >
                                 <X className="w-4 h-4" />
                             </button>
-
+ 
                             {/* Header */}
                             <div className="mb-6">
                                 <h2 className="text-2xl font-black uppercase tracking-tight mb-1 flex items-center gap-2">
@@ -573,7 +575,7 @@ export default function VendorOrdersPage() {
                                 </h2>
                                 <p className="text-xs text-foreground/40 font-bold uppercase tracking-wider">Choose a channel to coordinate delivery.</p>
                             </div>
-
+ 
                             {/* Customer Info Card */}
                             <div className="mb-6 p-4 bg-primary/5 border border-primary/10 rounded-2xl">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Customer</p>
@@ -583,7 +585,7 @@ export default function VendorOrdersPage() {
                                     <p className="text-xs text-foreground/60 mt-1 font-mono">{contactOrder.student.phoneNumber}</p>
                                 )}
                             </div>
-
+ 
                             {/* Action channels */}
                             <div className="space-y-3">
                                 {contactOrder.student.phoneNumber ? (
@@ -598,9 +600,12 @@ export default function VendorOrdersPage() {
                                             href={`https://wa.me/${contactOrder.student.phoneNumber.replace(/[^0-9]/g, '')}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95"
+                                            className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95 animate-pulse-glow"
                                         >
-                                            <MessageSquare className="w-4 h-4" /> Open WhatsApp
+                                            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                                <path d="M12.031 2c-5.514 0-10 4.486-10 10 0 1.968.57 3.805 1.558 5.359l-1.558 5.641 5.812-1.523c1.472.859 3.178 1.354 4.99 1.354 5.514 0 10-4.486 10-10s-4.486-10-10-10zm0 18c-1.621 0-3.134-.482-4.421-1.298l-.317-.197-3.277.859.882-3.189-.228-.363c-.888-1.421-1.401-3.109-1.401-4.912 0-4.963 4.037-9 9-9s9 4.037 9 9-4.037 9-9 9zm4.646-6.425c-.254-.127-1.503-.742-1.737-.825-.233-.085-.403-.127-.573.127-.17.254-.658.825-.807.994-.148.17-.297.191-.551.064-.254-.127-1.071-.395-2.04-1.26-.754-.672-1.263-1.502-1.411-1.756-.148-.254-.016-.392.111-.518.114-.114.254-.297.381-.446.127-.148.17-.254.254-.424.085-.17.042-.318-.021-.446-.064-.127-.573-1.379-.785-1.887-.207-.5-.435-.433-.594-.442-.154-.008-.33-.008-.507-.008-.178 0-.467.067-.711.332-.244.265-.933.912-.933 2.226 0 1.314.954 2.585 1.087 2.76.133.175 1.879 2.87 4.55 4.024.636.275 1.132.439 1.52.562.639.203 1.22.175 1.679.106.512-.076 1.503-.615 1.716-1.21.213-.595.213-1.104.148-1.21-.063-.105-.233-.148-.487-.275z" />
+                                            </svg>
+                                            Open WhatsApp
                                         </a>
                                     </>
                                 ) : (

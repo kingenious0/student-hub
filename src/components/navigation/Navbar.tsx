@@ -414,17 +414,12 @@ export default function Navbar() {
                                     </div>
 
                                     {/* Specialized Modes */}
-                                    {(dbUser?.role === 'VENDOR' || dbUser?.role === 'ADMIN') && (
+                                    {dbUser?.role === 'ADMIN' && (
                                         <div className="mb-6 p-4 bg-surface rounded-2xl border border-surface-border">
                                             <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3">
-                                                Vendor Dashboard
+                                                Admin Dashboard
                                             </h3>
-                                            {dbUser?.role === 'VENDOR' && (
-                                                <DrawerLink href="/dashboard/vendor" icon={<StoreIcon className="w-5 h-5 text-[#39FF14]" />} label="Vendor Dashboard" setIsOpen={setIsDrawerOpen} active={isActive('/dashboard/vendor')} className="text-[#39FF14]" />
-                                            )}
-                                            {dbUser?.role === 'ADMIN' && (
-                                                <DrawerLink href="/dashboard/admin" icon={<ZapIcon className="w-5 h-5 text-red-500" />} label="Admin Command" setIsOpen={setIsDrawerOpen} active={isActive('/dashboard/admin')} className="text-red-500" />
-                                            )}
+                                            <DrawerLink href="/dashboard/admin" icon={<ZapIcon className="w-5 h-5 text-red-500" />} label="Admin Command" setIsOpen={setIsDrawerOpen} active={isActive('/dashboard/admin')} className="text-red-500" />
                                         </div>
                                     )}
 
