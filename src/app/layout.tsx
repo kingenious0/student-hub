@@ -21,6 +21,8 @@ import "./globals.css";
 import WelcomeModal from "@/components/alpha/WelcomeModal";
 import GlobalMaintenanceGuard from "@/components/admin/GlobalMaintenanceGuard";
 import PushNotificationProvider from "@/components/providers/PushNotificationProvider";
+import PWARegistration from "@/components/providers/PWARegistration";
+import PWAInstallPrompt from "@/components/providers/PWAInstallPrompt";
 
 
 const geistSans = Geist({
@@ -89,6 +91,8 @@ export default function RootLayout({
                           <Footer />
                           <GhostEditToggle />
                           <WelcomeModal />
+                          <PWARegistration />
+                          <PWAInstallPrompt />
                           <PushNotificationProvider />
                         </GlobalMaintenanceGuard>
                         <Toaster richColors position="top-center" theme="dark" />
