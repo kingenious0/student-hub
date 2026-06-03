@@ -2,8 +2,8 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isAdminRoute = createRouteMatcher(['/dashboard/admin(.*)', '/admin(.*)', '/api/admin(.*)']);
-const isPublicRoute = createRouteMatcher(['/', '/sign-in(.*)', '/sign-up(.*)', '/verify', '/api/system/config(.*)', '/omni-gate', '/command-center-z', '/marketplace(.*)', '/products(.*)', '/cart(.*)', '/stories(.*)', '/search(.*)', '/category(.*)', '/become-vendor', '/api/marketplace(.*)', '/api/products(.*)', '/api/category(.*)', '/security-setup', '/api/security(.*)']);
-const isIdentityRoute = createRouteMatcher(['/onboarding(.*)', '/api/auth/onboard(.*)', '/api/auth/sync(.*)', '/api/users/me(.*)', '/api/orders(.*)', '/api/vendor(.*)']);
+const isPublicRoute = createRouteMatcher(['/', '/sign-in(.*)', '/sign-up(.*)', '/verify', '/api/system/config(.*)', '/omni-gate', '/command-center-z', '/marketplace(.*)', '/products(.*)', '/cart(.*)', '/wishlist(.*)', '/stories(.*)', '/search(.*)', '/category(.*)', '/become-vendor', '/api/marketplace(.*)', '/api/products(.*)', '/api/category(.*)', '/security-setup', '/api/security(.*)']);
+const isIdentityRoute = createRouteMatcher(['/onboarding(.*)', '/api/auth/onboard(.*)', '/api/auth/sync(.*)', '/api/users/me(.*)', '/api/orders(.*)', '/api/vendor(.*)', '/api/push(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();

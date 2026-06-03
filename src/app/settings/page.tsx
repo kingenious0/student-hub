@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import GoBack from '@/components/navigation/GoBack';
 import { useModal } from '@/context/ModalContext';
+import { subscribeUserToPush, unsubscribeUser } from '@/lib/notifications/client';
 
 export default function SettingsPage() {
   const { user, isLoaded } = useUser();
@@ -29,7 +30,8 @@ export default function SettingsPage() {
       orderUpdates: true,
       newReleases: true,
       marketingEmails: false,
-      securityAlerts: true
+      securityAlerts: true,
+      pushEnabled: false
     }
   });
 
@@ -56,7 +58,8 @@ export default function SettingsPage() {
             orderUpdates: notifs.orderUpdates ?? true,
             newReleases: notifs.newReleases ?? true,
             marketingEmails: notifs.marketingEmails ?? false,
-            securityAlerts: notifs.securityAlerts ?? true
+            securityAlerts: notifs.securityAlerts ?? true,
+            pushEnabled: notifs.pushEnabled ?? false
           }
         });
       }
@@ -238,6 +241,23 @@ export default function SettingsPage() {
                   desc="Notifications for new products and flash sales"
                   active={formData.notifications.newReleases}
                   onChange={(v) => setFormData({...formData, notifications: {...formData.notifications, newReleases: v}})}
+               />
+               <GridToggle 
+                  title="Push Alerts"
+                  desc="Receive push notifications even when you're not on OMNI"
+                  active={formData.notifications.pushEnabled}
+                  onChange={async (v) => {
+                    setFormData({...formData, notifications: {...formData.notifications, pushEnabled: v}});
+                    if (v) {
+                      const ok = await subscribeUserToPush();
+                      if (!ok) {
+                        setFormData({...formData, notifications: {...formData.notifications, pushEnabled: false}});
+                        toast.error('Failed to enable push notifications');
+                      }
+                    } else {
+                      await unsubscribeUser();
+                    }
+                  }}
                />
                <GridToggle 
                   title="Security Hardening"

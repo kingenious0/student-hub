@@ -279,7 +279,7 @@ export default function ProfilePage() {
                   </button>
                 </Link>
 
-                <Link href="/favorites">
+                <Link href="/wishlist">
                   <button className="flex flex-col items-center gap-2 p-4 rounded-lg bg-pink-50 dark:bg-pink-900/20 hover:bg-pink-100 dark:hover:bg-pink-900/30 transition">
                     <Heart className="w-8 h-8 text-pink-600 dark:text-pink-400" />
                     <span className="text-sm font-medium text-gray-900 dark:text-white">Favorites</span>

@@ -242,6 +242,7 @@ export default function Navbar() {
                             <div className="hidden lg:flex items-center gap-4 mr-2">
                                 <Link href="/" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
                                 <Link href="/orders" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Orders</Link>
+                                <Link href="/wishlist" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Wishlist</Link>
                                 {dbUser?.role === 'VENDOR' && (
                                     <Link 
                                         href="/dashboard/vendor" 
@@ -419,6 +420,7 @@ export default function Navbar() {
                                             </div>
                                         </div>
                                         <DrawerLink href="/orders" icon={<PackageIcon className="w-5 h-5" />} label="My Orders" setIsOpen={setIsDrawerOpen} active={isActive('/orders')} />
+                                        <DrawerLink href="/wishlist" icon={<HeartIcon className="w-5 h-5" />} label="Wishlist" setIsOpen={setIsDrawerOpen} active={isActive('/wishlist')} />
                                         <DrawerLink href="/security-setup" icon={<Shield className="w-5 h-5 text-blue-500" />} label="OMNI Security" setIsOpen={setIsDrawerOpen} active={isActive('/security-setup')} />
                                         <DrawerLink href="/settings" icon={<Settings className="w-5 h-5" />} label="Settings" setIsOpen={setIsDrawerOpen} active={isActive('/settings')} />
                                     </div>

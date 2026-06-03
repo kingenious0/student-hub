@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { SignedIn, SignedOut, useUser, useClerk } from '@clerk/nextjs';
 import { useCartStore } from '@/lib/store/cart';
+import { useWishlistStore } from '@/lib/store/wishlist';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -12,7 +13,9 @@ import 'react-image-gallery/styles/css/image-gallery.css'; // Ensure CSS is impo
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ZapIcon, MapPinIcon, CheckCircleIcon, ClockIcon } from '@/components/ui/Icons';
+import { ZapIcon, MapPinIcon, CheckCircleIcon, ClockIcon, HeartIcon } from '@/components/ui/Icons';
+import ReviewList from '@/components/reviews/ReviewList';
+import ReviewForm from '@/components/reviews/ReviewForm';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -32,6 +35,9 @@ export default function ProductDetailsPage() {
     const cartItems = useCartStore((state) => state.items);
     const [quantity, setQuantity] = useState(1);
     const [isGhostAdmin, setIsGhostAdmin] = useState(false);
+    const { isInWishlist, addItem, removeItem } = useWishlistStore();
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [reviewListKey, setReviewListKey] = useState(0);
 
     // Initial Auth Check
     useEffect(() => {
@@ -314,6 +320,25 @@ export default function ProductDetailsPage() {
                                             </button>
                                         </div>
 
+                                        {/* Wishlist Button */}
+                                        <button
+                                            onClick={() => {
+                                                if (isInWishlist(product.id)) {
+                                                    removeItem(product.id);
+                                                    toast.success('Removed from wishlist');
+                                                } else {
+                                                    addItem(product.id);
+                                                    toast.success('Added to wishlist');
+                                                }
+                                            }}
+                                            className={`w-16 h-16 rounded-full border flex items-center justify-center transition-all flex-shrink-0 ${isInWishlist(product.id)
+                                                    ? 'bg-red-500/10 border-red-500/30 text-red-500'
+                                                    : 'bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/5 text-foreground/40 hover:text-red-500 hover:border-red-500/30'
+                                                }`}
+                                        >
+                                            <HeartIcon className={`w-6 h-6 transition-all ${isInWishlist(product.id) ? 'fill-current scale-110' : ''}`} />
+                                        </button>
+
                                         {/* Add To Cart */}
                                         <button
                                             onClick={handleAddToCart}
@@ -407,12 +432,61 @@ export default function ProductDetailsPage() {
                                         </motion.div>
                                     </TabsContent>
 
-                                    <TabsContent key="reviews" value="reviews" className="mt-8 focus:outline-none">
-                                        <div className="text-center py-24 border border-dashed border-black/10 dark:border-white/10 rounded-3xl">
-                                            <div className="text-4xl mb-4 opacity-20">💬</div>
-                                            <p className="font-black text-sm uppercase tracking-widest mb-4 opacity-50">No reviews yet</p>
-                                            <Button variant="outline" className="rounded-full">Be the first to review</Button>
-                                        </div>
+                                    <TabsContent key="reviews" value="reviews" className="mt-8 space-y-8 focus:outline-none">
+                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
+                                                <div className="flex items-center gap-5">
+                                                    <span className="text-5xl font-black tabular-nums text-foreground">{rating.toFixed(1)}</span>
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex text-primary">
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <StarIcon key={i} className="w-4 h-4" fill={i < Math.round(rating)} />
+                                                            ))}
+                                                        </div>
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">
+                                                            {reviewCount} review{reviewCount !== 1 ? 's' : ''}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <ReviewList key={reviewListKey} productId={params.id as string} />
+
+                                            <div className="border-t border-black/5 dark:border-white/5 pt-8">
+                                                {user ? (
+                                                    <>
+                                                        {showReviewForm ? (
+                                                            <ReviewForm
+                                                                productId={params.id as string}
+                                                                onReviewSubmitted={() => {
+                                                                    setShowReviewForm(false);
+                                                                    setReviewListKey((k) => k + 1);
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <Button
+                                                                onClick={() => setShowReviewForm(true)}
+                                                                variant="outline"
+                                                                className="rounded-full"
+                                                            >
+                                                                Write a Review
+                                                            </Button>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div className="text-center py-8 rounded-2xl border border-dashed border-black/10 dark:border-white/10">
+                                                        <p className="text-sm font-medium text-foreground/50 mb-4">Sign in to leave a review</p>
+                                                        <Button
+                                                            onClick={() => openSignIn()}
+                                                            variant="outline"
+                                                            className="rounded-full"
+                                                        >
+                                                            Sign In
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </motion.div>
                                     </TabsContent>
                                 </AnimatePresence>
                             </Tabs>

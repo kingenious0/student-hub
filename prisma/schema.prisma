@@ -157,9 +157,10 @@ model Product {
   updatedAt   DateTime @updatedAt
   
   // Relations
-  orderItems  OrderItem[]
-  reviews     Review[]
-  flashSale   FlashSale?
+  orderItems    OrderItem[]
+  reviews       Review[]
+  wishlistItems WishlistItem[]
+  flashSale     FlashSale?
   
   @@index([vendorId])
   @@index([categoryId])
@@ -215,6 +216,30 @@ model Review {
   @@index([productId])
   @@index([userId])
   @@index([rating])
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
 }
 
 model Category {
