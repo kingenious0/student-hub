@@ -41,6 +41,7 @@ export default function VendorLayout({
                     {/* Desktop Links */}
                     <div className="hidden md:flex items-center gap-1 bg-surface p-1 rounded-full border border-surface-border transition-colors duration-300">
                         <VendorLink href={getHref("/dashboard/vendor")} icon={<HomeIcon className="w-4 h-4" />} label="Overview" active={isActive('/dashboard/vendor')} />
+                        <VendorLink href={getHref("/dashboard/vendor/kds")} icon={<div className="w-4 h-4 font-bold text-[10px] flex items-center justify-center">KDS</div>} label="Kitchen" active={isActive('/dashboard/vendor/kds')} />
                         <VendorLink href={getHref("/dashboard/vendor/products")} icon={<PackageIcon className="w-4 h-4" />} label="Inventory" active={isActive('/dashboard/vendor/products')} />
                         <VendorLink href={getHref("/dashboard/vendor/orders")} icon={<ZapIcon className="w-4 h-4" />} label="Orders" active={isActive('/dashboard/vendor/orders')} />
                         <VendorLink href={getHref("/dashboard/vendor/scan")} icon={<div className="w-4 h-4 border-2 border-current rounded flex items-center justify-center text-[10px] font-bold">QR</div>} label="Scan" active={isActive('/dashboard/vendor/scan')} />
@@ -82,6 +83,7 @@ export default function VendorLayout({
             <div className="md:hidden fixed bottom-0 w-full bg-background/90 backdrop-blur-xl border-t border-surface-border pb-safe z-50 transition-colors duration-300">
                 <div className="flex justify-around items-center h-16">
                     <MobileVendorLink href={getHref("/dashboard/vendor")} icon={<HomeIcon className="w-5 h-5" />} label="Home" active={isActive('/dashboard/vendor')} />
+                    <MobileVendorLink href={getHref("/dashboard/vendor/kds")} icon={<div className="font-bold text-[10px] bg-emerald-500 text-black w-5 h-5 flex items-center justify-center rounded">K</div>} label="KDS" active={isActive('/dashboard/vendor/kds')} />
                     <MobileVendorLink href={getHref("/dashboard/vendor/products")} icon={<PackageIcon className="w-5 h-5" />} label="Items" active={isActive('/dashboard/vendor/products')} />
                     <MobileVendorLink href={getHref("/dashboard/vendor/orders")} icon={<ZapIcon className="w-5 h-5" />} label="Orders" active={isActive('/dashboard/vendor/orders')} />
                     <MobileVendorLink href={getHref("/dashboard/vendor/scan")} icon={<div className="font-bold text-[10px] border-2 border-current rounded w-5 h-5 flex items-center justify-center">QR</div>} label="Verify" active={isActive('/dashboard/vendor/scan')} />

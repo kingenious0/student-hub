@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button";
 import { SalesChart } from "@/components/vendor/SalesChart";
 import { DataTable } from "@/components/ui/data-table";
 import { columns, RecentOrder } from "./columns";
+import QuickAvailability from '@/components/vendor/QuickAvailability';
+import AnalyticsDashboard from '@/components/vendor/AnalyticsDashboard';
 
 // Icons (Lucide)
-import { Package, ShoppingCart, DollarSign, Clock, Zap, Plus, Settings, ArrowRight } from "lucide-react";
+import { Package, ShoppingCart, DollarSign, Clock, Zap, Plus, Settings, ArrowRight, ChefHat, Users, Timer } from "lucide-react";
 
 export default function VendorDashboard() {
     const { user, isLoaded } = useUser();
@@ -153,12 +155,21 @@ export default function VendorDashboard() {
                         <SalesChart data={stats.monthlyRevenue} />
 
                         {/* Quick Actions (Shadcn Style) */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            <Link href="/dashboard/vendor/kds" className="block col-span-1">
+                                <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
+                                    <CardHeader>
+                                        <ChefHat className="h-8 w-8 mb-2 text-white" />
+                                        <CardTitle>Kitchen Display</CardTitle>
+                                        <CardDescription className="text-emerald-100">Live order view</CardDescription>
+                                    </CardHeader>
+                                </Card>
+                            </Link>
                             <Link href="/dashboard/vendor/products" className="block col-span-1">
                                 <Card className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-surface-border/50 text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>
                                         <Package className="h-8 w-8 mb-2 text-primary" />
-                                        <CardTitle>Manage Inventory</CardTitle>
+                                        <CardTitle>Inventory</CardTitle>
                                         <CardDescription className="text-slate-300">Update stock & prices</CardDescription>
                                     </CardHeader>
                                 </Card>
@@ -168,7 +179,25 @@ export default function VendorDashboard() {
                                     <CardHeader>
                                         <Zap className="h-8 w-8 mb-2 text-primary animate-pulse" />
                                         <CardTitle>Flash Sales</CardTitle>
-                                        <CardDescription className="text-slate-300">Create limited time deals</CardDescription>
+                                        <CardDescription className="text-slate-300">Time-limited deals</CardDescription>
+                                    </CardHeader>
+                                </Card>
+                            </Link>
+                            <Link href="/dashboard/vendor/hours" className="block col-span-1">
+                                <Card className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-surface-border/50 text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
+                                    <CardHeader>
+                                        <Timer className="h-8 w-8 mb-2 text-primary" />
+                                        <CardTitle>Hours</CardTitle>
+                                        <CardDescription className="text-slate-300">Set open/close times</CardDescription>
+                                    </CardHeader>
+                                </Card>
+                            </Link>
+                            <Link href="/dashboard/vendor/staff" className="block col-span-1">
+                                <Card className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-surface-border/50 text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
+                                    <CardHeader>
+                                        <Users className="h-8 w-8 mb-2 text-primary" />
+                                        <CardTitle>Staff</CardTitle>
+                                        <CardDescription className="text-slate-300">Manage PIN accounts</CardDescription>
                                     </CardHeader>
                                 </Card>
                             </Link>
@@ -198,6 +227,17 @@ export default function VendorDashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* Analytics Section */}
+            <section className="space-y-4">
+                <h2 className="text-xl font-black uppercase tracking-tight">Analytics</h2>
+                <AnalyticsDashboard />
+            </section>
+
+            {/* Quick Availability Toggle */}
+            <section className="space-y-4">
+                <QuickAvailability />
+            </section>
 
             <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
                 <p>© 2026 OMNI Student Marketplace • All Rights Reserved</p>

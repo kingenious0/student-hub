@@ -33,14 +33,17 @@ model User {
   updatedAt        DateTime @updatedAt
 
   // Relations
-  products       Product[]
-  orderGroups    OrderGroup[]    @relation("StudentOrderGroups")
-  orders         Order[]         @relation("StudentOrders")
-  vendorOrders   Order[]         @relation("VendorOrders")
-  stories        Story[]         @relation("VendorStories")
-  payoutRequests PayoutRequest[]
-  storyLikes     StoryLike[]     @relation("UserStoryLikes")
-  storyFavorites StoryFavorite[] @relation("UserStoryFavorites")
+  products          Product[]
+  orderGroups       OrderGroup[]          @relation("StudentOrderGroups")
+  orders            Order[]               @relation("StudentOrders")
+  vendorOrders      Order[]               @relation("VendorOrders")
+  stories           Story[]               @relation("VendorStories")
+  payoutRequests    PayoutRequest[]
+  storyLikes        StoryLike[]           @relation("UserStoryLikes")
+  storyFavorites    StoryFavorite[]       @relation("UserStoryFavorites")
+  operatingHours    VendorOperatingHours[]
+  vendorStaff       VendorStaff[]
+  vendorLocations   VendorLocation[]
 
   // Financials
   balance       Float   @default(0.0)
@@ -141,6 +144,11 @@ model Product {
 
   // Hotspot-based location for Flash-Match
   hotspot String? // e.g., "Bush Canteen", "Balme Library"
+
+  // Modifiers (food-specific)
+  hasModifiers Boolean @default(false)
+
+  modifierGroups ProductModifierGroup[]
 
   // Stock Management (NEW)
   stockQuantity     Int     @default(0)
@@ -326,7 +334,8 @@ model OrderItem {
 
   productId       String? // Optional in case product is deleted later? No, keep it.
   product         Product? @relation(fields: [productId], references: [id])
-  productSnapshot Json? // Backup title, image, etc.
+  productSnapshot  Json? // Backup title, image, etc.
+  modifierSnapshot Json? // [{name, groupName, priceDiff}] — selected modifiers
 
   quantity Int
   price    Float // Price at time of purchase
@@ -525,6 +534,80 @@ model LoyaltyLedger {
 
   @@index([accountId])
   @@index([type])
+}
+
+// ─── Vendor Operating Hours ──────────────────────────────────────────────
+model VendorOperatingHours {
+  id        String   @id @default(uuid())
+  vendorId  String
+  vendor    User     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  dayOfWeek Int      // 0=Sunday, 1=Monday … 6=Saturday
+  isOpen    Boolean  @default(true)
+  openTime  String?  // "08:00" (24h)
+  closeTime String?  // "22:00" (24h)
+
+  @@unique([vendorId, dayOfWeek])
+  @@index([vendorId])
+}
+
+// ─── Product Modifier Groups (e.g. "Sides", "Size", "Extras") ────────────
+model ProductModifierGroup {
+  id         String  @id @default(uuid())
+  name       String
+  isRequired Boolean @default(false)
+  minSelect  Int     @default(0)
+  maxSelect  Int     @default(1)
+
+  productId String
+  product   Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  modifiers ProductModifier[]
+
+  @@index([productId])
+}
+
+// ─── Individual Modifiers (e.g. "Extra Cheese +₵2") ──────────────────────
+model ProductModifier {
+  id        String  @id @default(uuid())
+  name      String
+  priceDiff Float   @default(0)
+  isDefault Boolean @default(false)
+
+  groupId String
+  group   ProductModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+}
+
+// ─── Vendor Staff (PIN-based accounts) ───────────────────────────────────
+model VendorStaff {
+  id        String    @id @default(uuid())
+  pin       String    // Hashed 4-6 digit PIN
+  name      String
+  role      String    // "MANAGER", "KITCHEN", "CASHIER"
+  isActive  Boolean   @default(true)
+
+  vendorId String
+  vendor   User      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([vendorId])
+}
+
+// ─── Vendor Locations (multi-location / brand support) ───────────────────
+model VendorLocation {
+  id        String   @id @default(uuid())
+  name      String   // "Valley Hall Kiosk", "Bus Terminal"
+  landmark  String?
+  isActive  Boolean  @default(true)
+
+  vendorId String
+  vendor   User     @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([vendorId])
 }
 
 // Discount Rules Model (for auto-applied discounts)
