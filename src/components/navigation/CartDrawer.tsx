@@ -177,42 +177,59 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                     </div>
                                                     <div className="divide-y divide-surface-border/40">
                                                         {items.map((item) => (
-                                                            <div key={item.id} className="p-4 flex gap-4 items-center">
-                                                                {/* Image Placeholder */}
-                                                                <div className="w-12 h-12 rounded-xl bg-surface border border-surface-border flex-shrink-0 flex items-center justify-center text-xl font-bold">
-                                                                    📦
+                                                            <div key={item.id} className="p-4 flex gap-4 items-start">
+                                                                {/* Product Image */}
+                                                                {item.imageUrl ? (
+                                                                    <img 
+                                                                        src={item.imageUrl} 
+                                                                        alt={item.title} 
+                                                                        className="w-16 h-16 rounded-xl object-cover flex-shrink-0 border border-surface-border"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-16 h-16 rounded-xl bg-surface border border-surface-border flex-shrink-0 flex items-center justify-center text-2xl">
+                                                                        📦
+                                                                    </div>
+                                                                )}
+                                                                
+                                                                {/* Product Info & Actions */}
+                                                                <div className="flex-1 min-w-0 flex flex-col gap-2">
+                                                                    <div className="flex justify-between items-start gap-2">
+                                                                        <h4 className="text-sm font-bold text-foreground truncate uppercase tracking-tight">
+                                                                            {item.title}
+                                                                        </h4>
+                                                                        {/* Remove Button */}
+                                                                        <button
+                                                                            onClick={() => removeFromCart(item.id)}
+                                                                            className="text-foreground/30 hover:text-red-500 transition-colors p-1 -mt-1 -mr-1 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                                            aria-label="Remove item"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
+                                                                    
+                                                                    <div className="flex items-center justify-between gap-4">
+                                                                        <p className="text-xs font-black text-primary">₵{item.price.toFixed(2)}</p>
+                                                                        
+                                                                        {/* Quantity Selector */}
+                                                                        <div className="flex items-center bg-surface border border-surface-border/60 rounded-xl p-0.5">
+                                                                            <button
+                                                                                onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                                                                                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-background transition-colors text-foreground/60 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                                                aria-label="Decrease quantity"
+                                                                            >
+                                                                                <Minus className="w-3 h-3" />
+                                                                            </button>
+                                                                            <span className="text-xs font-black w-6 text-center tabular-nums">{item.quantity}</span>
+                                                                            <button
+                                                                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                                                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-background transition-colors text-foreground/60 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                                                aria-label="Increase quantity"
+                                                                            >
+                                                                                <Plus className="w-3 h-3" />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                                {/* Item details */}
-                                                                <div className="flex-1 min-w-0">
-                                                                    <h4 className="text-sm font-bold text-foreground truncate uppercase tracking-tight">{item.title}</h4>
-                                                                    <p className="text-xs font-black text-primary mt-0.5">₵{item.price.toFixed(2)}</p>
-                                                                </div>
-                                                                {/* Quantity selectors */}
-                                                                <div className="flex items-center gap-2 bg-surface border border-surface-border/60 rounded-xl p-1">
-                                                                    <button
-                                                                        onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                                                                        className="w-11 h-11 rounded-lg flex items-center justify-center hover:bg-background transition-colors text-foreground/60 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                                                        aria-label="Decrease quantity"
-                                                                    >
-                                                                        <Minus className="w-3.5 h-3.5" />
-                                                                    </button>
-                                                                    <span className="text-xs font-black w-4 text-center">{item.quantity}</span>
-                                                                    <button
-                                                                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                                        className="w-11 h-11 rounded-lg flex items-center justify-center hover:bg-background transition-colors text-foreground/60 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                                                        aria-label="Increase quantity"
-                                                                    >
-                                                                        <Plus className="w-3.5 h-3.5" />
-                                                                    </button>
-                                                                </div>
-                                                                {/* Remove */}
-                                                                <button
-                                                                    onClick={() => removeFromCart(item.id)}
-                                                                    className="w-11 h-11 flex items-center justify-center text-foreground/30 hover:text-red-500 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                                                    aria-label="Remove item"
-                                                                >
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </button>
                                                             </div>
                                                         ))}
                                                     </div>
