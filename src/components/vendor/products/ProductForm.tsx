@@ -5,9 +5,10 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
-import { Save, Loader2, DollarSign, Package, Layers, Image as ImageIcon, TrendingUp, BadgeCheck } from 'lucide-react';
+import { Save, Loader2, DollarSign, Package, Layers, Image as ImageIcon, TrendingUp, BadgeCheck, UtensilsCrossed } from 'lucide-react';
 import { ImageUploader } from './ImageUploader';
 import { DescriptionEditor } from './DescriptionEditor';
+import ModifierGroupEditor from './ModifierGroupEditor';
 import { Button } from '@/components/ui/button';
 import { useModal } from '@/context/ModalContext';
 import { toast } from 'sonner';
@@ -39,6 +40,7 @@ const productSchema = z.object({
     details: z.record(z.any()).optional(),
     stockQuantity: z.coerce.number().min(0, "Stock cannot be negative").default(1),
     isReadyMade: z.boolean().default(true),
+    modifierGroups: z.array(z.any()).optional(),
 });
 
 // --- IMAGE COMPRESSOR (95% weight reduction for instant uploads) ---
@@ -92,6 +94,19 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
+    const [modifierGroups, setModifierGroups] = useState<any[]>(initialData?.modifierGroups || []);
+
+    const isFood = vendorTier === 'FOOD';
+    const isGoods = vendorTier === 'GOODS';
+
+    // Fetch vendor tier on mount
+    useEffect(() => {
+        fetch('/api/vendor/tier')
+            .then(r => r.ok && r.json())
+            .then(d => d?.tier && setVendorTier(d.tier))
+            .catch(() => {});
+    }, []);
 
     const form = useForm<z.infer<typeof productSchema>>({
         resolver: zodResolver(productSchema),
@@ -101,9 +116,9 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
             categoryId: initialData?.categoryId || '',
             description: initialData?.description || '',
             images: initialData?.images || (initialData?.imageUrl ? [initialData.imageUrl] : []),
-            stockQuantity: initialData?.stockQuantity || 1,
+            stockQuantity: initialData?.stockQuantity ?? (isFood ? 0 : 1),
             details: initialData?.details || {},
-            isReadyMade: initialData?.isReadyMade !== undefined ? initialData.isReadyMade : true,
+            isReadyMade: initialData?.isReadyMade !== undefined ? initialData.isReadyMade : !isFood,
         }
     });
 
@@ -168,11 +183,18 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
             setUploading(false);
 
             // 2. Create or Update Product
-            const payload = {
+            const payload: any = {
                 ...values,
                 images: uploadedUrls,
                 imageUrl: uploadedUrls[0] || null,
+                modifierGroups,
             };
+
+            // Food vendors don't track stock — always set to 0
+            if (isFood) {
+                payload.stockQuantity = 0;
+                payload.isReadyMade = false;
+            }
 
             const url = initialData 
                 ? `/api/vendor/products/${initialData.id}` 
@@ -281,6 +303,21 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                             )}
                         </CardContent>
                     </Card>
+
+                    {/* Modifier Groups — FOOD/MIXED only */}
+                    {!isGoods && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <UtensilsCrossed className="w-5 h-5" /> Customization Options
+                                </CardTitle>
+                                <CardDescription>Let students add extras, choose sides, pick sizes, etc.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ModifierGroupEditor value={modifierGroups} onChange={setModifierGroups} disabled={loading} />
+                            </CardContent>
+                        </Card>
+                    )}
 
                     {/* Dynamic Details */}
                     {selectedCategory && ['food-and-snacks', 'tech-and-gadgets', 'books-and-notes', 'fashion', 'services'].includes(selectedCategory.slug) && (
@@ -591,51 +628,56 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                                 )}
                             </div>
 
-                            {/* Stock */}
-                            <div className="space-y-2">
-                                <Label htmlFor="stock">Stock Quantity</Label>
-                                <div className="relative">
-                                    <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                    <Input
-                                        id="stock"
-                                        type="number"
-                                        {...form.register('stockQuantity')}
-                                        className="pl-9"
-                                    />
-                                </div>
-                            </div>
-
-                            <Separator />
-
-                            {/* Ready-Made Toggle */}
-                            <div className="space-y-3">
-                                <Label className="text-sm font-semibold flex items-center gap-2">Fulfillment Mode</Label>
-                                <div className="flex items-center justify-between p-4 bg-background border border-surface-border rounded-2xl hover:border-primary/20 transition-all">
-                                    <div className="space-y-1">
-                                        <p className="text-xs font-black uppercase tracking-wider text-foreground">Instantly Ready</p>
-                                        <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-tight leading-relaxed">Ready-made items (canned drinks, snacks, books, gadgets) skip preparation upon payment.</p>
+                            {/* Stock — hidden for FOOD vendors */}
+                            {!isFood && (
+                                <>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="stock">Stock Quantity</Label>
+                                        <div className="relative">
+                                            <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                            <Input
+                                                id="stock"
+                                                type="number"
+                                                {...form.register('stockQuantity')}
+                                                className="pl-9"
+                                            />
+                                        </div>
                                     </div>
-                                    <Controller
-                                        control={form.control}
-                                        name="isReadyMade"
-                                        render={({ field }) => (
-                                            <button
-                                                type="button"
-                                                onClick={() => field.onChange(!field.value)}
-                                                className={`w-12 h-6 rounded-full transition-colors relative focus:outline-none border border-surface-border/50 ${
-                                                    field.value ? 'bg-primary' : 'bg-foreground/10'
-                                                }`}
-                                            >
-                                                <div
-                                                    className={`w-5 h-5 rounded-full bg-white absolute top-0.5 shadow-md transition-transform duration-200 ${
-                                                        field.value ? 'translate-x-6' : 'translate-x-0.5'
+                                    <Separator />
+                                </>
+                            )}
+
+                            {/* Ready-Made Toggle — hidden for FOOD vendors */}
+                            {!isFood && (
+                                <div className="space-y-3">
+                                    <Label className="text-sm font-semibold flex items-center gap-2">Fulfillment Mode</Label>
+                                    <div className="flex items-center justify-between p-4 bg-background border border-surface-border rounded-2xl hover:border-primary/20 transition-all">
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-black uppercase tracking-wider text-foreground">Instantly Ready</p>
+                                            <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-tight leading-relaxed">Ready-made items (canned drinks, snacks, books, gadgets) skip preparation upon payment.</p>
+                                        </div>
+                                        <Controller
+                                            control={form.control}
+                                            name="isReadyMade"
+                                            render={({ field }) => (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => field.onChange(!field.value)}
+                                                    className={`w-12 h-6 rounded-full transition-colors relative focus:outline-none border border-surface-border/50 ${
+                                                        field.value ? 'bg-primary' : 'bg-foreground/10'
                                                     }`}
-                                                />
-                                            </button>
-                                        )}
-                                    />
+                                                >
+                                                    <div
+                                                        className={`w-5 h-5 rounded-full bg-white absolute top-0.5 shadow-md transition-transform duration-200 ${
+                                                            field.value ? 'translate-x-6' : 'translate-x-0.5'
+                                                        }`}
+                                                    />
+                                                </button>
+                                            )}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </CardContent>
                     </Card>
 
