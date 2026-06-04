@@ -20,6 +20,7 @@ model User {
   shopName          String?
   shopLandmark      String?
   vendorStatus      VendorStatus @default(NOT_APPLICABLE)
+  vendorType        VendorType?
   isAcceptingOrders Boolean      @default(true)
   phoneNumber       String?
 
@@ -125,6 +126,12 @@ enum VendorStatus {
   PENDING
   ACTIVE
   SUSPENDED
+}
+
+enum VendorType {
+  FOOD
+  GOODS
+  MIXED
 }
 
 model Product {

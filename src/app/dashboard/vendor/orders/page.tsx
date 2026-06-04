@@ -125,6 +125,7 @@ export default function VendorOrdersPage() {
     const { getToken } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
     const [activeTab, setActiveTab] = useState<'ALL' | 'NEW' | 'ACTIVE' | 'HISTORY'>('ALL');
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -136,6 +137,9 @@ export default function VendorOrdersPage() {
     const itemsPerPage = 10;
     const previousOrdersRef = useRef<Order[]>([]);
     const [connected, setConnected] = useState(false);
+
+    const isFood = vendorTier === 'FOOD';
+    const isGoods = vendorTier === 'GOODS';
 
     // Real-time SSE stream
     const { orders: streamOrders, connected: streamConnected } = useOrderStream({
@@ -162,6 +166,14 @@ export default function VendorOrdersPage() {
             setConnected(true);
         }
     }, [streamOrders]);
+
+    // Fetch tier
+    useEffect(() => {
+        fetch('/api/vendor/tier')
+            .then(r => r.ok && r.json())
+            .then(d => d?.tier && setVendorTier(d.tier))
+            .catch(() => {});
+    }, []);
 
     // Fallback polling (every 15s) to catch anything SSE misses
     useEffect(() => {
@@ -505,7 +517,7 @@ export default function VendorOrdersPage() {
                                                                 Mark Ready
                                                             </Button>
                                                         )}
-                                                        {order.status === 'READY' && (
+                                                        {order.status === 'READY' && !isFood && (
                                                             <div className="flex items-center gap-2">
                                                                 <Input 
                                                                     className="w-24 h-8 text-center text-xs bg-slate-900 border-emerald-500/30 text-white placeholder-slate-500 focus-visible:ring-emerald-500" 
@@ -519,7 +531,12 @@ export default function VendorOrdersPage() {
                                                                  </Button>
                                                              </div>
                                                          )}
-                                                         {order.status === 'PICKED_UP' && (
+                                                         {order.status === 'READY' && isFood && (
+                                                             <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider animate-pulse">
+                                                                 Auto-completing...
+                                                             </span>
+                                                         )}
+                                                         {order.status === 'PICKED_UP' && !isFood && (
                                                              <div className="flex items-center gap-2">
                                                                  <Input 
                                                                      className="w-24 h-8 text-center text-xs bg-slate-900 border-emerald-500/30 text-white placeholder-slate-500 focus-visible:ring-emerald-500" 

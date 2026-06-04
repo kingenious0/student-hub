@@ -22,6 +22,7 @@ export default function VendorDashboard() {
     const { getToken } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
     const [stats, setStats] = useState({
         totalProducts: 0,
         totalOrders: 0,
@@ -34,9 +35,20 @@ export default function VendorDashboard() {
 
     useEffect(() => {
         if (isLoaded && user) {
+            fetchTier();
             fetchDashboardData();
         }
     }, [isLoaded, user]);
+
+    const fetchTier = async () => {
+        try {
+            const res = await fetch('/api/vendor/tier');
+            if (res.ok) {
+                const d = await res.json();
+                setVendorTier(d.tier);
+            }
+        } catch { }
+    };
 
     const fetchDashboardData = async () => {
         try {
@@ -69,13 +81,16 @@ export default function VendorDashboard() {
         );
     }
 
+    const isFood = vendorTier === 'FOOD';
+    const isGoods = vendorTier === 'GOODS';
+
     return (
         <div className="space-y-8">
             {/* Header */}
             <div className="bg-surface border-b border-surface-border -mx-4 px-4 py-8 md:px-8">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-black uppercase tracking-tighter">Vendor Command</h1>
+                        <h1 className="text-3xl font-black uppercase tracking-tighter">{isFood ? 'Food Command' : isGoods ? 'Shop Command' : 'Vendor Command'}</h1>
                         <p className="text-foreground/60 font-medium">Welcome back, <span className="text-primary">{user?.firstName}</span></p>
                     </div>
                     <div className="flex flex-wrap gap-3">
@@ -154,9 +169,9 @@ export default function VendorDashboard() {
                     <div className="md:col-span-4 space-y-8">
                         <SalesChart data={stats.monthlyRevenue} />
 
-                        {/* Quick Actions (Shadcn Style) */}
+                        {/* Quick Actions — Type-Specific */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                            <Link href="/dashboard/vendor/kds" className="block col-span-1">
+                            {!isGoods && <Link href="/dashboard/vendor/kds" className="block col-span-1">
                                 <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>
                                         <ChefHat className="h-8 w-8 mb-2 text-white" />
@@ -164,17 +179,17 @@ export default function VendorDashboard() {
                                         <CardDescription className="text-emerald-100">Live order view</CardDescription>
                                     </CardHeader>
                                 </Card>
-                            </Link>
+                            </Link>}
                             <Link href="/dashboard/vendor/products" className="block col-span-1">
                                 <Card className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-surface-border/50 text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>
                                         <Package className="h-8 w-8 mb-2 text-primary" />
-                                        <CardTitle>Inventory</CardTitle>
-                                        <CardDescription className="text-slate-300">Update stock & prices</CardDescription>
+                                        <CardTitle>{isFood ? 'Menu' : 'Inventory'}</CardTitle>
+                                        <CardDescription className="text-slate-300">{isFood ? 'Manage food items & modifiers' : 'Update stock & prices'}</CardDescription>
                                     </CardHeader>
                                 </Card>
                             </Link>
-                            <Link href="/dashboard/vendor/flash-sales" className="block col-span-1">
+                            {!isFood && <Link href="/dashboard/vendor/flash-sales" className="block col-span-1">
                                 <Card className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-surface-border/50 text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>
                                         <Zap className="h-8 w-8 mb-2 text-primary animate-pulse" />
@@ -182,8 +197,8 @@ export default function VendorDashboard() {
                                         <CardDescription className="text-slate-300">Time-limited deals</CardDescription>
                                     </CardHeader>
                                 </Card>
-                            </Link>
-                            <Link href="/dashboard/vendor/hours" className="block col-span-1">
+                            </Link>}
+                            {!isGoods && <Link href="/dashboard/vendor/hours" className="block col-span-1">
                                 <Card className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-surface-border/50 text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>
                                         <Timer className="h-8 w-8 mb-2 text-primary" />
@@ -191,8 +206,8 @@ export default function VendorDashboard() {
                                         <CardDescription className="text-slate-300">Set open/close times</CardDescription>
                                     </CardHeader>
                                 </Card>
-                            </Link>
-                            <Link href="/dashboard/vendor/staff" className="block col-span-1">
+                            </Link>}
+                            {!isGoods && <Link href="/dashboard/vendor/staff" className="block col-span-1">
                                 <Card className="bg-gradient-to-br from-[#0F172A] to-[#1E293B] border border-surface-border/50 text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>
                                         <Users className="h-8 w-8 mb-2 text-primary" />
@@ -200,7 +215,7 @@ export default function VendorDashboard() {
                                         <CardDescription className="text-slate-300">Manage PIN accounts</CardDescription>
                                     </CardHeader>
                                 </Card>
-                            </Link>
+                            </Link>}
                             <Link href="/dashboard/vendor/earnings" className="block col-span-1">
                                 <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>

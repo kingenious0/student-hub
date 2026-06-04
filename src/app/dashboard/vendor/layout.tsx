@@ -33,6 +33,8 @@ export default function VendorLayout({
     const getHref = (path: string) => omniToken ? `${path}?__omni_token=${omniToken}` : path;
     const isActive = (path: string) => pathname === path;
     const canKDS = vendorTier !== 'GOODS';
+    const canScan = vendorTier !== 'FOOD';
+    const typeLabel = vendorTier === 'FOOD' ? 'Food Terminal' : vendorTier === 'GOODS' ? 'Shop Terminal' : 'Vendor Terminal';
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-[#39FF14] selection:text-black font-sans transition-colors duration-300">
@@ -46,7 +48,7 @@ export default function VendorLayout({
                         </div>
                         <div className="flex flex-col">
                             <span className="font-black text-lg tracking-tight leading-none text-foreground">OMNI</span>
-                            <span className="text-[10px] font-bold text-primary dark:text-[#39FF14] tracking-widest uppercase leading-none">Vendor Terminal</span>
+                            <span className="text-[10px] font-bold text-primary dark:text-[#39FF14] tracking-widest uppercase leading-none">{typeLabel}</span>
                         </div>
                     </div>
 
@@ -56,7 +58,7 @@ export default function VendorLayout({
                         {canKDS && <VendorLink href={getHref("/dashboard/vendor/kds")} icon={<div className="w-4 h-4 font-bold text-[10px] flex items-center justify-center">KDS</div>} label="Kitchen" active={isActive('/dashboard/vendor/kds')} />}
                         <VendorLink href={getHref("/dashboard/vendor/products")} icon={<PackageIcon className="w-4 h-4" />} label="Inventory" active={isActive('/dashboard/vendor/products')} />
                         <VendorLink href={getHref("/dashboard/vendor/orders")} icon={<ZapIcon className="w-4 h-4" />} label="Orders" active={isActive('/dashboard/vendor/orders')} />
-                        <VendorLink href={getHref("/dashboard/vendor/scan")} icon={<div className="w-4 h-4 border-2 border-current rounded flex items-center justify-center text-[10px] font-bold">QR</div>} label="Scan" active={isActive('/dashboard/vendor/scan')} />
+                        {canScan && <VendorLink href={getHref("/dashboard/vendor/scan")} icon={<div className="w-4 h-4 border-2 border-current rounded flex items-center justify-center text-[10px] font-bold">QR</div>} label="Scan" active={isActive('/dashboard/vendor/scan')} />}
                     </div>
 
                     {/* Right Side Actions */}
@@ -98,7 +100,7 @@ export default function VendorLayout({
                     {canKDS && <MobileVendorLink href={getHref("/dashboard/vendor/kds")} icon={<div className="font-bold text-[10px] bg-emerald-500 text-black w-5 h-5 flex items-center justify-center rounded">K</div>} label="KDS" active={isActive('/dashboard/vendor/kds')} />}
                     <MobileVendorLink href={getHref("/dashboard/vendor/products")} icon={<PackageIcon className="w-5 h-5" />} label="Items" active={isActive('/dashboard/vendor/products')} />
                     <MobileVendorLink href={getHref("/dashboard/vendor/orders")} icon={<ZapIcon className="w-5 h-5" />} label="Orders" active={isActive('/dashboard/vendor/orders')} />
-                    <MobileVendorLink href={getHref("/dashboard/vendor/scan")} icon={<div className="font-bold text-[10px] border-2 border-current rounded w-5 h-5 flex items-center justify-center">QR</div>} label="Verify" active={isActive('/dashboard/vendor/scan')} />
+                    {canScan && <MobileVendorLink href={getHref("/dashboard/vendor/scan")} icon={<div className="font-bold text-[10px] border-2 border-current rounded w-5 h-5 flex items-center justify-center">QR</div>} label="Verify" active={isActive('/dashboard/vendor/scan')} />}
                     <MobileVendorLink href="/marketplace" icon={<ShoppingCartIcon className="w-5 h-5" />} label="Shop" active={false} />
                 </div>
             </div>
