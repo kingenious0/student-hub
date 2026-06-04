@@ -128,12 +128,12 @@ export default function ProductDetailsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAFAFA] bg-[#050505] transition-colors duration-500 pb-32">
+        <div className="min-h-screen bg-background text-foreground transition-colors duration-500 pb-32">
             {/* Minimalist Sticky Header */}
             <motion.div
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
-                className="sticky top-0 z-50 bg-white/80 bg-foreground/10 backdrop-blur-xl border-b border-black/5 border-foreground/5"
+                className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-surface-border"
             >
                 <div className="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-6">
@@ -141,7 +141,7 @@ export default function ProductDetailsPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => router.back()}
-                            className="rounded-full hover:bg-black/5 hover:bg-foreground/10"
+                            className="rounded-full hover:bg-foreground/10"
                             aria-label="Go back"
                         >
                             <span className="text-xl">←</span>
@@ -203,7 +203,7 @@ export default function ProductDetailsPage() {
 
                         {/* Breadcrumbs & Badges */}
                         <div className="flex flex-wrap items-center gap-3 mb-6">
-                            <Link href={`/category/${product.categoryId}`} className="px-3 py-1 rounded-full border border-black/10 border-foreground/10 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white hover:bg-foreground hover:text-background transition-all">
+                            <Link href={`/category/${product.categoryId}`} className="px-3 py-1 rounded-full border border-surface-border text-[10px] font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-all">
                                 {product.category?.name || 'Collection'}
                             </Link>
                             {product.hotspot && (
@@ -307,7 +307,7 @@ export default function ProductDetailsPage() {
                         </div>
 
                         {/* Action Module */}
-                        <div className="p-1 rounded-[2rem] bg-gradient-to-b from-white to-zinc-50 from-surface to-background border border-black/5 border-foreground/5 shadow-xl shadow-black/5 shadow-foreground/5 mb-10">
+                        <div className="p-1 rounded-[2rem] bg-gradient-to-b from-surface to-background border border-surface-border shadow-xl shadow-foreground/5 mb-10">
                             <div className="p-6 md:p-8">
                                 {/* Stock Status Text */}
                                 <div className="mb-6 flex items-center justify-between">
@@ -333,53 +333,55 @@ export default function ProductDetailsPage() {
 
                                 {/* Controls */}
                                 <div className="space-y-4">
-                                    <div className="flex gap-4">
-                                        {/* Quantity Pill */}
-                                        <div className="flex items-center bg-black/5 bg-foreground/5 rounded-full p-1 border border-black/5 border-foreground/5 h-16 w-40">
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <div className="flex gap-4 w-full sm:w-auto">
+                                            {/* Quantity Pill */}
+                                            <div className="flex-1 sm:flex-initial flex items-center bg-foreground/5 rounded-full p-1 border border-surface-border h-16 w-full sm:w-40">
+                                                <button
+                                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                                    disabled={quantity <= 1 || isOutOfStock}
+                                                    aria-label="Decrease quantity"
+                                                    className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                >
+                                                    −
+                                                </button>
+                                                <span className="flex-1 text-center font-black text-xl tabular-nums">{quantity}</span>
+                                                <button
+                                                    onClick={() => setQuantity(quantity + 1)}
+                                                    disabled={isOutOfStock}
+                                                    aria-label="Increase quantity"
+                                                    className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+
+                                            {/* Wishlist Button */}
                                             <button
-                                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                                disabled={quantity <= 1 || isOutOfStock}
-                                                aria-label="Decrease quantity"
-                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                onClick={() => {
+                                                    if (isInWishlist(product.id)) {
+                                                        removeItem(product.id);
+                                                        toast.success('Removed from wishlist');
+                                                    } else {
+                                                        addItem(product.id);
+                                                        toast.success('Added to wishlist');
+                                                    }
+                                                }}
+                                                aria-label={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                                                className={`w-16 h-16 rounded-full border flex items-center justify-center transition-all flex-shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${isInWishlist(product.id)
+                                                        ? 'bg-red-500/10 border-red-500/30 text-red-500'
+                                                        : 'bg-foreground/5 border-surface-border text-foreground/40 hover:text-red-500 hover:border-red-500/30'
+                                                    }`}
                                             >
-                                                −
-                                            </button>
-                                            <span className="flex-1 text-center font-black text-xl tabular-nums">{quantity}</span>
-                                            <button
-                                                onClick={() => setQuantity(quantity + 1)}
-                                                disabled={isOutOfStock}
-                                                aria-label="Increase quantity"
-                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                            >
-                                                +
+                                                <HeartIcon className={`w-6 h-6 transition-all ${isInWishlist(product.id) ? 'fill-current scale-110' : ''}`} />
                                             </button>
                                         </div>
-
-                                        {/* Wishlist Button */}
-                                        <button
-                                            onClick={() => {
-                                                if (isInWishlist(product.id)) {
-                                                    removeItem(product.id);
-                                                    toast.success('Removed from wishlist');
-                                                } else {
-                                                    addItem(product.id);
-                                                    toast.success('Added to wishlist');
-                                                }
-                                            }}
-                                            aria-label={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
-                                            className={`w-16 h-16 rounded-full border flex items-center justify-center transition-all flex-shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${isInWishlist(product.id)
-                                                    ? 'bg-red-500/10 border-red-500/30 text-red-500'
-                                                    : 'bg-black/5 bg-foreground/5 border-black/5 border-foreground/5 text-foreground/40 hover:text-red-500 hover:border-red-500/30'
-                                                }`}
-                                        >
-                                            <HeartIcon className={`w-6 h-6 transition-all ${isInWishlist(product.id) ? 'fill-current scale-110' : ''}`} />
-                                        </button>
 
                                         {/* Add To Cart */}
                                         <button
                                             onClick={handleAddToCart}
                                             disabled={isOutOfStock || isGhostAdmin}
-                                            className="flex-1 h-16 bg-primary text-black rounded-full font-black text-sm md:text-base uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-black/20 shadow-primary/20 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                            className="w-full sm:flex-1 h-16 bg-primary text-black rounded-full font-black text-sm md:text-base uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                         >
                                             <div className="w-1 h-1 rounded-full bg-current"></div>
                                             {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
@@ -403,7 +405,7 @@ export default function ProductDetailsPage() {
                                 </div>
 
                                 {/* Trust Indicators */}
-                                <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-dashed border-black/10 border-foreground/10">
+                                <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-dashed border-surface-border">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
                                             <ZapIcon className="w-5 h-5" />
@@ -434,7 +436,7 @@ export default function ProductDetailsPage() {
                                         <TabsTrigger
                                             key={tab}
                                             value={tab}
-                                            className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-4 font-black text-xs uppercase tracking-widest text-foreground/40 hover:text-foreground transition-colors shadow-none"
+                                            className="bg-transparent data-[state=active]:bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-4 font-black text-xs uppercase tracking-widest text-foreground/40 hover:text-foreground transition-colors shadow-none data-[state=active]:shadow-none"
                                         >
                                             {tab}
                                         </TabsTrigger>
