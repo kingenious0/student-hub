@@ -8,7 +8,6 @@ import dynamic from "next/dynamic";
 import SmartFeed from "@/components/marketplace/SmartFeed";
 import GlobalSearch from "@/components/navigation/GlobalSearch";
 import { Suspense } from "react";
-import RefreshButton from "@/components/ui/RefreshButton";
 import * as React from "react";
 import { useScroll, useTransform } from "framer-motion";
 
@@ -216,8 +215,7 @@ export default function Home() {
                  <span className="text-primary text-[10px] font-black uppercase tracking-[0.5em]">Real-time Hub</span>
                  <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">Fresh <span className="text-foreground/20">Supply</span></h2>
               </div>
-              <RefreshButton />
-           </motion.div>
+            </motion.div>
            
             <Suspense fallback={<div className="h-[600px] w-full bg-surface rounded-[3rem] animate-pulse border border-surface-border" />}>
               <SmartFeed />
