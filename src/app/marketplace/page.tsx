@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import EnhancedProductCard from '@/components/marketplace/EnhancedProductCard';
-import { SearchIcon } from '@/components/ui/Icons';
+import { SlidersHorizontal, SearchIcon } from 'lucide-react';
 import Link from 'next/link';
+import EnhancedProductCard from '@/components/marketplace/EnhancedProductCard';
+import MobileFilterSheet from '@/components/marketplace/MobileFilterSheet';
+import FilterPills from '@/components/marketplace/FilterPills';
+import BackToTop from '@/components/marketplace/BackToTop';
+import { useFilterUrlParam, useFilterUrlBool } from '@/hooks/useFilterUrlState';
 
 interface Product {
   id: string;
@@ -44,16 +48,26 @@ const categories = [
   { slug: 'other', name: 'Everything Else', icon: '🎁' }
 ];
 
-export default function MarketplacePage() {
+function MarketplaceContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState(0);
+  const [showFiltersMobile, setShowFiltersMobile] = useState(false);
+
+  const [selectedCategory, setSelectedCategory] = useFilterUrlParam('category', 'all');
+  const [sortBy, setSortBy] = useFilterUrlParam('sort', 'newest');
+  const [searchQuery, setSearchQuery] = useFilterUrlParam('q');
+  const [pageNum, setPageNum] = useState(1);
+  const [pageFromUrl, setPageFromUrl] = useFilterUrlParam('page', '1');
+
+  const page = useMemo(() => parseInt(pageFromUrl) || 1, [pageFromUrl]);
+
+  const setPage = useCallback((p: number) => {
+    setPageNum(p);
+    setPageFromUrl(String(p));
+  }, [setPageFromUrl]);
 
   const fetchProducts = useCallback(async (pageNum: number, reset: boolean) => {
     if (reset) { setLoading(true); setProducts([]); }
@@ -88,14 +102,44 @@ export default function MarketplacePage() {
 
   useEffect(() => {
     setPage(1);
+    setPageState(1);
     fetchProducts(1, true);
   }, [fetchProducts]);
 
   const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
+    setPageState(nextPage);
     fetchProducts(nextPage, false);
   };
+
+  const activeFilterPills = useMemo(() => {
+    const pills: { label: string; onRemove: () => void }[] = [];
+    if (selectedCategory !== 'all') pills.push({ label: categories.find(c => c.slug === selectedCategory)?.name || selectedCategory, onRemove: () => setSelectedCategory('all') });
+    if (sortBy !== 'newest') pills.push({ label: `Sort: ${sortBy}`, onRemove: () => setSortBy('newest') });
+    if (searchQuery) pills.push({ label: `"${searchQuery}"`, onRemove: () => setSearchQuery('') });
+    return pills;
+  }, [selectedCategory, sortBy, searchQuery, setSelectedCategory, setSortBy, setSearchQuery]);
+
+  const clearAllFilters = useCallback(() => {
+    setSelectedCategory('all');
+    setSortBy('newest');
+    setSearchQuery('');
+    setPage('1');
+  }, [setSelectedCategory, setSortBy, setSearchQuery, setPage]);
+
+  const categoryThemeColor = useMemo(() => {
+    const map: Record<string, string> = {
+      food: '#FF4D00',
+      tech: '#0070FF',
+      fashion: '#A333FF',
+      books: '#2ECC71',
+      services: '#FFD700',
+      beauty: '#EC4899',
+      sports: '#10B981',
+    };
+    return map[selectedCategory] || '#10B981';
+  }, [selectedCategory]);
 
   return (
     <div className="min-h-screen bg-background pt-32 pb-20">
@@ -147,7 +191,7 @@ export default function MarketplacePage() {
             ))}
           </div>
 
-          {/* Sort Options */}
+          {/* Sort + Filter Controls */}
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-foreground/60">Sort by:</span>
@@ -176,11 +220,35 @@ export default function MarketplacePage() {
           </div>
         </div>
 
+        {/* Active Filter Pills */}
+        {activeFilterPills.length > 0 && (
+          <div className="mb-6">
+            <FilterPills
+              pills={activeFilterPills}
+              onClearAll={clearAllFilters}
+            />
+          </div>
+        )}
+
         {/* Results Count */}
         <div className="flex items-center justify-between mb-6 px-2">
           <p className="text-sm font-black uppercase tracking-wider text-foreground/60">
             {loading ? 'Loading...' : `${total} Products Found`}
           </p>
+
+          {/* Mobile Filter Button */}
+          <button
+            onClick={() => setShowFiltersMobile(true)}
+            className="md:hidden flex items-center gap-2 px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider border-2 border-primary/30 text-primary"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            Filters
+            {activeFilterPills.length > 0 && (
+              <span className="bg-primary text-primary-foreground text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                {activeFilterPills.length}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Products Grid */}
@@ -200,11 +268,7 @@ export default function MarketplacePage() {
               Try adjusting your filters or search query
             </p>
             <button
-              onClick={() => {
-                setSelectedCategory('all');
-                setSearchQuery('');
-                setSortBy('newest');
-              }}
+              onClick={clearAllFilters}
               className="px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-transform"
             >
               Reset Filters
@@ -232,6 +296,11 @@ export default function MarketplacePage() {
                       stockQuantity={product.stockQuantity}
                       averageRating={product.averageRating || undefined}
                       totalReviews={product.totalReviews}
+                      hotspot={product.hotspot || product.vendor.currentHotspot}
+                      deliveryTime="15m"
+                      themeColor={categoryThemeColor}
+                      categoryIcon={product.category.icon || '📦'}
+                      showShield={true}
                     />
                   </motion.div>
                 ))}
@@ -253,6 +322,76 @@ export default function MarketplacePage() {
           </>
         )}
       </div>
+
+      {/* Back to Top */}
+      <BackToTop />
+
+      {/* Mobile Filter Sheet */}
+      <MobileFilterSheet
+        isOpen={showFiltersMobile}
+        onClose={() => setShowFiltersMobile(false)}
+        title="Filters"
+        activeCount={activeFilterPills.length}
+      >
+        {/* Category Select */}
+        <div>
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-3 text-primary">Category</h4>
+          <div className="space-y-2">
+            {categories.map(cat => (
+              <label key={cat.slug} className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="radio"
+                  name="mobile-category"
+                  checked={selectedCategory === cat.slug}
+                  onChange={() => setSelectedCategory(cat.slug)}
+                  className="accent-primary"
+                />
+                <span className={`text-xs font-bold ${selectedCategory === cat.slug ? 'text-primary' : 'text-foreground/60 group-hover:text-foreground'}`}>
+                  {cat.icon} {cat.name}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Sort */}
+        <div>
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-3 text-primary">Sort By</h4>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="w-full bg-surface border border-surface-border rounded-lg p-3 text-xs font-bold focus:outline-none"
+          >
+            <option value="newest">Newest Arrivals</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="popular">Most Popular</option>
+            <option value="rating">Top Rated</option>
+          </select>
+        </div>
+
+        {/* Clear All */}
+        {activeFilterPills.length > 0 && (
+          <button
+            onClick={() => { clearAllFilters(); setShowFiltersMobile(false); }}
+            className="w-full py-3 text-xs font-black uppercase tracking-wider text-primary hover:text-primary/80 transition-colors"
+          >
+            Clear All Filters
+          </button>
+        )}
+      </MobileFilterSheet>
     </div>
+  );
+}
+
+export default function MarketplacePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin omni-glow" />
+      </div>
+    }>
+      <MarketplaceContent />
+    </Suspense>
   );
 }
