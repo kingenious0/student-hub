@@ -40,9 +40,14 @@ export default function VendorOrderDetails() {
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
     const [releaseKey, setReleaseKey] = useState('');
+    const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
 
     useEffect(() => {
         if (id) fetchOrder();
+        fetch('/api/vendor/tier')
+            .then(r => r.json())
+            .then(d => setVendorTier(d.tier))
+            .catch(() => {});
     }, [id]);
 
     const fetchOrder = async () => {
@@ -61,6 +66,8 @@ export default function VendorOrderDetails() {
         }
     };
 
+    const isFoodVendor = vendorTier === 'FOOD';
+
     const updateStatus = async (newStatus: string) => {
         setUpdating(true);
         try {
@@ -71,8 +78,17 @@ export default function VendorOrderDetails() {
             });
             const data = await res.json();
             if (data.success) {
-                setOrder(prev => prev ? { ...prev, status: newStatus } : null);
-                toast.success(`Order marked as ${newStatus}`);
+                const actualStatus = data.status || newStatus;
+                setOrder(prev => prev ? {
+                    ...prev,
+                    status: actualStatus,
+                    escrowStatus: actualStatus === 'COMPLETED' ? 'RELEASED' : prev.escrowStatus,
+                } : null);
+                const label = isFoodVendor && newStatus === 'READY' ? 'COMPLETED' : actualStatus;
+                toast.success(`Order marked as ${label}`);
+                if (actualStatus === 'COMPLETED') {
+                    setTimeout(() => router.push('/dashboard/vendor'), 2000);
+                }
             }
         } catch (error) {
             console.error('Failed to update status:', error);
@@ -279,15 +295,26 @@ export default function VendorOrderDetails() {
                                         disabled={updating}
                                         className="w-full py-4 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-orange-600/20"
                                     >
-                                        Mark Ready
+                                        {isFoodVendor ? 'Complete Order' : 'Mark Ready'}
                                     </button>
                                 )}
-                                {order.status === 'READY' && (
+                                {order.status === 'READY' && !isFoodVendor && (
                                     <form onSubmit={handleVerifyKey} className="space-y-4">
                                         <div className="text-center py-4 bg-background/5 rounded-2xl border border-dashed border-surface-border mb-2">
                                             <div className="text-2xl mb-1">🤝</div>
                                             <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">Awaiting Escrow Unlock</p>
                                         </div>
+                                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-center">
+                                            <p className="text-[9px] font-bold text-blue-400 uppercase tracking-wider leading-relaxed">
+                                                We sent a 6-digit PIN to the student's phone. Ask them to share it when they receive their items.
+                                            </p>
+                                        </div>
+                                        {order.student.phoneNumber && (
+                                            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-foreground/60">
+                                                <Phone className="w-3 h-3" />
+                                                <span>Student: {order.student.phoneNumber}</span>
+                                            </div>
+                                        )}
                                         <div className="space-y-2">
                                             <label className="block text-[8px] font-black uppercase tracking-widest text-foreground/45">Enter Student's 6-Digit PIN</label>
                                             <input
@@ -307,7 +334,30 @@ export default function VendorOrderDetails() {
                                         >
                                             Complete Handoff & Release
                                         </button>
+                                        <button
+                                            type="button"
+                                            disabled={updating}
+                                            onClick={async () => {
+                                                try {
+                                                    const res = await fetch(`/api/vendor/orders/${id}/resend-key`, { method: 'POST' });
+                                                    if (res.ok) toast.success('PIN resent to student');
+                                                    else toast.error('Failed to resend PIN');
+                                                } catch { toast.error('Network error'); }
+                                            }}
+                                            className="w-full py-2 text-[9px] font-bold text-foreground/30 hover:text-foreground/60 uppercase tracking-widest transition-colors"
+                                        >
+                                            Student lost their PIN? Resend
+                                        </button>
                                     </form>
+                                )}
+                                {order.status === 'READY' && isFoodVendor && (
+                                    <button
+                                        onClick={() => updateStatus('COMPLETED')}
+                                        disabled={updating}
+                                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-emerald-600/20"
+                                    >
+                                        Complete Order
+                                    </button>
                                 )}
                                 {order.status === 'COMPLETED' && (
                                     <div className="text-center py-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
@@ -316,9 +366,15 @@ export default function VendorOrderDetails() {
                                         <p className="text-[8px] text-foreground/40 uppercase tracking-wider mt-1 font-bold">Funds Released to Vault</p>
                                     </div>
                                 )}
-                                <p className="text-[9px] text-center text-foreground/20 mt-4 leading-relaxed font-black uppercase tracking-tighter">
-                                    Funds are held securely in Escrow until the secure 6-digit key is verified.
-                                </p>
+                                {isFoodVendor ? (
+                                    <p className="text-[9px] text-center text-emerald-500/30 mt-4 leading-relaxed font-black uppercase tracking-tighter">
+                                        Food orders auto-complete when marked ready. Funds released instantly.
+                                    </p>
+                                ) : (
+                                    <p className="text-[9px] text-center text-foreground/20 mt-4 leading-relaxed font-black uppercase tracking-tighter">
+                                        Funds are held securely in Escrow until the secure 6-digit key is verified.
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>

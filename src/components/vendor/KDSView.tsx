@@ -45,7 +45,16 @@ const formatElapsed = (seconds: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-export default function KDSView() {
+interface StaffSession {
+  staffId: string;
+  staffName: string;
+  role: string;
+  vendorId: string;
+  shopName: string;
+  loggedInAt: number;
+}
+
+export default function KDSView({ staffSession }: { staffSession?: StaffSession | null }) {
   const { getToken } = useAuth();
   const { orders, connected } = useOrderStream({
     onNewOrder: () => playAlert(),
@@ -131,19 +140,31 @@ export default function KDSView() {
               <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
                 <ChefHat className="w-6 h-6 text-emerald-400" />
                 KITCHEN
+                {staffSession && (
+                  <span className="text-[10px] bg-zinc-800 text-emerald-400 px-2 py-0.5 rounded-full font-mono uppercase tracking-wider">
+                    {staffSession.staffName}
+                  </span>
+                )}
               </h1>
               <p className="text-xs text-zinc-500 font-mono">
                 {connected ? '● LIVE' : '○ RECONNECTING...'} · {activeOrders.length} active
               </p>
             </div>
           </div>
-          <button
-            onClick={toggleFullscreen}
-            className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
-            aria-label={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-          >
-            {fullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
-          </button>
+          <div className="flex items-center gap-2">
+            {staffSession && (
+              <span className="hidden md:inline text-[9px] text-zinc-600 uppercase tracking-wider font-bold">
+                {staffSession.role}
+              </span>
+            )}
+            <button
+              onClick={toggleFullscreen}
+              className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+              aria-label={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            >
+              {fullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
 
         {/* Order Grid */}

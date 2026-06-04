@@ -56,19 +56,23 @@ export async function POST(
             return NextResponse.json({ error: 'Invalid Release Key' }, { status: 400 });
         }
 
-        // Execute Completion
+        // Execute Completion + Credit Vendor Balance
         await prisma.$transaction(async (tx) => {
-            // Update Order
             await tx.order.update({
                 where: { id: orderId },
                 data: {
                     status: 'COMPLETED',
                     escrowStatus: 'RELEASED',
                     releaseKey: null,
+                    deliveredAt: new Date(),
                 }
             });
-
-
+            await tx.user.update({
+                where: { id: order.vendorId },
+                data: {
+                    balance: { increment: order.amount }
+                }
+            });
         });
 
         // Send Notifications

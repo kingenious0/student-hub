@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 import { sendSMS } from '@/lib/sms/wigal';
+import { getVendorTier } from '@/lib/vendor/tier';
 
 export async function PATCH(
     req: NextRequest,
@@ -45,26 +46,53 @@ export async function PATCH(
             return NextResponse.json({ error: 'Order not found or unauthorized' }, { status: 404 });
         }
 
+        // Determine if this vendor is food-tier for auto-complete logic
+        const tier = await getVendorTier(vendor.id);
+
+        // For food vendors: marking as READY auto-completes the order
+        const targetStatus = (status === 'READY' && tier === 'FOOD') ? 'COMPLETED' : (status || 'READY');
+
         // Update
         await prisma.order.update({
             where: { id: params.id },
-            data: { status: status || 'READY' }
+            data: { status: targetStatus }
         });
 
+        // If auto-completed for food vendor, also release escrow and credit balance
+        if (targetStatus === 'COMPLETED' && tier === 'FOOD') {
+            await prisma.$transaction(async (tx) => {
+                await tx.order.update({
+                    where: { id: params.id },
+                    data: {
+                        escrowStatus: 'RELEASED',
+                        releaseKey: null,
+                        deliveredAt: new Date(),
+                    }
+                });
+                await tx.user.update({
+                    where: { id: vendor.id },
+                    data: {
+                        balance: { increment: order.amount }
+                    }
+                });
+            });
+        }
+
         // Notification Logic
-        if (status === 'READY') {
+        if (targetStatus === 'READY' || targetStatus === 'COMPLETED') {
             if (order.student.phoneNumber) {
-                // SMS: "OMNI: Your order [Item] is READY at [Shop]."
                 const primaryItem = order.items?.[0];
                 const itemTitle = primaryItem ? primaryItem.product.title : 'Details';
                 const displayTitle = order.items.length > 1 ? `${itemTitle} +${order.items.length - 1}` : itemTitle;
 
-                const msg = `OMNI: Your order for ${displayTitle} is marked READY at ${vendor.shopName || 'Vendor'}. Runners are being notified.`;
+                const msg = targetStatus === 'COMPLETED'
+                    ? `OMNI: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready and completed! Enjoy your meal.`
+                    : `OMNI: Your order for ${displayTitle} is marked READY at ${vendor.shopName || 'Vendor'}. Runners are being notified.`;
                 await sendSMS(order.student.phoneNumber, msg);
             }
         }
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, status: targetStatus });
 
     } catch (error) {
         console.error('Update order error:', error);
