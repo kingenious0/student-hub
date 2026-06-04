@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
     SearchIcon, 
     FilterIcon, 
@@ -25,6 +25,7 @@ import GoBack from '@/components/navigation/GoBack';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import { useOrderStream } from '@/hooks/useOrderStream';
 import {
     Table,
     TableBody,
@@ -133,10 +134,39 @@ export default function VendorOrdersPage() {
     const [reportDetails, setReportDetails] = useState('');
     const [submittingReport, setSubmittingReport] = useState(false);
     const itemsPerPage = 10;
+    const previousOrdersRef = useRef<Order[]>([]);
+    const [connected, setConnected] = useState(false);
 
+    // Real-time SSE stream
+    const { orders: streamOrders, connected: streamConnected } = useOrderStream({
+        onNewOrder: (order) => {
+            playNotificationSound();
+            if (order.status === 'PAID') {
+                toast.success('🔔 NEW ORDER RECEIVED!', {
+                    description: `${order.student.name} ordered from your shop.`,
+                    duration: 8000,
+                });
+            }
+        },
+        onOrderUpdate: (order) => {
+            if (order.status === 'READY' || order.status === 'COMPLETED') {
+                playNotificationSound();
+            }
+        },
+    });
+
+    // Sync SSE orders into local state
+    useEffect(() => {
+        if (streamOrders.length > 0) {
+            setOrders(streamOrders);
+            setConnected(true);
+        }
+    }, [streamOrders]);
+
+    // Fallback polling (every 15s) to catch anything SSE misses
     useEffect(() => {
         fetchOrders();
-        const interval = setInterval(fetchOrders, 8000); // 8s polling for fast real-time updates
+        const interval = setInterval(fetchOrders, 15000);
         return () => clearInterval(interval);
     }, []);
 
@@ -150,21 +180,24 @@ export default function VendorOrdersPage() {
             const res = await fetch('/api/vendor/orders', { headers });
             if (res.ok) {
                 const data = await res.json();
-                const newOrders = data.orders || [];
+                const serverOrders = data.orders || [];
 
                 setOrders((prevOrders) => {
-                    if (prevOrders.length > 0) {
+                    if (prevOrders.length > 0 && serverOrders.length > 0) {
                         const oldIds = prevOrders.map(o => o.id);
-                        const hasNewOrder = newOrders.some((o: any) => !oldIds.includes(o.id) && (o.status === 'PAID' || o.status === 'READY'));
-                        if (hasNewOrder) {
+                        const hasNewOrder = serverOrders.some((o: any) => !oldIds.includes(o.id) && o.status === 'PAID');
+                        if (hasNewOrder && !streamConnected) {
                             playNotificationSound();
                             toast.success('🔔 NEW ORDER RECEIVED!', {
                                 description: 'A customer has purchased items from your shop. Check the New tab!',
-                                duration: 8000
+                                duration: 8000,
                             });
                         }
                     }
-                    return newOrders;
+                    if (!streamConnected || serverOrders.length > prevOrders.length) {
+                        return serverOrders;
+                    }
+                    return prevOrders;
                 });
             }
         } catch (error) {
@@ -354,7 +387,15 @@ export default function VendorOrdersPage() {
                     <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
                     <p className="text-muted-foreground text-sm">Manage and track your customer orders.</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                    <div className={`flex items-center gap-1.5 text-[10px] font-mono font-bold ${
+                        streamConnected ? 'text-emerald-500' : 'text-amber-500'
+                    }`}>
+                        <span className={`w-2 h-2 rounded-full ${
+                            streamConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+                        }`} />
+                        {streamConnected ? 'LIVE' : 'POLL'}
+                    </div>
                     <div className="relative">
                         <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
