@@ -18,7 +18,7 @@ import CampusGuard from "@/components/layout/CampusGuard";
 import { CartProvider } from "@/context/CartContext";
 import { SecurityProvider } from "@/context/SecurityContext";
 import "./globals.css";
-import WelcomeModal from "@/components/alpha/WelcomeModal";
+
 import GlobalMaintenanceGuard from "@/components/admin/GlobalMaintenanceGuard";
 import PushNotificationProvider from "@/components/providers/PushNotificationProvider";
 import PWARegistration from "@/components/providers/PWARegistration";
@@ -101,7 +101,7 @@ export default function RootLayout({
                           </CampusGuard>
                           <Footer />
                           <GhostEditToggle />
-                          <WelcomeModal />
+
                           <PWARegistration />
                           <PWAInstallPrompt />
                           <CartRecoveryTrigger />

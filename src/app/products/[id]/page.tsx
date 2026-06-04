@@ -36,6 +36,7 @@ export default function ProductDetailsPage() {
     const { isInWishlist, addItem, removeItem } = useWishlistStore();
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [reviewListKey, setReviewListKey] = useState(0);
+    const [selectedModifiers, setSelectedModifiers] = useState<Record<string, string | string[]>>({});
     const viewTrackedRef = useRef(false);
 
     // Initial Auth Check
@@ -102,11 +103,51 @@ export default function ProductDetailsPage() {
         galleryImages.unshift({ original: product.imageUrl, thumbnail: product.imageUrl });
     }
 
+    // Modifier helpers
+    const hasModifiers = product.hasModifiers && product.modifierGroups?.length > 0;
+
+    const getSelectedModifiersList = () => {
+        if (!hasModifiers) return [];
+        const list: Array<{ groupName: string; optionName: string; priceDiff: number }> = [];
+        for (const group of product.modifierGroups) {
+            const val = selectedModifiers[group.id];
+            if (!val) continue;
+            if (Array.isArray(val)) {
+                for (const optionId of val) {
+                    const opt = group.modifiers.find((m: any) => m.id === optionId);
+                    if (opt) list.push({ groupName: group.name, optionName: opt.name, priceDiff: opt.priceDiff });
+                }
+            } else {
+                const opt = group.modifiers.find((m: any) => m.id === val);
+                if (opt) list.push({ groupName: group.name, optionName: opt.name, priceDiff: opt.priceDiff });
+            }
+        }
+        return list;
+    };
+
+    const modifiersTotal = getSelectedModifiersList().reduce((sum, m) => sum + m.priceDiff, 0);
+    const effectivePrice = currentPrice + modifiersTotal;
+
+    const handleModifierChange = (groupId: string, optionId: string, maxSelect: number) => {
+        setSelectedModifiers(prev => {
+            if (maxSelect <= 1) {
+                return { ...prev, [groupId]: optionId };
+            }
+            const current = (prev[groupId] as string[]) || [];
+            if (current.includes(optionId)) {
+                return { ...prev, [groupId]: current.filter(id => id !== optionId) };
+            }
+            return { ...prev, [groupId]: [...current, optionId] };
+        });
+    };
+
     const handleAddToCart = () => {
         if (!user) {
             router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
             return;
         }
+
+        const modifiers = getSelectedModifiersList();
 
         addToCart({
             id: product.id,
@@ -115,11 +156,14 @@ export default function ProductDetailsPage() {
             imageUrl: product.imageUrl || '',
             vendorId: product.vendorId,
             vendorName: product.vendor.shopName || product.vendor.name,
-            flashSaleId: product.flashSale?.isActive ? 'active' : undefined
+            flashSaleId: product.flashSale?.isActive ? 'active' : undefined,
+            selectedModifiers: modifiers,
         }, quantity);
 
         toast.success(`${product.title} added to cart`, {
-            description: "Keep shopping or proceed to checkout.",
+            description: modifiers.length > 0
+                ? `With ${modifiers.map(m => m.optionName).join(', ')}`
+                : "Keep shopping or proceed to checkout.",
             action: {
                 label: "View Cart",
                 onClick: () => router.push('/cart')
@@ -289,13 +333,18 @@ export default function ProductDetailsPage() {
 
                         {/* Price Block */}
                         <div className="mb-8">
-                            <div className="flex items-baseline gap-4">
+                            <div className="flex items-baseline gap-4 flex-wrap">
                                 <span className="text-6xl font-black tracking-tighter text-foreground">
-                                    ₵{currentPrice.toFixed(2)}
+                                    ₵{effectivePrice.toFixed(2)}
                                 </span>
                                 {isOnSale && originalPrice && (
                                     <span className="text-xl font-bold text-foreground/40 line-through decoration-2 decoration-red-500/50">
                                         ₵{originalPrice.toFixed(2)}
+                                    </span>
+                                )}
+                                {modifiersTotal > 0 && (
+                                    <span className="text-sm font-bold text-emerald-500">
+                                        (+₵{modifiersTotal.toFixed(2)} customization)
                                     </span>
                                 )}
                             </div>
@@ -305,6 +354,61 @@ export default function ProductDetailsPage() {
                                 </p>
                             )}
                         </div>
+
+                        {/* Modifier Groups — food customization */}
+                        {hasModifiers && (
+                            <div className="mb-8 space-y-4">
+                                <h3 className="text-sm font-black uppercase tracking-wider text-foreground/60">Customize Your Order</h3>
+                                {product.modifierGroups.map((group: any) => (
+                                    <div key={group.id} className="p-4 rounded-2xl border border-surface-border bg-background/50">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="text-xs font-black uppercase tracking-wider">{group.name}</span>
+                                            <div className="flex items-center gap-2">
+                                                {group.isRequired && (
+                                                    <span className="text-[10px] font-bold uppercase text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full">Required</span>
+                                                )}
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    {group.maxSelect === 1 ? 'Choose 1' : `Choose up to ${group.maxSelect}`}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {group.modifiers.map((mod: any) => {
+                                                const isSelected = group.maxSelect <= 1
+                                                    ? selectedModifiers[group.id] === mod.id
+                                                    : (selectedModifiers[group.id] as string[])?.includes(mod.id);
+                                                return (
+                                                    <button
+                                                        key={mod.id}
+                                                        type="button"
+                                                        onClick={() => handleModifierChange(group.id, mod.id, group.maxSelect)}
+                                                        className={`w-full flex items-center justify-between p-3 rounded-xl border-2 text-left transition-all active:scale-[0.98] touch-manipulation ${
+                                                            isSelected
+                                                                ? 'border-primary bg-primary/5 text-foreground'
+                                                                : 'border-transparent bg-foreground/5 text-foreground/70 hover:text-foreground hover:bg-foreground/10'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                                                isSelected ? 'border-primary' : 'border-foreground/30'
+                                                            }`}>
+                                                                {isSelected && (
+                                                                    <div className={`w-2.5 h-2.5 rounded-full bg-primary ${group.maxSelect > 1 ? 'rounded-sm' : ''}`} />
+                                                                )}
+                                                            </div>
+                                                            <span className="text-sm font-bold">{mod.name}</span>
+                                                        </div>
+                                                        <span className={`text-xs font-bold ${mod.priceDiff > 0 ? 'text-emerald-500' : 'text-muted-foreground'} shrink-0 ml-2`}>
+                                                            {mod.priceDiff > 0 ? `+₵${mod.priceDiff.toFixed(2)}` : 'Free'}
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Action Module */}
                         <div className="p-1 rounded-[2rem] bg-gradient-to-b from-surface to-background border border-surface-border shadow-xl shadow-foreground/5 mb-10">
@@ -395,6 +499,13 @@ export default function ProductDetailsPage() {
                                                 router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
                                                 return;
                                             }
+                                            const modifiers = getSelectedModifiersList();
+                                            sessionStorage.setItem('omni_checkout_modifiers', JSON.stringify({
+                                                productId: product.id,
+                                                quantity,
+                                                selectedModifiers: modifiers,
+                                                effectivePrice,
+                                            }));
                                             router.push(`/checkout/${product.id}?quantity=${quantity}`);
                                         }}
                                         disabled={isOutOfStock || isGhostAdmin}

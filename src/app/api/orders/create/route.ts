@@ -3,6 +3,12 @@ import { prisma } from '@/lib/db/prisma';
 import { ensureUserExists } from '@/lib/auth/sync';
 import { sendPushNotification } from '@/lib/notifications/push';
 
+interface SelectedModifier {
+  groupName: string;
+  optionName: string;
+  priceDiff: number;
+}
+
 interface ProcessedCartItem {
     id: string;
     quantity: number;
@@ -10,6 +16,7 @@ interface ProcessedCartItem {
     title: string;
     vendorId: string;
     activeFlashSaleId: string | null;
+    selectedModifiers?: SelectedModifier[];
 }
 
 async function getAuthenticatedStudent(): Promise<any | null> {
@@ -58,13 +65,17 @@ function processCartItems(
             }
         }
 
+        // Add modifier price diffs to final price
+        const modifiersTotal = (item.selectedModifiers || []).reduce((sum: number, m: SelectedModifier) => sum + (m.priceDiff || 0), 0);
+
         const processedItem: ProcessedCartItem = {
             id: item.id,
             quantity: item.quantity,
-            finalPrice,
+            finalPrice: finalPrice + modifiersTotal,
             title: product.title,
             vendorId: product.vendorId,
-            activeFlashSaleId
+            activeFlashSaleId,
+            selectedModifiers: item.selectedModifiers || [],
         };
 
         if (!vendorGroups[product.vendorId]) {
@@ -175,7 +186,8 @@ async function executeOrderCreationTransaction(
                     productId: item.id,
                     quantity: item.quantity,
                     price: item.finalPrice,
-                    productSnapshot: { title: item.title }
+                    productSnapshot: { title: item.title },
+                    modifierSnapshot: item.selectedModifiers?.length ? JSON.parse(JSON.stringify(item.selectedModifiers)) : undefined,
                 }
             });
 
@@ -219,7 +231,11 @@ export async function POST(request: NextRequest) {
         if (body.items && Array.isArray(body.items)) {
             cartItems = body.items;
         } else if (body.productId) {
-            cartItems = [{ id: body.productId, quantity: body.quantity || 1 }];
+            cartItems = [{
+                id: body.productId,
+                quantity: body.quantity || 1,
+                selectedModifiers: body.selectedModifiers || [],
+            }];
         } else {
             return NextResponse.json({ error: 'No items in cart' }, { status: 400 });
         }

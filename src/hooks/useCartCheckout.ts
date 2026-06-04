@@ -146,7 +146,7 @@ export function useCartCheckout() {
         method: "POST",
         headers,
         body: JSON.stringify({
-          items: items.map(i => ({ id: i.id, quantity: i.quantity })),
+          items: items.map(i => ({ id: i.id, quantity: i.quantity, selectedModifiers: i.selectedModifiers || [] })),
           fulfillmentType: fulfillmentMethod === "delivery" ? "DELIVERY" : "PICKUP",
           couponCode: appliedCoupon?.code || null
         })

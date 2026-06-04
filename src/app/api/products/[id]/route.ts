@@ -15,6 +15,10 @@ export async function GET(
         const product = await prisma.product.findUnique({
             where: { id },
             include: {
+                modifierGroups: {
+                    include: { modifiers: true },
+                    orderBy: { name: 'asc' },
+                },
                 vendor: {
                     select: {
                         id: true,

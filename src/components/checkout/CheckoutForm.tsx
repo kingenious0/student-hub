@@ -3,6 +3,12 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
+interface SelectedModifier {
+  groupName: string;
+  optionName: string;
+  priceDiff: number;
+}
+
 interface CheckoutFormProps {
     productId: string;
     productTitle: string;
@@ -23,9 +29,28 @@ export default function CheckoutForm({
     const [fulfillment, setFulfillment] = useState<'PICKUP' | 'DELIVERY'>('PICKUP');
     const [fulfillmentNote, setFulfillmentNote] = useState('');
     const [quantity, setQuantity] = useState(1);
+    const [selectedModifiers, setSelectedModifiers] = useState<SelectedModifier[]>([]);
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
     const [paystackPublicKey, setPaystackPublicKey] = useState(process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '');
-    const subtotal = productPrice * quantity;
+
+    // Restore modifiers from sessionStorage (set by Instant Checkout on product page)
+    useEffect(() => {
+        try {
+            const stored = sessionStorage.getItem('omni_checkout_modifiers');
+            if (stored) {
+                const data = JSON.parse(stored);
+                if (data.productId === productId) {
+                    setSelectedModifiers(data.selectedModifiers || []);
+                    setQuantity(data.quantity || 1);
+                }
+                sessionStorage.removeItem('omni_checkout_modifiers');
+            }
+        } catch {}
+    }, [productId]);
+
+    const modifiersTotal = selectedModifiers.reduce((sum, m) => sum + m.priceDiff, 0);
+    const effectivePrice = productPrice + modifiersTotal;
+    const subtotal = effectivePrice * quantity;
     const total = subtotal + (fulfillment === 'DELIVERY' ? deliveryFee : 0);
 
     useEffect(() => {
@@ -44,18 +69,14 @@ export default function CheckoutForm({
     }, []);
 
     const onSuccess = async (reference: { reference: string }) => {
-        // After Paystack success, verify on our backend
         try {
             const res = await fetch('/api/payments/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    reference: reference.reference,
-                }),
+                body: JSON.stringify({ reference: reference.reference }),
             });
             const data = await res.json();
             if (data.success) {
-                // Check for Mobile WebView
                 if ((window as any).ReactNativeWebView) {
                     (window as any).ReactNativeWebView.postMessage(JSON.stringify({
                         type: 'PAYMENT_SUCCESS',
@@ -76,7 +97,6 @@ export default function CheckoutForm({
     };
 
     const handleCheckout = async () => {
-        // Pre-check for Paystack (Avoid orphan orders)
         const PaystackPop = (window as unknown as {
             PaystackPop: {
                 setup: (options: unknown) => { openIframe: () => void }
@@ -90,7 +110,6 @@ export default function CheckoutForm({
 
         setIsCreatingOrder(true);
         try {
-            // 1. Create the order in our database first
             const res = await fetch('/api/orders/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -98,13 +117,13 @@ export default function CheckoutForm({
                     productId,
                     quantity,
                     fulfillmentType: fulfillment,
-                    fulfillmentNote: fulfillmentNote.trim() || null
+                    fulfillmentNote: fulfillmentNote.trim() || null,
+                    selectedModifiers,
                 }),
             });
             const data = await res.json();
 
             if (data.success) {
-                // 2. Launch Paystack using the Inline script
                 const handler = PaystackPop.setup({
                     key: paystackPublicKey,
                     email: email,
@@ -148,22 +167,22 @@ export default function CheckoutForm({
                 <button
                     type="button"
                     onClick={() => setFulfillment('PICKUP')}
-                            className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
-                                fulfillment === 'PICKUP'
-                                    ? 'bg-primary text-primary-foreground shadow-md'
-                                    : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
-                            }`}
-                        >
-                            📍 Self-Pickup
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setFulfillment('DELIVERY')}
-                            className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
-                                fulfillment === 'DELIVERY'
-                                    ? 'bg-primary text-primary-foreground shadow-md'
-                                    : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
-                            }`}
+                    className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+                        fulfillment === 'PICKUP'
+                            ? 'bg-primary text-primary-foreground shadow-md'
+                            : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
+                    }`}
+                >
+                    📍 Self-Pickup
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setFulfillment('DELIVERY')}
+                    className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+                        fulfillment === 'DELIVERY'
+                            ? 'bg-primary text-primary-foreground shadow-md'
+                            : 'text-foreground/60 hover:text-foreground hover:bg-white/5'
+                    }`}
                 >
                     🚚 Direct Delivery
                 </button>
@@ -187,10 +206,27 @@ export default function CheckoutForm({
                 />
             </div>
 
+            {/* Selected Modifiers Summary */}
+            {selectedModifiers.length > 0 && (
+                <div className="mb-6 p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 mb-2">Customizations</p>
+                    <div className="space-y-1">
+                        {selectedModifiers.map((m, i) => (
+                            <div key={i} className="flex justify-between text-xs">
+                                <span className="text-muted-foreground">{m.groupName}: <span className="font-bold text-foreground">{m.optionName}</span></span>
+                                {m.priceDiff > 0 && <span className="font-bold text-emerald-500">+₵{m.priceDiff.toFixed(2)}</span>}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Order Summary */}
             <div className="space-y-6 mb-12">
                 <div className="flex justify-between items-center pb-4 border-b border-surface-border">
-                    <span className="text-[10px] font-black text-foreground/30 uppercase tracking-widest">Item Subtotal</span>
+                    <span className="text-[10px] font-black text-foreground/30 uppercase tracking-widest">
+                        {effectivePrice !== productPrice ? 'Item (₵' + productPrice.toFixed(2) + ' + extras)' : 'Item Subtotal'}
+                    </span>
                     <span className="text-foreground font-black text-lg">₵{subtotal.toFixed(2)}</span>
                 </div>
 

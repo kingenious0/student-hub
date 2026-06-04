@@ -109,72 +109,90 @@ export default function CartPage() {
                                         {/* Items */}
                                         <div className="divide-y divide-surface-border">
                                             <AnimatePresence>
-                                                {vendorItems.map((item) => (
-                                                    <motion.div
-                                                        key={item.id}
-                                                        layout
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        exit={{ opacity: 0, height: 0 }}
-                                                        className="p-6 flex flex-col md:flex-row gap-6 group hover:bg-foreground/5 transition-colors"
-                                                    >
-                                                        {/* Image */}
-                                                        <Link href={`/products/${item.id}`} className="w-full md:w-24 h-24 bg-background rounded-lg flex-shrink-0 overflow-hidden border border-surface-border relative">
-                                                            {item.imageUrl ? (
-                                                                <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-4xl">📦</div>
-                                                            )}
-                                                        </Link>
+                                                {vendorItems.map((item) => {
+                                                    const modifiersTotal = (item.selectedModifiers || []).reduce((s, m) => s + m.priceDiff, 0);
+                                                    const effectiveUnitPrice = item.price + modifiersTotal;
+                                                    const effectiveLineTotal = effectiveUnitPrice * item.quantity;
+                                                    return (
+                                                        <motion.div
+                                                            key={item.cartItemId}
+                                                            layout
+                                                            initial={{ opacity: 0 }}
+                                                            animate={{ opacity: 1 }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            className="p-6 flex flex-col md:flex-row gap-6 group hover:bg-foreground/5 transition-colors"
+                                                        >
+                                                            {/* Image */}
+                                                            <Link href={`/products/${item.id}`} className="w-full md:w-24 h-24 bg-background rounded-lg flex-shrink-0 overflow-hidden border border-surface-border relative">
+                                                                {item.imageUrl ? (
+                                                                    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-4xl">📦</div>
+                                                                )}
+                                                            </Link>
 
-                                                        {/* Details */}
-                                                        <div className="flex-1 flex flex-col justify-between">
-                                                            <div className="flex justify-between items-start gap-4">
-                                                                <div>
-                                                                    <Link href={`/products/${item.id}`} className="text-base font-bold text-foreground leading-tight hover:text-primary transition-colors line-clamp-2">
-                                                                        {item.title}
-                                                                    </Link>
-                                                                    <div className="text-xs font-bold text-foreground/40 mt-1">
-                                                                        Unit Price: ₵{item.price.toFixed(2)}
+                                                            {/* Details */}
+                                                            <div className="flex-1 flex flex-col justify-between">
+                                                                <div className="flex justify-between items-start gap-4">
+                                                                    <div>
+                                                                        <Link href={`/products/${item.id}`} className="text-base font-bold text-foreground leading-tight hover:text-primary transition-colors line-clamp-2">
+                                                                            {item.title}
+                                                                        </Link>
+                                                                        <div className="text-xs font-bold text-foreground/40 mt-1">
+                                                                            Unit Price: ₵{item.price.toFixed(2)}
+                                                                            {modifiersTotal > 0 && (
+                                                                                <span className="ml-1">+ ₵{modifiersTotal.toFixed(2)} modifiers</span>
+                                                                            )}
+                                                                        </div>
+                                                                        {/* Modifier Selections */}
+                                                                        {item.selectedModifiers && item.selectedModifiers.length > 0 && (
+                                                                            <div className="flex flex-wrap gap-1.5 mt-2">
+                                                                                {item.selectedModifiers.map((m, i) => (
+                                                                                    <span key={i} className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                                                                                        {m.groupName}: {m.optionName}{m.priceDiff > 0 ? ` (+₵${m.priceDiff.toFixed(2)})` : ''}
+                                                                                    </span>
+                                                                                ))}
+                                                                            </div>
+                                                                        )}
                                                                     </div>
+                                                                    <span className="text-lg font-black text-foreground tracking-tight whitespace-nowrap">
+                                                                        ₵{effectiveLineTotal.toFixed(2)}
+                                                                    </span>
                                                                 </div>
-                                                                <span className="text-lg font-black text-foreground tracking-tight whitespace-nowrap">
-                                                                    ₵{(item.price * item.quantity).toFixed(2)}
-                                                                </span>
-                                                            </div>
 
-                                                            {/* Controls */}
-                                                            <div className="flex items-center justify-between mt-4">
-                                                                <div className="flex items-center gap-2 bg-foreground/5 rounded-lg p-1">
-                                                                    <button
-                                                                        onClick={() => updateQuantity(item.id, Number(item.quantity) - 1)}
-                                                                        aria-label="Decrease quantity"
-                                                                        className="w-11 h-11 flex items-center justify-center bg-surface rounded-md shadow-sm hover:text-primary transition-colors font-bold focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                                                    >
-                                                                        <MinusIcon className="w-3 h-3" />
-                                                                    </button>
-                                                                    <div className="w-8 text-center font-bold text-sm text-foreground">
-                                                                        {item.quantity}
+                                                                {/* Controls */}
+                                                                <div className="flex items-center justify-between mt-4">
+                                                                    <div className="flex items-center gap-2 bg-foreground/5 rounded-lg p-1">
+                                                                        <button
+                                                                            onClick={() => updateQuantity(item.cartItemId, Number(item.quantity) - 1)}
+                                                                            aria-label="Decrease quantity"
+                                                                            className="w-11 h-11 flex items-center justify-center bg-surface rounded-md shadow-sm hover:text-primary transition-colors font-bold focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                                        >
+                                                                            <MinusIcon className="w-3 h-3" />
+                                                                        </button>
+                                                                        <div className="w-8 text-center font-bold text-sm text-foreground">
+                                                                            {item.quantity}
+                                                                        </div>
+                                                                        <button
+                                                                            onClick={() => updateQuantity(item.cartItemId, Number(item.quantity) + 1)}
+                                                                            aria-label="Increase quantity"
+                                                                            className="w-11 h-11 flex items-center justify-center bg-surface rounded-md shadow-sm hover:text-primary transition-colors font-bold focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                                        >
+                                                                            <PlusIcon className="w-3 h-3" />
+                                                                        </button>
                                                                     </div>
                                                                     <button
-                                                                        onClick={() => updateQuantity(item.id, Number(item.quantity) + 1)}
-                                                                        aria-label="Increase quantity"
-                                                                        className="w-11 h-11 flex items-center justify-center bg-surface rounded-md shadow-sm hover:text-primary transition-colors font-bold focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                                        onClick={() => removeFromCart(item.cartItemId)}
+                                                                        aria-label="Remove item"
+                                                                        className="text-foreground/40 hover:text-destructive transition-colors w-11 h-11 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                                                     >
-                                                                        <PlusIcon className="w-3 h-3" />
+                                                                        <Trash2Icon className="w-4 h-4" />
                                                                     </button>
                                                                 </div>
-                                                                <button
-                                                                    onClick={() => removeFromCart(item.id)}
-                                                                    aria-label="Remove item"
-                                                                    className="text-foreground/40 hover:text-destructive transition-colors w-11 h-11 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                                                >
-                                                                    <Trash2Icon className="w-4 h-4" />
-                                                                </button>
                                                             </div>
-                                                        </div>
-                                                    </motion.div>
-                                                ))}
+                                                        </motion.div>
+                                                    );
+                                                })}
                                             </AnimatePresence>
                                         </div>
                                     </div>
