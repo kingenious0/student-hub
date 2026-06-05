@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useOrderStream } from '@/hooks/useOrderStream';
+import { playKDSAlert } from '@/lib/audio/playChime';
 import { toast } from 'sonner';
 import { Bell, Clock, CheckCircle, ChefHat, ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 import Link from 'next/link';
@@ -22,23 +23,6 @@ interface KDSOrder {
   elapsed?: number;
 }
 
-const playAlert = () => {
-  try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.setValueAtTime(660, ctx.currentTime + 0.15);
-    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.4);
-  } catch { /* noop */ }
-};
-
 const formatElapsed = (seconds: number) => {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
@@ -57,7 +41,7 @@ interface StaffSession {
 export default function KDSView({ staffSession }: { staffSession?: StaffSession | null }) {
   const { getToken } = useAuth();
   const { orders, connected } = useOrderStream({
-    onNewOrder: () => playAlert(),
+    onNewOrder: () => playKDSAlert(),
     playSound: true,
   });
   const [fullscreen, setFullscreen] = useState(false);

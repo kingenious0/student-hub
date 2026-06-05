@@ -8,7 +8,7 @@ import { SignedIn, useUser } from "@clerk/nextjs";
 import ThemeToggle from '@/components/navigation/ThemeToggle';
 import { StoreIcon, PackageIcon, ShoppingCartIcon, ZapIcon, HomeIcon } from "@/components/ui/Icons";
 import MaintenanceGuard from '@/components/admin/MaintenanceGuard';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export default function VendorLayout({
     children,
@@ -20,6 +20,7 @@ export default function VendorLayout({
     const { user } = useUser();
     const omniToken = searchParams?.get('__omni_token');
     const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
+    const [pendingOrderCount, setPendingOrderCount] = useState(0);
 
     useEffect(() => {
         if (!user) return;
@@ -27,6 +28,23 @@ export default function VendorLayout({
             .then(r => r.json())
             .then(d => setVendorTier(d.tier))
             .catch(() => {});
+    }, [user]);
+
+    useEffect(() => {
+        if (!user) return;
+        const fetchPendingCount = async () => {
+            try {
+                const res = await fetch('/api/vendor/orders');
+                if (res.ok) {
+                    const data = await res.json();
+                    const orders = data.orders || [];
+                    setPendingOrderCount(orders.filter((o: any) => o.status === 'PAID').length);
+                }
+            } catch {}
+        };
+        fetchPendingCount();
+        const interval = setInterval(fetchPendingCount, 15000);
+        return () => clearInterval(interval);
     }, [user]);
 
     // Helper to preserve auth token in navigation
@@ -57,7 +75,7 @@ export default function VendorLayout({
                         <VendorLink href={getHref("/dashboard/vendor")} icon={<HomeIcon className="w-4 h-4" />} label="Overview" active={isActive('/dashboard/vendor')} />
                         {canKDS && <VendorLink href={getHref("/dashboard/vendor/kds")} icon={<div className="w-4 h-4 font-bold text-[10px] flex items-center justify-center">KDS</div>} label="Kitchen" active={isActive('/dashboard/vendor/kds')} />}
                         <VendorLink href={getHref("/dashboard/vendor/products")} icon={<PackageIcon className="w-4 h-4" />} label="Inventory" active={isActive('/dashboard/vendor/products')} />
-                        <VendorLink href={getHref("/dashboard/vendor/orders")} icon={<ZapIcon className="w-4 h-4" />} label="Orders" active={isActive('/dashboard/vendor/orders')} />
+                        <VendorLink href={getHref("/dashboard/vendor/orders")} icon={<ZapIcon className="w-4 h-4" />} label="Orders" active={isActive('/dashboard/vendor/orders')} badge={pendingOrderCount} />
                         {canScan && <VendorLink href={getHref("/dashboard/vendor/scan")} icon={<div className="w-4 h-4 border-2 border-current rounded flex items-center justify-center text-[10px] font-bold">QR</div>} label="Scan" active={isActive('/dashboard/vendor/scan')} />}
                     </div>
 
@@ -99,7 +117,7 @@ export default function VendorLayout({
                     <MobileVendorLink href={getHref("/dashboard/vendor")} icon={<HomeIcon className="w-5 h-5" />} label="Home" active={isActive('/dashboard/vendor')} />
                     {canKDS && <MobileVendorLink href={getHref("/dashboard/vendor/kds")} icon={<div className="font-bold text-[10px] bg-emerald-500 text-black w-5 h-5 flex items-center justify-center rounded">K</div>} label="KDS" active={isActive('/dashboard/vendor/kds')} />}
                     <MobileVendorLink href={getHref("/dashboard/vendor/products")} icon={<PackageIcon className="w-5 h-5" />} label="Items" active={isActive('/dashboard/vendor/products')} />
-                    <MobileVendorLink href={getHref("/dashboard/vendor/orders")} icon={<ZapIcon className="w-5 h-5" />} label="Orders" active={isActive('/dashboard/vendor/orders')} />
+                    <MobileVendorLink href={getHref("/dashboard/vendor/orders")} icon={<ZapIcon className="w-5 h-5" />} label="Orders" active={isActive('/dashboard/vendor/orders')} badge={pendingOrderCount} />
                     {canScan && <MobileVendorLink href={getHref("/dashboard/vendor/scan")} icon={<div className="font-bold text-[10px] border-2 border-current rounded w-5 h-5 flex items-center justify-center">QR</div>} label="Verify" active={isActive('/dashboard/vendor/scan')} />}
                     <MobileVendorLink href="/marketplace" icon={<ShoppingCartIcon className="w-5 h-5" />} label="Shop" active={false} />
                 </div>
@@ -108,26 +126,36 @@ export default function VendorLayout({
     );
 }
 
-function VendorLink({ href, icon, label, active }: any) {
+function VendorLink({ href, icon, label, active, badge }: any) {
     return (
         <Link
             href={href}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${active ? 'bg-primary/10 text-primary border border-primary/20' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all relative ${active ? 'bg-primary/10 text-primary border border-primary/20' : 'text-foreground/60 hover:text-foreground hover:bg-foreground/5'}`}
         >
             {icon}
             <span>{label}</span>
+            {badge !== undefined && badge > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] h-[18px] flex items-center justify-center shadow-lg">
+                    {badge}
+                </span>
+            )}
         </Link>
     );
 }
 
-function MobileVendorLink({ href, icon, label, active }: any) {
+function MobileVendorLink({ href, icon, label, active, badge }: any) {
     return (
         <Link
             href={href}
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${active ? 'text-primary dark:text-[#39FF14]' : 'text-foreground/40'}`}
+            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors relative ${active ? 'text-primary dark:text-[#39FF14]' : 'text-foreground/40'}`}
         >
             {icon}
             <span className="text-[9px] font-black uppercase tracking-wider">{label}</span>
+            {badge !== undefined && badge > 0 && (
+                <span className="absolute -top-0.5 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full min-w-[14px] h-[14px] flex items-center justify-center shadow-lg">
+                    {badge}
+                </span>
+            )}
         </Link>
     );
 }

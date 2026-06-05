@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useOrderStream } from '@/hooks/useOrderStream';
+import { playNotificationSound } from '@/lib/audio/playChime';
 import {
     Table,
     TableBody,
@@ -86,38 +87,7 @@ const formatDate = (dateString: string) => {
     });
 };
 
-// Synthesize cash register / success double-chime using native AudioContext (zero static file dependency)
-const playNotificationSound = () => {
-    try {
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-        
-        // Chime 1
-        const osc1 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain();
-        osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
-        gain1.gain.setValueAtTime(0.15, audioCtx.currentTime);
-        gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
-        osc1.start(audioCtx.currentTime);
-        osc1.stop(audioCtx.currentTime + 0.6);
 
-        // Chime 2
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.1); // A5
-        gain2.gain.setValueAtTime(0.15, audioCtx.currentTime + 0.1);
-        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
-        osc2.start(audioCtx.currentTime + 0.1);
-        osc2.stop(audioCtx.currentTime + 0.7);
-    } catch (e) {
-        console.error('Failed to play synthesized sound:', e);
-    }
-};
 
 export default function VendorOrdersPage() {
     const modal = useModal();

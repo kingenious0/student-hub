@@ -36,6 +36,7 @@ export default function Navbar() {
     const itemCount = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
     const wishlistCount = useWishlistStore((state) => state.items.length);
     const [mounted, setMounted] = useState(false);
+    const [pendingOrderCount, setPendingOrderCount] = useState(0);
 
     useEffect(() => {
         setMounted(true);
@@ -109,10 +110,37 @@ export default function Navbar() {
         };
 
         fetchTicker();
-        const interval = setInterval(fetchTicker, 3000);
+        const tickerInterval = setInterval(fetchTicker, 3000);
 
-        return () => clearInterval(interval);
+        return () => clearInterval(tickerInterval);
     }, [clerkLoaded, user]);
+
+    // Poll vendor pending order count (separate effect to avoid re-fetching dbUser)
+    const prevRoleRef = useRef<string | undefined>(undefined);
+    useEffect(() => {
+        const role = dbUser?.role;
+        if (role !== 'VENDOR') {
+            setPendingOrderCount(0);
+            prevRoleRef.current = role;
+            return;
+        }
+        if (prevRoleRef.current === role) return;
+        prevRoleRef.current = role;
+
+        const fetchPendingOrders = async () => {
+            try {
+                const res = await fetch('/api/vendor/orders');
+                if (res.ok) {
+                    const data = await res.json();
+                    const orders = data.orders || [];
+                    setPendingOrderCount(orders.filter((o: any) => o.status === 'PAID').length);
+                }
+            } catch {}
+        };
+        fetchPendingOrders();
+        const interval = setInterval(fetchPendingOrders, 15000);
+        return () => clearInterval(interval);
+    }, [dbUser?.role]);
 
     useEffect(() => {
         setIsDrawerOpen(false);
@@ -231,7 +259,12 @@ export default function Navbar() {
                             <div className="hidden lg:flex items-center gap-4 mr-2">
                                 <Link href="/" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
                                 <Link href="/services" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Services</Link>
-                                <Link href="/orders" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Orders</Link>
+                                <Link href="/orders" className="relative text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">
+                                    Orders
+                                    {dbUser?.role === 'VENDOR' && pendingOrderCount > 0 && (
+                                        <span className="absolute -top-2 -right-4 w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center">{pendingOrderCount}</span>
+                                    )}
+                                </Link>
                                 <Link href="/wishlist" className="relative text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">
                                     Wishlist
                                     {wishlistCount > 0 && (
@@ -241,9 +274,14 @@ export default function Navbar() {
                                 {dbUser?.role === 'VENDOR' && (
                                     <Link 
                                         href="/dashboard/vendor" 
-                                        className="text-xs font-black text-primary hover:text-primary/80 transition-all bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20 uppercase tracking-wider"
+                                        className="relative text-xs font-black text-primary hover:text-primary/80 transition-all bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20 uppercase tracking-wider"
                                     >
                                         🏪 Vendor Dashboard
+                                        {pendingOrderCount > 0 && (
+                                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full min-w-[16px] h-4 flex items-center justify-center shadow-lg">
+                                                {pendingOrderCount}
+                                            </span>
+                                        )}
                                     </Link>
                                 )}
                             </div>
@@ -383,7 +421,14 @@ export default function Navbar() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <ChevronRightIcon className="w-5 h-5 text-foreground/40" />
+                                            <div className="flex items-center gap-2 relative z-10">
+                                                {dbUser?.role === 'VENDOR' && pendingOrderCount > 0 && (
+                                                    <span className="bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full min-w-[16px] h-4 flex items-center justify-center shadow-lg">
+                                                        {pendingOrderCount}
+                                                    </span>
+                                                )}
+                                                <ChevronRightIcon className="w-5 h-5 text-foreground/40" />
+                                            </div>
                                         </Link>
                                     </div>
 
@@ -409,7 +454,7 @@ export default function Navbar() {
                                                 <ChevronRightIcon className="w-4 h-4 text-foreground/20" />
                                             </div>
                                         </div>
-                                        <DrawerLink href="/orders" icon={<PackageIcon className="w-5 h-5" />} label="My Orders" setIsOpen={setIsDrawerOpen} active={isActive('/orders')} />
+                                        <DrawerLink href="/orders" icon={<PackageIcon className="w-5 h-5" />} label="My Orders" setIsOpen={setIsDrawerOpen} active={isActive('/orders')} badge={dbUser?.role === 'VENDOR' ? pendingOrderCount : 0} />
                                         <DrawerLink href="/dashboard/services" icon={<Tag className="w-5 h-5" />} label="My Services" setIsOpen={setIsDrawerOpen} active={pathname?.startsWith('/dashboard/services')} />
                                         <DrawerLink href="/wishlist" icon={<HeartIcon className="w-5 h-5" />} label="Wishlist" setIsOpen={setIsDrawerOpen} active={isActive('/wishlist')} badge={wishlistCount} />
                                         <DrawerLink href="/security-setup" icon={<Shield className="w-5 h-5 text-blue-500" />} label="OMNI Security" setIsOpen={setIsDrawerOpen} active={isActive('/security-setup')} />
