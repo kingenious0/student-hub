@@ -39,7 +39,6 @@ export default function EnhancedProductCard({
   isFlashSale = false,
   originalPrice,
   discountPercent,
-  hotspot,
   deliveryTime = '15m',
   themeColor = '#10B981',
   categoryIcon = '📦',
@@ -227,12 +226,7 @@ export default function EnhancedProductCard({
         )}
 
         {/* Delivery Info */}
-        {hotspot && (
-          <div className="mt-1 pt-2 border-t border-surface-border text-[9px] font-bold text-foreground/40 uppercase tracking-wider flex items-center gap-1">
-            <span>⚡ {deliveryTime} to</span>
-            <span className="truncate max-w-[80px]">{hotspot}</span>
-          </div>
-        )}
+
       </div>
     </Link>
   );

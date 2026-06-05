@@ -144,13 +144,7 @@ export default function ProductCard({
 
                 {/* Overlay: Badges */}
                 <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-                    {/* Hotspot Badge */}
-                    {product.hotspot && (
-                        <Badge variant="secondary" className="bg-black/60 text-white backdrop-blur-md text-[10px] px-2 h-5 gap-1 border-0">
-                            <MapPinIcon className="w-3 h-3 text-primary" />
-                            {product.hotspot}
-                        </Badge>
-                    )}
+
                     {/* External Custom Badge (from SmartFeed) */}
                     {badge && (
                         <Badge className={`${badgeColor || 'bg-primary'} text-white text-[10px] px-2 h-5 border-0`}>

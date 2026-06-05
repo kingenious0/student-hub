@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use, useMemo, useCallback, Suspense } from 'react';
+import { useState, useEffect, use, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal } from 'lucide-react';
@@ -69,12 +69,8 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
   const [visibleCount, setVisibleCount] = useState(12);
 
   const [sortBy, setSortBy] = useFilterUrlParam('sort', 'newest');
-  const [selectedHotspot, setSelectedHotspot] = useFilterUrlParam('hotspot');
   const [showActiveOnly, setShowActiveOnly] = useFilterUrlBool('active', false);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
-
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
-  const [maxPrice, setMaxPrice] = useState(1000);
 
   const [spicyLevel, setSpicyLevel] = useState('');
   const [condition, setCondition] = useState('');
@@ -88,7 +84,7 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
     if (category) {
       applyFilters();
     }
-  }, [category, sortBy, selectedHotspot, priceRange, showActiveOnly, spicyLevel, condition]);
+  }, [category, sortBy, showActiveOnly, spicyLevel, condition]);
 
   const fetchCategory = async () => {
     try {
@@ -97,12 +93,7 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
 
       if (data.success) {
         setCategory(data.category);
-        if (data.category.products.length > 0) {
-          const prices = data.category.products.map((p: Product) => p.price);
-          const max = Math.max(...prices);
-          setMaxPrice(max);
-          setPriceRange([0, max]);
-        }
+
       } else {
         const fallback = categoryConfig.find(c => c.slug === slug);
         if (fallback) {
@@ -138,12 +129,9 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
     if (!category) return;
     let filtered = [...category.products];
 
-    if (selectedHotspot) filtered = filtered.filter(p => p.hotspot === selectedHotspot);
     if (showActiveOnly) filtered = filtered.filter(p => p.vendor.isAcceptingOrders);
     if (slug === 'food' && spicyLevel) filtered = filtered.filter(p => p.details?.spicyLevel === spicyLevel);
     if (slug === 'tech' && condition) filtered = filtered.filter(p => p.details?.condition === condition);
-
-    filtered = filtered.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
 
     switch (sortBy) {
       case 'newest': filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); break;
@@ -163,13 +151,11 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
 
   const clearAllFilters = useCallback(() => {
     setSortBy('newest');
-    setSelectedHotspot('');
     setShowActiveOnly(false);
-    setPriceRange([0, maxPrice]);
     setSpicyLevel('');
     setCondition('');
     setActiveQuickFilter('');
-  }, [setSortBy, setSelectedHotspot, setShowActiveOnly, maxPrice]);
+  }, [setSortBy, setShowActiveOnly]);
 
   const getQuickFilters = () => {
     switch (slug) {
@@ -198,21 +184,12 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
   };
 
   const theme = getCategoryTheme();
-  const hotspots = useMemo(() =>
-    Array.from(new Set(category?.products.map(p => p.hotspot).filter(Boolean) as string[])),
-    [category]
-  );
-
   const activeFilterPills = useMemo(() => {
     const pills: { label: string; onRemove: () => void }[] = [];
     if (sortBy !== 'newest') pills.push({ label: `Sort: ${sortBy}`, onRemove: () => setSortBy('newest') });
-    if (selectedHotspot) pills.push({ label: `📍 ${selectedHotspot}`, onRemove: () => setSelectedHotspot('') });
     if (showActiveOnly) pills.push({ label: 'Active Vendors', onRemove: () => setShowActiveOnly(false) });
-    if (priceRange[0] > 0 || priceRange[1] < maxPrice) {
-      pills.push({ label: `₵${priceRange[0]} - ₵${priceRange[1]}`, onRemove: () => setPriceRange([0, maxPrice]) });
-    }
     return pills;
-  }, [sortBy, selectedHotspot, showActiveOnly, priceRange, maxPrice, setSortBy, setSelectedHotspot, setShowActiveOnly]);
+  }, [sortBy, showActiveOnly, setSortBy, setShowActiveOnly]);
 
   const handleAddToCart = useCallback((product: Product) => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -228,47 +205,6 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
 
   const filterSection = (
     <div className="space-y-6">
-      {/* Hotspots */}
-      {hotspots.length > 0 && (
-        <div>
-          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-3 text-primary">Locations</h4>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 cursor-pointer group">
-              <input type="radio" name="hotspot" checked={!selectedHotspot} onChange={() => setSelectedHotspot('')} className="accent-primary" />
-              <span className={`text-xs font-bold ${!selectedHotspot ? 'text-primary' : 'text-foreground/60 group-hover:text-foreground'}`}>All Campus</span>
-            </label>
-            {hotspots.map(h => (
-              <label key={h} className="flex items-center gap-2 cursor-pointer group">
-                <input type="radio" name="hotspot" checked={selectedHotspot === h} onChange={() => setSelectedHotspot(h)} className="accent-primary" />
-                <span className={`text-xs font-bold ${selectedHotspot === h ? 'text-primary' : 'text-foreground/60 group-hover:text-foreground'}`}>{h}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Price Range */}
-      <div>
-        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-3 text-primary">Price Range</h4>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            value={priceRange[0]}
-            onChange={(e) => setPriceRange([Number(e.target.value) || 0, priceRange[1]])}
-            placeholder="Min"
-            className="w-full bg-surface border border-surface-border rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-primary"
-          />
-          <span className="text-foreground/40 text-xs">—</span>
-          <input
-            type="number"
-            value={priceRange[1]}
-            onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value) || 0])}
-            placeholder="Max"
-            className="w-full bg-surface border border-surface-border rounded-lg p-2 text-xs font-bold focus:outline-none focus:border-primary"
-          />
-        </div>
-      </div>
-
       {/* Sort */}
       <div>
         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-3 text-primary">Sort By</h4>
@@ -399,20 +335,7 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
                   >
                     ⚡ Online
                   </button>
-                  {hotspots.slice(0, 3).map(hotspot => (
-                    <button
-                      key={hotspot}
-                      onClick={() => setSelectedHotspot(selectedHotspot === hotspot ? '' : hotspot)}
-                      className="px-4 py-2.5 rounded-full text-xs font-black uppercase whitespace-nowrap border-2 transition-all shrink-0"
-                      style={{
-                        backgroundColor: selectedHotspot === hotspot ? theme.energy : 'transparent',
-                        borderColor: theme.energy,
-                        color: selectedHotspot === hotspot ? '#000' : theme.energy,
-                      }}
-                    >
-                      📍 {hotspot}
-                    </button>
-                  ))}
+
                 </div>
               </div>
 
@@ -453,7 +376,6 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
                   category={category.name}
                   vendorName={product.vendor.name || 'Verified Vendor'}
                   stockQuantity={100}
-                  hotspot={product.hotspot}
                   deliveryTime="15m"
                   themeColor={theme.energy}
                   categoryIcon={category.icon || '📦'}
