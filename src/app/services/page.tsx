@@ -15,6 +15,7 @@ import {
   X
 } from 'lucide-react'
 import { getRegions, getTowns, serviceCategories } from '@/lib/data/ghana-locations'
+import { SkeletonGrid } from '@/components/ui/Skeleton'
 
 interface Service {
   id: string
@@ -186,9 +187,7 @@ export default function ServicesPage() {
 
         {/* Results */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-          </div>
+          <SkeletonGrid count={8} />
         ) : services.length === 0 ? (
           <div className="text-center py-20">
             <Tag className="w-12 h-12 mx-auto text-muted-foreground/40 mb-4" />

@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react'
+import { SkeletonDetail } from '@/components/ui/Skeleton'
 
 interface Service {
   id: string
@@ -58,11 +59,7 @@ export default function ServiceDetailPage() {
   }, [id])
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    )
+    return <SkeletonDetail />
   }
 
   if (!service) {

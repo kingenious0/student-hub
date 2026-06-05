@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 
 import SmartFeed from "@/components/marketplace/SmartFeed";
 import GlobalSearch from "@/components/navigation/GlobalSearch";
+import ServicesShowcase from "@/components/services/ServicesShowcase";
 import { Suspense } from "react";
 import * as React from "react";
 import { useScroll, useTransform } from "framer-motion";
@@ -222,6 +223,11 @@ export default function Home() {
            </Suspense>
         </section>
       </main>
+
+      {/* SERVICES SHOWCASE */}
+      <div className="bg-surface/50 border-y border-surface-border">
+        <ServicesShowcase />
+      </div>
 
 
 

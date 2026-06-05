@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import {
@@ -27,6 +27,17 @@ export default function NewServicePage() {
   const [loading, setLoading] = useState(false)
   const [files, setFiles] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const previewUrlsRef = useRef<string[]>([])
+
+  useEffect(() => {
+    const urls = previewUrlsRef.current
+    return () => {
+      urls.forEach((url) => {
+        if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+      })
+    }
+  }, [])
 
   const [form, setForm] = useState({
     title: '',
@@ -65,12 +76,24 @@ export default function NewServicePage() {
     const newFiles = [...files, ...toAdd]
     setFiles(newFiles)
 
-    const newPreviews = toAdd.map((f) => URL.createObjectURL(f))
+    const newPreviews = toAdd.map((f) => {
+      const url = URL.createObjectURL(f)
+      previewUrlsRef.current.push(url)
+      return url
+    })
     setPreviews([...previews, ...newPreviews])
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   const removeImage = (index: number) => {
-    URL.revokeObjectURL(previews[index])
+    const removed = previews[index]
+    if (removed?.startsWith('blob:')) {
+      URL.revokeObjectURL(removed)
+      previewUrlsRef.current = previewUrlsRef.current.filter((u) => u !== removed)
+    }
     setFiles(files.filter((_, i) => i !== index))
     setPreviews(previews.filter((_, i) => i !== index))
   }
@@ -190,6 +213,7 @@ export default function NewServicePage() {
                     Add
                   </span>
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     multiple
