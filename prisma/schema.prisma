@@ -46,6 +46,9 @@ model User {
   vendorStaff       VendorStaff[]
   vendorLocations   VendorLocation[]
 
+  // Services
+  services StudentService[]
+
   // Financials
   balance       Float   @default(0.0)
   walletFrozen  Boolean @default(false) // Emergency freeze by admin
@@ -637,4 +640,47 @@ model DiscountRule {
 
   @@index([isActive])
   @@index([type])
+}
+
+// ─── Service Listing Status ───────────────────────────────────────────────
+enum ServiceListingStatus {
+  ACTIVE
+  INACTIVE
+  FLAGGED
+}
+
+// ─── Student Services Directory ──────────────────────────────────────────
+model StudentService {
+  id            String               @id @default(uuid())
+  title         String
+  description   String
+  price         Float?
+  priceLabel    String?              // "per hour", "fixed", "negotiable"
+
+  contactPhone      String
+  contactWhatsApp   String?
+
+  region        String
+  town          String
+  locationNote  String?
+
+  images        String[]             @default([])
+
+  category      String               // flexible text category
+
+  status        ServiceListingStatus @default(ACTIVE)
+
+  userId        String
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  viewCount     Int                  @default(0)
+
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([region])
+  @@index([category])
+  @@index([createdAt])
 }

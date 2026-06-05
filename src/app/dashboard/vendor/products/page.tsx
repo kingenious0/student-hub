@@ -201,7 +201,7 @@ export default function VendorProductsPage() {
                                 </div>
                                 
                                 <p className="text-sm text-muted-foreground line-clamp-2 mb-3 h-10">
-                                    {product.description || 'No description provided.'}
+                                    {product.description ? product.description.replace(/<[^>]*>/g, '') : 'No description provided.'}
                                 </p>
 
                                 <div className="flex items-center justify-between mt-auto">

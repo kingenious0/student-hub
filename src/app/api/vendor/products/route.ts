@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
             data: {
                 title,
                 description: description || '',
-                price: parseFloat(price),
+                price: Math.round(Number(price) * 100) / 100,
                 categoryId,
                 vendorId: vendor.id,
                 imageUrl: imageUrl || null,
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
                             modifiers: {
                                 create: (g.modifiers || []).map((m: any) => ({
                                     name: m.name,
-                                    priceDiff: parseFloat(m.priceDiff) || 0,
+                                    priceDiff: Math.round(Number(m.priceDiff || 0) * 100) / 100,
                                     isDefault: m.isDefault || false,
                                 })),
                             },

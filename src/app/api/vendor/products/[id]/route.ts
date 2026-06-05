@@ -84,7 +84,7 @@ export async function PATCH(
                 data: {
                     ...(title && { title }),
                     ...(description !== undefined && { description }),
-                    ...(price && { price: parseFloat(price) }),
+                    ...(price !== undefined && { price: Math.round(Number(price) * 100) / 100 }),
                     ...(categoryId && { categoryId }),
                     ...(imageUrl !== undefined && { imageUrl }),
                     ...(images !== undefined && { images }),
@@ -120,7 +120,7 @@ export async function PATCH(
                                 modifiers: {
                                     create: (g.modifiers || []).map((m: any) => ({
                                         name: m.name,
-                                        priceDiff: parseFloat(m.priceDiff) || 0,
+                                        priceDiff: Math.round(Number(m.priceDiff || 0) * 100) / 100,
                                         isDefault: m.isDefault || false,
                                     })),
                                 },

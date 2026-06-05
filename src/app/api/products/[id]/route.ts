@@ -98,7 +98,7 @@ export async function PATCH(
             data: {
                 title: body.title,
                 description: body.description ? sanitizeHtml(body.description) : undefined,
-                price: parseFloat(body.price),
+                price: body.price !== undefined ? Math.round(Number(body.price) * 100) / 100 : undefined,
                 imageUrl: body.imageUrl,
                 hotspot: body.hotspot,
                 categoryId: body.categoryId,

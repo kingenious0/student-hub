@@ -26,7 +26,7 @@ import {
     UserCircleIcon,
     ClockIcon
 } from '@/components/ui/Icons';
-import { Shield, Settings } from 'lucide-react';
+import { Shield, Settings, Tag } from 'lucide-react';
 import { OmniLogo } from '@/components/ui/OmniLogo';
 
 export default function Navbar() {
@@ -230,6 +230,7 @@ export default function Navbar() {
                         <SignedIn>
                             <div className="hidden lg:flex items-center gap-4 mr-2">
                                 <Link href="/" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
+                                <Link href="/services" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Services</Link>
                                 <Link href="/orders" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Orders</Link>
                                 <Link href="/wishlist" className="relative text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">
                                     Wishlist
@@ -391,6 +392,7 @@ export default function Navbar() {
                                             Shop & Save
                                         </h3>
                                         <DrawerLink href="/" icon={<StoreIcon className="w-5 h-5" />} label="Marketplace" setIsOpen={setIsDrawerOpen} active={isActive('/')} />
+                                        <DrawerLink href="/services" icon={<Tag className="w-5 h-5" />} label="Services" setIsOpen={setIsDrawerOpen} active={isActive('/services')} />
                                         <div
                                             onClick={() => {
                                                 setIsDrawerOpen(false);
@@ -408,6 +410,7 @@ export default function Navbar() {
                                             </div>
                                         </div>
                                         <DrawerLink href="/orders" icon={<PackageIcon className="w-5 h-5" />} label="My Orders" setIsOpen={setIsDrawerOpen} active={isActive('/orders')} />
+                                        <DrawerLink href="/dashboard/services" icon={<Tag className="w-5 h-5" />} label="My Services" setIsOpen={setIsDrawerOpen} active={pathname?.startsWith('/dashboard/services')} />
                                         <DrawerLink href="/wishlist" icon={<HeartIcon className="w-5 h-5" />} label="Wishlist" setIsOpen={setIsDrawerOpen} active={isActive('/wishlist')} badge={wishlistCount} />
                                         <DrawerLink href="/security-setup" icon={<Shield className="w-5 h-5 text-blue-500" />} label="OMNI Security" setIsOpen={setIsDrawerOpen} active={isActive('/security-setup')} />
                                         <DrawerLink href="/settings" icon={<Settings className="w-5 h-5" />} label="Settings" setIsOpen={setIsDrawerOpen} active={isActive('/settings')} />
