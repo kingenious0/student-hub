@@ -53,7 +53,7 @@ function processCartItems(
             return { error: `Product not found: ${item.id}`, status: 404 };
         }
 
-        let finalPrice = product.price;
+        let finalPrice = Number(product.price);
         let activeFlashSaleId = null;
 
         if (product.flashSale) {

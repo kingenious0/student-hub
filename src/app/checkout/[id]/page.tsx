@@ -102,7 +102,7 @@ export default async function CheckoutPage({
                         <CheckoutForm
                             productId={product.id}
                             productTitle={product.title}
-                            productPrice={product.price}
+                            productPrice={Number(product.price)}
                             email={studentEmail}
                             isGuest={isGuest}
                             vendorLandmark={product.hotspot || 'Main Campus'}

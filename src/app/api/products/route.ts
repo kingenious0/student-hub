@@ -117,6 +117,7 @@ export async function GET(request: NextRequest) {
             const products = await prisma.product.findMany({ where, include });
             const mapped = products.map(product => ({
                 ...product,
+                price: Number(product.price),
                 rating: product.averageRating ?? 0,
             }));
 
