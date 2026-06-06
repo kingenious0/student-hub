@@ -61,6 +61,9 @@ export async function GET(req: NextRequest) {
             console.log(`[EarningsReconciliation] Vendor ${vendor.id} balance healed from GHS ${vendor.balance} to GHS ${expectedBalance}`);
         }
 
+        // Strip notes from payouts before returning to vendor (internal admin visibility only)
+        const sanitizedPayouts = payouts.map(({ notes, ...rest }) => rest);
+
         return NextResponse.json({
             stats: {
                 balance: currentBalance,
@@ -68,7 +71,7 @@ export async function GET(req: NextRequest) {
                 pendingPayouts,
                 totalWithdrawn,
             },
-            payouts
+            payouts: sanitizedPayouts
         });
 
     } catch (error) {

@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
 
             if (paystackBalance < requestAmount) {
                 const shortfall = requestAmount - paystackBalance;
-                payoutNotes = `Insufficient Paystack balance: ₵${paystackBalance.toFixed(2)} available, ₵${shortfall.toFixed(2)} more needed. Admin must fund Paystack balance.`;
-                console.warn(`[PayoutInstant] Paystack balance ₵${paystackBalance} insufficient for ₵${requestAmount} payout. Queuing as PENDING.`);
+                console.warn(`[PayoutInstant] Paystack balance ₵${paystackBalance} insufficient for ₵${requestAmount} payout (shortfall ₵${shortfall}). Queuing as PENDING.`);
+                payoutNotes = `Insufficient Paystack balance: ₵${paystackBalance.toFixed(2)} available, ₵${shortfall.toFixed(2)} more needed.`;
             }
         } catch (e) {
             console.error(`[PayoutInstant] Failed to check Paystack balance, proceeding with direct transfer:`, e);
