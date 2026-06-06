@@ -182,7 +182,7 @@ export default function CheckoutForm({
     };
 
     return (
-        <div className="glass-strong rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden border-2 border-surface-border/50 hover:border-primary/30 transition-all">
+        <form onSubmit={(e) => { e.preventDefault(); handleCheckout(); }} className="glass-strong rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden border-2 border-surface-border/50 hover:border-primary/30 transition-all">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full animate-pulse-glow"></div>
 
             {/* Guest Info Fields */}
@@ -332,7 +332,7 @@ export default function CheckoutForm({
 
             {/* Pay Button */}
             <button
-                onClick={handleCheckout}
+                type="submit"
                 disabled={isCreatingOrder}
                 className="w-full py-6 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 omni-glow mb-6 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
             >
@@ -348,6 +348,6 @@ export default function CheckoutForm({
                     🔒 Protected by OMNI Escrow Shield
                 </p>
             </div>
-        </div>
+        </form>
     );
 }
