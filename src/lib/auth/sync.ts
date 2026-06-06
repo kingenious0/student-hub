@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db/prisma';
  * Returns the User object from Prisma.
  */
 import { unstable_cache } from 'next/cache';
+import { linkGuestOrdersByPhone } from '@/lib/orders/link-guest-orders';
 
 // Cached user getter to reduce DB hits
 const getCachedUser = unstable_cache(
@@ -62,6 +63,8 @@ export async function ensureUserExists() {
         const rawEmail = clerkUser.emailAddresses?.[0]?.emailAddress || `${clerkUser.username || clerkUser.id}@omni-marketplace.com`;
         const email = rawEmail.trim().toLowerCase();
 
+        const clerkPhone = clerkUser.phoneNumbers?.[0]?.phoneNumber || null;
+
         user = await prisma.user.upsert({
             where: { clerkId: userId },
             update: {}, // No updates if exists, just fetch
@@ -71,6 +74,7 @@ export async function ensureUserExists() {
                 name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Anonymous Student',
                 role: 'STUDENT', // Default role
                 university: 'USTED', // Default to USTED
+                phoneNumber: clerkPhone,
             },
             select: {
                 id: true,
@@ -89,6 +93,14 @@ export async function ensureUserExists() {
                 updatedAt: true,
             }
         });
+
+        // Link any guest orders if the Clerk user has a phone number
+        if (clerkPhone) {
+            const linked = await linkGuestOrdersByPhone(clerkPhone, user.id);
+            if (linked > 0) {
+                console.log(`[Sync] Linked ${linked} guest order(s) to user ${user.id}`);
+            }
+        }
 
         console.log(`✅ Synced new user from Clerk: ${email}`);
     }

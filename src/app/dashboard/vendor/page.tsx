@@ -13,15 +13,18 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns, RecentOrder } from "./columns";
 import QuickAvailability from '@/components/vendor/QuickAvailability';
 import AnalyticsDashboard from '@/components/vendor/AnalyticsDashboard';
+import { toast } from 'sonner';
 
 // Icons (Lucide)
-import { Package, ShoppingCart, DollarSign, Clock, Zap, Plus, Settings, ArrowRight, ChefHat, Users, Timer } from "lucide-react";
+import { Package, ShoppingCart, DollarSign, Clock, Zap, Plus, Settings, ArrowRight, ChefHat, Users, Timer, Share2, Copy } from "lucide-react";
 
 export default function VendorDashboard() {
     const { user, isLoaded } = useUser();
     const { getToken } = useAuth();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [shopName, setShopName] = useState<string | null>(null);
     const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
     const [stats, setStats] = useState({
         totalProducts: 0,
@@ -37,8 +40,22 @@ export default function VendorDashboard() {
         if (isLoaded && user) {
             fetchTier();
             fetchDashboardData();
+            fetchUserProfile();
         }
     }, [isLoaded, user]);
+
+    const fetchUserProfile = async () => {
+        try {
+            const res = await fetch('/api/users/me');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.id) {
+                    setUserId(data.id);
+                    setShopName(data.shopName);
+                }
+            }
+        } catch {}
+    };
 
     const fetchTier = async () => {
         try {
@@ -110,6 +127,49 @@ export default function VendorDashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* Share Your Store Section */}
+            {userId && (
+                <div className="bg-gradient-to-r from-primary/5 to-primary/[0.02] border border-primary/10 rounded-2xl p-6 md:p-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                            <h3 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
+                                <Share2 className="h-5 w-5 text-primary" />
+                                Share Your Store
+                            </h3>
+                            <p className="text-sm text-foreground/60">
+                                Share your public storefront link with students on WhatsApp
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                            <button
+                                onClick={async () => {
+                                    const url = `${window.location.origin}/vendor/${userId}`;
+                                    try {
+                                        await navigator.clipboard.writeText(url);
+                                        toast.success('Store link copied!');
+                                    } catch {
+                                        toast.error('Failed to copy link');
+                                    }
+                                }}
+                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-surface border border-surface-border rounded-xl hover:border-primary/30 text-foreground font-bold text-xs uppercase tracking-wider transition-all"
+                            >
+                                <Copy className="h-4 w-4" />
+                                Copy Link
+                            </button>
+                            <a
+                                href={`https://wa.me/?text=${encodeURIComponent(`🛒 Check out ${shopName || user?.firstName || 'my store'} on OMNI Student Marketplace!\n\nBrowse products and order directly:\n${window.location.origin}/vendor/${userId}\n\n📱 Powered by OMNI`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20"
+                            >
+                                <span className="text-base">📱</span>
+                                Share on WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="space-y-8">
                 {/* Stats Grid */}

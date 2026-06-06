@@ -131,6 +131,9 @@ export default function OnboardingPage() {
                                 placeholder="e.g. 055 123 4567"
                                 required
                             />
+                            <p className="text-[10px] text-amber-500 font-bold mt-1.5">
+                                ⚠️ Use the same number you used for guest checkout to recover your orders
+                            </p>
                         </div>
 
                         {/* Submit Button */}

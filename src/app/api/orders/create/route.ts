@@ -65,7 +65,6 @@ function processCartItems(
             }
         }
 
-        // Add modifier price diffs to final price
         const modifiersTotal = (item.selectedModifiers || []).reduce((sum: number, m: SelectedModifier) => sum + (m.priceDiff || 0), 0);
 
         const processedItem: ProcessedCartItem = {
@@ -121,7 +120,6 @@ async function executeOrderCreationTransaction(
             throw new Error('This promo code has reached its maximum usage limit');
         }
 
-        // Calculate items subtotal
         let itemsSubtotal = 0;
         for (const [vendorId, items] of Object.entries(vendorGroups)) {
             for (const item of items) {
@@ -135,7 +133,6 @@ async function executeOrderCreationTransaction(
             discountAmount = Math.min(coupon.discountValue, itemsSubtotal);
         }
 
-        // Increment usedCount
         await tx.coupon.update({
             where: { id: coupon.id },
             data: { usedCount: { increment: 1 } }
@@ -212,20 +209,49 @@ async function executeOrderCreationTransaction(
     return finalGrandTotal;
 }
 
+async function getOrCreateGuestUser(guestInfo: { name: string; phone: string }): Promise<{ user: any; email: string }> {
+    const guestId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const email = `${guestId}@omni-marketplace.com`;
+
+    const user = await prisma.user.create({
+        data: {
+            clerkId: guestId,
+            email,
+            name: guestInfo.name,
+            phoneNumber: guestInfo.phone,
+            role: 'STUDENT',
+            university: 'USTED',
+            onboarded: true,
+        }
+    });
+
+    return { user, email };
+}
+
 export async function POST(request: NextRequest) {
     try {
-        const student = await getAuthenticatedStudent();
+        const body = await request.json();
+        const { fulfillmentType = 'PICKUP', fulfillmentNote = null, couponCode = null, guestInfo } = body;
+
+        let student = await getAuthenticatedStudent();
+        let isGuestUser = false;
+        let guestEmail = '';
+
         if (!student) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            if (guestInfo && guestInfo.name && guestInfo.phone) {
+                const result = await getOrCreateGuestUser(guestInfo);
+                student = result.user;
+                guestEmail = result.email;
+                isGuestUser = true;
+            } else {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
         }
 
         const studentData = student as any;
-        if (studentData.banned || studentData.walletFrozen) {
+        if (!isGuestUser && (studentData.banned || studentData.walletFrozen)) {
             return NextResponse.json({ error: 'Account restricted' }, { status: 403 });
         }
-
-        const body = await request.json();
-        const { fulfillmentType = 'PICKUP', fulfillmentNote = null, couponCode = null } = body;
 
         let cartItems = [];
         if (body.items && Array.isArray(body.items)) {
@@ -254,24 +280,26 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error }, { status: status || 400 });
         }
 
-        const recentPendingGroup = await prisma.orderGroup.findFirst({
-            where: {
-                studentId: student.id,
-                createdAt: { gt: new Date(Date.now() - 15 * 60 * 1000) },
-                orders: { some: { status: 'PENDING' } }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
-
-        if (recentPendingGroup) {
-            return NextResponse.json({
-                success: true,
-                paystackRef: recentPendingGroup.paystackRef,
-                totalAmount: recentPendingGroup.totalAmount,
-                email: student.email,
-                publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
-                message: 'Resuming existing pending order'
+        if (!isGuestUser) {
+            const recentPendingGroup = await prisma.orderGroup.findFirst({
+                where: {
+                    studentId: student.id,
+                    createdAt: { gt: new Date(Date.now() - 15 * 60 * 1000) },
+                    orders: { some: { status: 'PENDING' } }
+                },
+                orderBy: { createdAt: 'desc' }
             });
+
+            if (recentPendingGroup) {
+                return NextResponse.json({
+                    success: true,
+                    paystackRef: recentPendingGroup.paystackRef,
+                    totalAmount: recentPendingGroup.totalAmount,
+                    email: student.email,
+                    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
+                    message: 'Resuming existing pending order'
+                });
+            }
         }
 
         const paystackRef = `OMNI-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -289,7 +317,6 @@ export async function POST(request: NextRequest) {
             );
         });
 
-        // Send push notifications to vendors
         if (vendorGroups && Object.keys(vendorGroups).length > 0) {
             const vendorIds = Object.keys(vendorGroups);
             const vendorPushSubs = await prisma.pushSubscription.findMany({
@@ -319,21 +346,21 @@ export async function POST(request: NextRequest) {
             success: true,
             paystackRef,
             totalAmount: grandTotal,
-            email: student.email,
+            email: isGuestUser ? guestEmail : student.email,
             publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
         });
 
     } catch (error: any) {
         console.error('Create Order Error:', error);
         const errorMessage = error?.message || 'System Error';
-        
+
         const couponErrors = [
             'Invalid promo code',
             'This promo code is no longer active',
             'This promo code has expired',
             'This promo code has reached its maximum usage limit'
         ];
-        
+
         if (couponErrors.includes(errorMessage)) {
             return NextResponse.json({ error: errorMessage }, { status: 400 });
         }
@@ -341,5 +368,3 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'System Error', details: String(error) }, { status: 500 });
     }
 }
-
-

@@ -14,6 +14,7 @@ interface CheckoutFormProps {
     productTitle: string;
     productPrice: number;
     email: string;
+    isGuest?: boolean;
     vendorLandmark?: string;
     deliveryFee: number;
 }
@@ -23,6 +24,7 @@ export default function CheckoutForm({
     productTitle,
     productPrice,
     email,
+    isGuest = false,
     vendorLandmark,
     deliveryFee
 }: CheckoutFormProps) {
@@ -32,6 +34,8 @@ export default function CheckoutForm({
     const [selectedModifiers, setSelectedModifiers] = useState<SelectedModifier[]>([]);
     const [isCreatingOrder, setIsCreatingOrder] = useState(false);
     const [paystackPublicKey, setPaystackPublicKey] = useState(process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '');
+    const [guestName, setGuestName] = useState('');
+    const [guestPhone, setGuestPhone] = useState('');
 
     // Restore modifiers from sessionStorage (set by Instant Checkout on product page)
     useEffect(() => {
@@ -82,6 +86,8 @@ export default function CheckoutForm({
                         type: 'PAYMENT_SUCCESS',
                         orderId: data.order.id
                     }));
+                } else if (isGuest) {
+                    window.location.href = `/order-success?ref=${reference.reference}&phone=${encodeURIComponent(guestPhone)}`;
                 } else {
                     window.location.href = '/orders?success=true';
                 }
@@ -108,6 +114,17 @@ export default function CheckoutForm({
             return;
         }
 
+        if (isGuest) {
+            if (!guestName.trim()) {
+                toast.error('Please enter your name');
+                return;
+            }
+            if (!guestPhone.trim()) {
+                toast.error('Please enter your phone number');
+                return;
+            }
+        }
+
         setIsCreatingOrder(true);
         try {
             const res = await fetch('/api/orders/create', {
@@ -119,6 +136,12 @@ export default function CheckoutForm({
                     fulfillmentType: fulfillment,
                     fulfillmentNote: fulfillmentNote.trim() || null,
                     selectedModifiers,
+                    ...(isGuest ? {
+                        guestInfo: {
+                            name: guestName.trim(),
+                            phone: guestPhone.trim(),
+                        }
+                    } : {}),
                 }),
             });
             const data = await res.json();
@@ -126,7 +149,7 @@ export default function CheckoutForm({
             if (data.success) {
                 const handler = PaystackPop.setup({
                     key: paystackPublicKey,
-                    email: email,
+                    email: data.email || email,
                     amount: total * 100,
                     currency: 'GHS',
                     ref: data.paystackRef,
@@ -161,6 +184,40 @@ export default function CheckoutForm({
     return (
         <div className="glass-strong rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden border-2 border-surface-border/50 hover:border-primary/30 transition-all">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full animate-pulse-glow"></div>
+
+            {/* Guest Info Fields */}
+            {isGuest && (
+                <div className="space-y-4 mb-8">
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-4">
+                        <p className="text-[9px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">Guest Checkout</p>
+                        <p className="text-[10px] text-foreground/60">Enter your details to place the order. No account needed!</p>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 block">
+                            Your Name
+                        </label>
+                        <input
+                            type="text"
+                            value={guestName}
+                            onChange={(e) => setGuestName(e.target.value)}
+                            placeholder="e.g. John Doe"
+                            className="w-full bg-background border border-surface-border rounded-2xl p-4 font-bold text-xs focus:border-primary focus:outline-none outline-none transition-all placeholder:text-foreground/20 text-foreground"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 block">
+                            Phone Number
+                        </label>
+                        <input
+                            type="tel"
+                            value={guestPhone}
+                            onChange={(e) => setGuestPhone(e.target.value)}
+                            placeholder="e.g. 054 XXX XXXX"
+                            className="w-full bg-background border border-surface-border rounded-2xl p-4 font-bold text-xs focus:border-primary focus:outline-none outline-none transition-all placeholder:text-foreground/20 text-foreground"
+                        />
+                    </div>
+                </div>
+            )}
 
             {/* Fulfillment Protocol Tabs */}
             <div className="bg-background/40 border border-surface-border/50 rounded-2xl p-1 mb-8 flex gap-1 relative z-10">
