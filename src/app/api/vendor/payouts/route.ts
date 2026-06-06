@@ -42,34 +42,54 @@ export async function POST(req: NextRequest) {
         const bankCode = bankCodeMap[network] || 'MTN';
 
         let payoutStatus = 'PENDING';
+        let payoutNotes: string | null = null;
 
+        // Check Paystack balance before attempting transfer
         try {
-            console.log(`[PayoutInstant] Initiating Paystack transfer for ${vendor.id}. MoMo: ${momoNumber}, Net: ${network}`);
-            
-            const { createTransferRecipient, initiateTransfer } = await import('@/lib/payments/paystack');
-            
-            // 1. Create Recipient
-            const recipientCode = await createTransferRecipient(
-                vendor.name || 'OMNI Vendor',
-                momoNumber,
-                bankCode
-            );
-            
-            // 2. Initiate Transfer
-            const transfer = await initiateTransfer(
-                requestAmount,
-                recipientCode,
-                `OMNI Payout to ${vendor.name || 'Vendor'}`
-            );
-            
-            console.log(`[PayoutInstant] Paystack success! Code: ${transfer.transfer_code}, Status: ${transfer.status}`);
-            
-            // If transfer is successfully queued or processed, mark processed!
-            if (transfer.status === 'success' || transfer.status === 'otp' || transfer.status === 'pending') {
-                payoutStatus = 'PROCESSED';
+            const { getBalance } = await import('@/lib/payments/paystack');
+            const balances = await getBalance();
+            const ghs = balances.find(b => b.currency === 'GHS');
+            const paystackBalance = ghs ? ghs.balance : 0;
+
+            if (paystackBalance < requestAmount) {
+                const shortfall = requestAmount - paystackBalance;
+                payoutNotes = `Insufficient Paystack balance: ₵${paystackBalance.toFixed(2)} available, ₵${shortfall.toFixed(2)} more needed. Admin must fund Paystack balance.`;
+                console.warn(`[PayoutInstant] Paystack balance ₵${paystackBalance} insufficient for ₵${requestAmount} payout. Queuing as PENDING.`);
             }
         } catch (e) {
-            console.error(`[PayoutInstant] Paystack instant payout failed, falling back to manual PENDING status:`, e);
+            console.error(`[PayoutInstant] Failed to check Paystack balance, proceeding with direct transfer:`, e);
+        }
+
+        if (!payoutNotes) {
+            try {
+                console.log(`[PayoutInstant] Initiating Paystack transfer for ${vendor.id}. MoMo: ${momoNumber}, Net: ${network}`);
+                
+                const { createTransferRecipient, initiateTransfer } = await import('@/lib/payments/paystack');
+                
+                // 1. Create Recipient
+                const recipientCode = await createTransferRecipient(
+                    vendor.name || 'OMNI Vendor',
+                    momoNumber,
+                    bankCode
+                );
+                
+                // 2. Initiate Transfer
+                const transfer = await initiateTransfer(
+                    requestAmount,
+                    recipientCode,
+                    `OMNI Payout to ${vendor.name || 'Vendor'}`
+                );
+                
+                console.log(`[PayoutInstant] Paystack success! Code: ${transfer.transfer_code}, Status: ${transfer.status}`);
+                
+                // If transfer is successfully queued or processed, mark processed!
+                if (transfer.status === 'success' || transfer.status === 'otp' || transfer.status === 'pending') {
+                    payoutStatus = 'PROCESSED';
+                }
+            } catch (e) {
+                console.error(`[PayoutInstant] Paystack instant payout failed, falling back to manual PENDING status:`, e);
+                payoutNotes = `Paystack transfer failed: ${e.message || 'Unknown error'}. Manual admin intervention required.`;
+            }
         }
 
         // Complete the transaction in the database
@@ -101,7 +121,8 @@ export async function POST(req: NextRequest) {
                         vendorId: vendor.id,
                         momoNumber,
                         network,
-                        status: 'PENDING'
+                        status: 'PENDING',
+                        notes: payoutNotes
                     }
                 }),
                 prisma.user.update({

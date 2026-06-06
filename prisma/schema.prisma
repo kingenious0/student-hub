@@ -106,6 +106,7 @@ model PayoutRequest {
   status     String @default("PENDING") // PENDING, PROCESSED, REJECTED
   momoNumber String
   network    String // MTN, VODA, AT
+  notes      String? // Reason for PENDING, e.g. "Insufficient Paystack balance"
 
   vendorId String
   vendor   User   @relation(fields: [vendorId], references: [id], onDelete: Cascade)

@@ -33,7 +33,25 @@ export async function GET() {
             orderBy: { createdAt: 'desc' }
         });
 
-        return NextResponse.json({ success: true, payouts: pendingPayouts });
+        let paystackBalance = 0;
+        try {
+            const { getBalance } = await import('@/lib/payments/paystack');
+            const balances = await getBalance();
+            const ghs = balances.find(b => b.currency === 'GHS');
+            if (ghs) paystackBalance = ghs.balance;
+        } catch (e) {
+            console.error('[AdminPayouts] Failed to fetch Paystack balance:', e);
+        }
+
+        const totalPendingAmount = pendingPayouts.reduce((sum, p) => sum + p.amount, 0);
+
+        return NextResponse.json({
+            success: true,
+            payouts: pendingPayouts,
+            paystackBalance,
+            totalPendingAmount,
+            shortfall: Math.max(0, totalPendingAmount - paystackBalance)
+        });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch pending payouts' }, { status: 500 });
     }
@@ -68,6 +86,25 @@ export async function POST(request: NextRequest) {
         const { amount, momoNumber, network, vendorId } = payout;
 
         if (action === 'RETRY') {
+            // Check Paystack balance before retrying
+            let paystackBalance = 0;
+            try {
+                const { getBalance } = await import('@/lib/payments/paystack');
+                const balances = await getBalance();
+                const ghs = balances.find(b => b.currency === 'GHS');
+                if (ghs) paystackBalance = ghs.balance;
+            } catch (e) {
+                console.error('[AdminPayoutRetry] Failed to check Paystack balance:', e);
+            }
+
+            if (paystackBalance < amount) {
+                return NextResponse.json({
+                    error: `Insufficient Paystack balance (₵${paystackBalance.toFixed(2)}) to process ₵${amount.toFixed(2)} payout. Fund your Paystack balance and try again.`,
+                    paystackBalance,
+                    shortfall: (amount - paystackBalance).toFixed(2)
+                }, { status: 400 });
+            }
+
             // Map Ghana MoMo networks to standard Paystack bank codes
             const bankCodeMap: Record<string, string> = {
                 'MTN': 'MTN',

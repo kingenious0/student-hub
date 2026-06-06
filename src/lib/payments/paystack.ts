@@ -316,6 +316,32 @@ export async function createTransferRecipient(
 /**
  * Initiate an instant Transfer via Paystack (Mobile Money / Bank)
  */
+/**
+ * Fetch Paystack account balance
+ * Returns the GHS balance available for transfers
+ */
+export async function getBalance(): Promise<{ currency: string; balance: number }[]> {
+  const secretKey = await getPaystackSecretKey();
+  const response = await fetch(`${PAYSTACK_BASE_URL}/balance`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`Paystack balance error: ${error.message || response.statusText}`);
+  }
+
+  const result = await response.json();
+  // result.data is an array of { currency: "GHS", balance: number } in kobo/pesewas
+  return (result.data || []).map((b: any) => ({
+    currency: b.currency,
+    balance: b.balance / 100, // convert from pesewas to GHS
+  }));
+}
+
 export async function initiateTransfer(
     amountGHS: number,
     recipientCode: string,

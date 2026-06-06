@@ -21,6 +21,9 @@ export default function SystemControlsPage() {
     const [message, setMessage] = useState('');
     const [resetting, setResetting] = useState(false);
     const [pendingPayouts, setPendingPayouts] = useState<any[]>([]);
+    const [paystackBalance, setPaystackBalance] = useState<number>(0);
+    const [totalPendingAmount, setTotalPendingAmount] = useState<number>(0);
+    const [shortfall, setShortfall] = useState<number>(0);
     const [processingPayoutId, setProcessingPayoutId] = useState<string | null>(null);
 
     const fetchPendingPayouts = async () => {
@@ -29,6 +32,9 @@ export default function SystemControlsPage() {
             const data = await res.json();
             if (data.success) {
                 setPendingPayouts(data.payouts || []);
+                setPaystackBalance(data.paystackBalance ?? 0);
+                setTotalPendingAmount(data.totalPendingAmount ?? 0);
+                setShortfall(data.shortfall ?? 0);
             }
         } catch (error) {
             console.error('Failed to fetch pending payouts');
@@ -322,6 +328,31 @@ export default function SystemControlsPage() {
                             </span>
                         </div>
 
+                        {/* Paystack Balance Summary */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="p-4 bg-background/30 rounded-2xl border border-surface-border">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-foreground/40">Paystack Balance</p>
+                                <p className={`text-2xl font-black mt-1 ${paystackBalance >= totalPendingAmount ? 'text-[#39FF14]' : 'text-yellow-500'}`}>
+                                    ₵{paystackBalance.toFixed(2)}
+                                </p>
+                            </div>
+                            <div className="p-4 bg-background/30 rounded-2xl border border-surface-border">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-foreground/40">Total Pending Payouts</p>
+                                <p className="text-2xl font-black mt-1 text-foreground">₵{totalPendingAmount.toFixed(2)}</p>
+                            </div>
+                            <div className={`p-4 rounded-2xl border ${shortfall > 0 ? 'bg-red-950/20 border-red-500/25' : 'bg-background/30 border-surface-border'}`}>
+                                <p className="text-[9px] font-black uppercase tracking-wider text-foreground/40">Shortfall to Fund</p>
+                                <p className={`text-2xl font-black mt-1 ${shortfall > 0 ? 'text-red-500' : 'text-[#39FF14]'}`}>
+                                    {shortfall > 0 ? `₵${shortfall.toFixed(2)}` : 'None'}
+                                </p>
+                                {shortfall > 0 && (
+                                    <p className="text-[8px] text-red-400/70 font-black uppercase tracking-wider mt-1">
+                                        Fund Paystack balance to process all pending withdrawals
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
                         {pendingPayouts.length === 0 ? (
                             <div className="text-center py-10 space-y-3 bg-background/25 rounded-3xl border border-dashed border-surface-border">
                                 <span className="text-4xl">🛡️</span>
@@ -341,6 +372,11 @@ export default function SystemControlsPage() {
                                                 <p className="text-[10px] font-mono text-foreground/40 mt-1">
                                                     ID: #{payout.id.slice(0, 8)} • Phone: {payout.momoNumber} ({payout.network})
                                                 </p>
+                                                {payout.notes && (
+                                                    <p className="text-[9px] text-yellow-500/80 font-black uppercase tracking-wider mt-1.5">
+                                                        ⚠ {payout.notes}
+                                                    </p>
+                                                )}
                                             </div>
                                             <div className="text-right">
                                                 <span className="text-2xl font-black text-foreground">₵{payout.amount.toFixed(2)}</span>
