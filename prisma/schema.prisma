@@ -254,6 +254,31 @@ model WishlistItem {
   @@index([productId])
 }
 
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // ORDER_CREATED, ORDER_READY, ORDER_COMPLETED, PAYMENT_CONFIRMED, etc.
+  title     String
+  body      String?
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+}
+
+model DevicePushToken {
+  id        String   @id @default(uuid())
+  userId    String
+  pushToken String   @unique
+  platform  String   @default("unknown") // ios, android, web
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
 model PushSubscription {
   id        String   @id @default(uuid())
   userId    String

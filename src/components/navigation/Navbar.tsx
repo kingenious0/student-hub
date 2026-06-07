@@ -26,7 +26,7 @@ import {
     UserCircleIcon,
     ClockIcon
 } from '@/components/ui/Icons';
-import { Shield, Settings, Tag } from 'lucide-react';
+import { Shield, Settings, Tag, Bell } from 'lucide-react';
 import { OmniLogo } from '@/components/ui/OmniLogo';
 
 export default function Navbar() {
@@ -37,6 +37,7 @@ export default function Navbar() {
     const wishlistCount = useWishlistStore((state) => state.items.length);
     const [mounted, setMounted] = useState(false);
     const [pendingOrderCount, setPendingOrderCount] = useState(0);
+    const [notificationCount, setNotificationCount] = useState(0);
 
     useEffect(() => {
         setMounted(true);
@@ -113,6 +114,23 @@ export default function Navbar() {
         const tickerInterval = setInterval(fetchTicker, 3000);
 
         return () => clearInterval(tickerInterval);
+    }, [clerkLoaded, user]);
+
+    // Fetch notification badge count
+    useEffect(() => {
+        if (!clerkLoaded || !user) return;
+        const fetchNotifCount = async () => {
+            try {
+                const res = await fetch('/api/notifications/unread');
+                if (res.ok) {
+                    const data = await res.json();
+                    setNotificationCount(data.count || 0);
+                }
+            } catch {}
+        };
+        fetchNotifCount();
+        const interval = setInterval(fetchNotifCount, 20000);
+        return () => clearInterval(interval);
     }, [clerkLoaded, user]);
 
     // Poll vendor pending order count (separate effect to avoid re-fetching dbUser)
@@ -285,6 +303,18 @@ export default function Navbar() {
                                     </Link>
                                 )}
                             </div>
+
+                            <Link
+                                href="/notifications"
+                                className="relative p-3 text-foreground hover:text-primary transition-colors group cursor-pointer bg-transparent border-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                            >
+                                <Bell className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                {mounted && notificationCount > 0 && (
+                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-background shadow-sm">
+                                        <span className="text-[10px] font-black text-white">{notificationCount > 99 ? '99+' : notificationCount}</span>
+                                    </div>
+                                )}
+                            </Link>
 
                             <button
                                 onClick={() => setCartDrawerOpen(true)}

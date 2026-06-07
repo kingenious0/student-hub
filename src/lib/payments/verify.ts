@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
 import { sendOrderConfirmation, sendVendorNewOrderAlert } from '@/lib/email';
+import { createNotification } from '@/lib/notifications/badge';
 
 export async function confirmOrderGroupPayment(reference: string) {
     console.log(`[PaymentVerifyHelper] Processing payment for ref: ${reference}`);
@@ -85,7 +86,7 @@ export async function confirmOrderGroupPayment(reference: string) {
                 });
             }
 
-            // Send SMS Confirmation
+            // Send SMS Confirmation with Release Keys
             if (orderGroup.student.phoneNumber) {
                 const studentName = orderGroup.student.name || 'Student';
                 const totalAmount = orderGroup.totalAmount.toFixed(2);
@@ -98,8 +99,22 @@ export async function confirmOrderGroupPayment(reference: string) {
 
                 const studentMsg = `OMNI PAY: Hello ${studentName}, payment of ₵${totalAmount} is confirmed! 🛡️\nRelease Keys:\n${keyLines}\nShare this key with the vendor ONLY when you receive your items.`;
 
-                sendSMS(orderGroup.student.phoneNumber, studentMsg).then(res => {
-                    console.log('[SMS-NOTIFY] Student SMS Sent:', res);
+                const studentSmsRes = await sendSMS(orderGroup.student.phoneNumber, studentMsg);
+                if (!studentSmsRes.success) {
+                    console.error('[SMS-NOTIFY] Student SMS Failed:', studentSmsRes.error);
+                } else {
+                    console.log('[SMS-NOTIFY] Student SMS Sent successfully');
+                }
+            }
+
+            // In-app notification for student
+            if (orderGroup.student) {
+                await createNotification({
+                    userId: orderGroup.student.id,
+                    type: 'PAYMENT_CONFIRMED',
+                    title: '✅ Payment Confirmed',
+                    body: `₵${orderGroup.totalAmount.toFixed(2)} paid. Release keys sent via SMS.`,
+                    link: '/orders',
                 });
             }
         }
@@ -114,6 +129,15 @@ export async function confirmOrderGroupPayment(reference: string) {
                     });
                 }
 
+                // In-app notification for vendor
+                await createNotification({
+                    userId: o.vendor.id,
+                    type: 'ORDER_PAID',
+                    title: '💰 New Paid Order!',
+                    body: `${o.items.map(i => `${i.quantity}x ${(i.productSnapshot as any)?.title || i.product?.title || 'Item'}`).join(', ')} — ₵${o.amount.toFixed(2)}`,
+                    link: '/dashboard/vendor',
+                });
+
                 // Send SMS Notification
                 if (o.vendor.phoneNumber) {
                     const vendorPhone = o.vendor.phoneNumber;
@@ -121,11 +145,14 @@ export async function confirmOrderGroupPayment(reference: string) {
                     const itemsSummary = o.items.map(i => `${i.quantity}x ${(i.productSnapshot as any)?.title || i.product?.title || 'Item'}`).join(', ');
                     const amountStr = o.amount.toFixed(2);
 
-                    const vendorMsg = `OMNI ORDER: Hello ${vendorName}, you have a new order! 🔔\nItems: ${itemsSummary}\nTotal: ₵${amountStr}\nFulfillment: ${o.fulfillmentType}\nOpen the OMNI Dashboard to manage and fulfill.`;
+                    const vendorMsg = `OMNI ORDER: Hello ${vendorName}, you have a new order! 🔔\nItems: ${itemsSummary}\nTotal: ₵${amountStr}\nFulfillment: ${o.fulfillmentType}\nOpen the OMNI app to manage and fulfill.`;
 
-                    sendSMS(vendorPhone, vendorMsg).then(res => {
-                        console.log(`[SMS-NOTIFY] Vendor (${vendorName}) SMS Sent:`, res);
-                    });
+                    const vendorSmsRes = await sendSMS(vendorPhone, vendorMsg);
+                    if (!vendorSmsRes.success) {
+                        console.error(`[SMS-NOTIFY] Vendor (${vendorName}) SMS Failed:`, vendorSmsRes.error);
+                    } else {
+                        console.log(`[SMS-NOTIFY] Vendor (${vendorName}) SMS Sent successfully`);
+                    }
                 }
             }
         }

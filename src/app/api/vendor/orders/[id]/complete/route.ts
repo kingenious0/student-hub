@@ -102,7 +102,7 @@ export async function POST(
                     )
                 )
             );
-            const expired = results.filter(r => r.expired).map(r => r.endpoint);
+            const expired = results.filter(r => r.expired).map(r => r.endpoint).filter(Boolean) as string[];
             if (expired.length > 0) {
                 await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: expired } } });
             }

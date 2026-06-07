@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { ensureUserExists } from '@/lib/auth/sync';
 import { sendPushNotification } from '@/lib/notifications/push';
+import { sendSMS } from '@/lib/sms/wigal';
 
 interface SelectedModifier {
   groupName: string;
@@ -319,6 +320,12 @@ export async function POST(request: NextRequest) {
 
         if (vendorGroups && Object.keys(vendorGroups).length > 0) {
             const vendorIds = Object.keys(vendorGroups);
+            const vendors = await prisma.user.findMany({
+                where: { id: { in: vendorIds } },
+                select: { id: true, phoneNumber: true, shopName: true, name: true }
+            });
+
+            // Push notifications
             const vendorPushSubs = await prisma.pushSubscription.findMany({
                 where: { userId: { in: vendorIds } }
             });
@@ -335,9 +342,34 @@ export async function POST(request: NextRequest) {
                         )
                     )
                 );
-                const expired = results.filter(r => r.expired).map(r => r.endpoint);
+                const expired = results.filter(r => r.expired).map(r => r.endpoint).filter(Boolean) as string[];
                 if (expired.length > 0) {
                     await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: expired } } });
+                }
+            }
+
+            // SMS + In-App Notifications for vendors
+            for (const vendor of vendors) {
+                const vendorName = vendor.shopName || vendor.name || 'Vendor';
+                const vendorItems = vendorGroups[vendor.id] || [];
+                const itemsSummary = vendorItems.map(i => `${i.quantity}x ${i.title}`).join(', ');
+
+                // In-app notification
+                const { createNotification } = await import('@/lib/notifications/badge');
+                await createNotification({
+                    userId: vendor.id,
+                    type: 'ORDER_CREATED',
+                    title: '🛒 New Order Pending Payment',
+                    body: `${itemsSummary}`,
+                    link: '/dashboard/vendor',
+                });
+
+                // SMS
+                if (vendor.phoneNumber) {
+                    const msg = `OMNI: Hello ${vendorName}, a new order is pending payment!\nItems: ${itemsSummary}\nOpen your OMNI app to check and prepare.`;
+                    sendSMS(vendor.phoneNumber, msg).then(res => {
+                        console.log(`[SMS-ORDER-CREATE] Vendor (${vendorName}) SMS:`, res);
+                    });
                 }
             }
         }
