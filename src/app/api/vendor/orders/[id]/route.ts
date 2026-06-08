@@ -85,9 +85,13 @@ export async function PATCH(
                 const itemTitle = primaryItem ? primaryItem.product.title : 'Details';
                 const displayTitle = order.items.length > 1 ? `${itemTitle} +${order.items.length - 1}` : itemTitle;
 
+                const isPickup = order.fulfillmentType === 'PICKUP';
+
                 const msg = targetStatus === 'COMPLETED'
                     ? `OMNI: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready and completed! Enjoy your meal.`
-                    : `OMNI: Your order for ${displayTitle} is marked READY at ${vendor.shopName || 'Vendor'}. Runners are being notified.`;
+                    : isPickup
+                        ? `OMNI: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready for pickup! Please go to the vendor's location to collect it.`
+                        : `OMNI: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready! Someone will bring it to you.`;
                 await sendSMS(order.student.phoneNumber, msg);
             }
         }

@@ -20,13 +20,19 @@ export default function VendorLayout({
     const { user } = useUser();
     const omniToken = searchParams?.get('__omni_token');
     const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
+    const [kdsEnabled, setKdsEnabled] = useState(false);
     const [pendingOrderCount, setPendingOrderCount] = useState(0);
 
     useEffect(() => {
         if (!user) return;
-        fetch('/api/vendor/tier')
-            .then(r => r.json())
-            .then(d => setVendorTier(d.tier))
+        Promise.all([
+            fetch('/api/vendor/tier').then(r => r.json()),
+            fetch('/api/vendor/kds-access').then(r => r.json()),
+        ])
+            .then(([tierData, kdsData]) => {
+                setVendorTier(tierData.tier);
+                setKdsEnabled(kdsData.kdsEnabled);
+            })
             .catch(() => {});
     }, [user]);
 
@@ -50,7 +56,7 @@ export default function VendorLayout({
     // Helper to preserve auth token in navigation
     const getHref = (path: string) => omniToken ? `${path}?__omni_token=${omniToken}` : path;
     const isActive = (path: string) => pathname === path;
-    const canKDS = vendorTier !== 'GOODS';
+    const canKDS = vendorTier !== 'GOODS' && kdsEnabled;
     const canScan = vendorTier !== 'FOOD';
     const typeLabel = vendorTier === 'FOOD' ? 'Food Terminal' : vendorTier === 'GOODS' ? 'Shop Terminal' : 'Vendor Terminal';
 

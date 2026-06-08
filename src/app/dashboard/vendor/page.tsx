@@ -26,6 +26,7 @@ export default function VendorDashboard() {
     const [userId, setUserId] = useState<string | null>(null);
     const [shopName, setShopName] = useState<string | null>(null);
     const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
+    const [kdsEnabled, setKdsEnabled] = useState(false);
     const [stats, setStats] = useState({
         totalProducts: 0,
         totalOrders: 0,
@@ -59,10 +60,17 @@ export default function VendorDashboard() {
 
     const fetchTier = async () => {
         try {
-            const res = await fetch('/api/vendor/tier');
-            if (res.ok) {
-                const d = await res.json();
+            const [tierRes, kdsRes] = await Promise.all([
+                fetch('/api/vendor/tier'),
+                fetch('/api/vendor/kds-access'),
+            ]);
+            if (tierRes.ok) {
+                const d = await tierRes.json();
                 setVendorTier(d.tier);
+            }
+            if (kdsRes.ok) {
+                const d = await kdsRes.json();
+                setKdsEnabled(d.kdsEnabled);
             }
         } catch { }
     };
@@ -231,7 +239,7 @@ export default function VendorDashboard() {
 
                         {/* Quick Actions — Type-Specific */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                            {!isGoods && <Link href="/dashboard/vendor/kds" className="block col-span-1">
+                            {!isGoods && kdsEnabled && <Link href="/dashboard/vendor/kds" className="block col-span-1">
                                 <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 border-none text-white hover:scale-[1.02] transition-transform cursor-pointer h-full shadow-lg">
                                     <CardHeader>
                                         <ChefHat className="h-8 w-8 mb-2 text-white" />

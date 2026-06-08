@@ -161,5 +161,6 @@ export const serviceCategories = [
   "Catering",
   "Laundry",
   "Shopping",
+  "Food & Meals",
   "Other"
 ] as const

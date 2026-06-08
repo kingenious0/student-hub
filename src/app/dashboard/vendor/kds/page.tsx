@@ -39,10 +39,12 @@ export default function KDSPage() {
       } catch { /* ignore */ }
     }
 
-    fetch('/api/vendor/tier')
-      .then(r => r.json())
-      .then(d => {
-        if (d.tier === 'GOODS') {
+    Promise.all([
+      fetch('/api/vendor/tier').then(r => r.json()),
+      fetch('/api/vendor/kds-access').then(r => r.json()),
+    ])
+      .then(([tierData, kdsData]) => {
+        if (tierData.tier === 'GOODS' || !kdsData.kdsEnabled) {
           router.replace('/dashboard/vendor');
         } else {
           setAllowed(true);

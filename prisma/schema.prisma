@@ -22,6 +22,7 @@ model User {
   vendorStatus      VendorStatus @default(NOT_APPLICABLE)
   vendorType        VendorType?
   isAcceptingOrders Boolean      @default(true)
+  kdsEnabled        Boolean      @default(false)
   phoneNumber       String?
 
   // Location tracking (hotspot-based)
