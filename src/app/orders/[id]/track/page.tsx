@@ -14,6 +14,7 @@ import {
     MapPin
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -23,9 +24,12 @@ interface Order {
     id: string;
     status: string;
     createdAt: string;
-    pickupCode: string | null;
+    releaseKey: string | null;
+    fulfillmentType: 'PICKUP' | 'DELIVERY';
+    fulfillmentNote: string | null;
     items: Array<{
         product: {
+            id: string;
             title: string;
             imageUrl: string | null;
             price: number;
@@ -34,22 +38,20 @@ interface Order {
     }>;
     vendor: {
         name: string;
+        shopName: string | null;
+        phoneNumber: string | null;
     };
-    runner?: {
-        name: string;
-    };
-    total: number;
+    amount: number;
 }
 
 const STEPS = [
-    { id: 'PAID', label: 'Order Confirmed', icon: Package, description: 'We have received your order.' },
+    { id: 'PAID', label: 'Order Confirmed', icon: Package, description: 'Payment received.' },
     { id: 'PREPARING', label: 'Preparing', icon: ChefHat, description: 'Vendor is preparing your items.' },
-    { id: 'READY', label: 'Ready for Pickup', icon: MapPin, description: 'Your order is ready for pickup.' },
-    { id: 'PICKED_UP', label: 'On the Way', icon: Truck, description: 'Runner has picked up your order.' },
-    { id: 'COMPLETED', label: 'Delivered', icon: Home, description: 'Enjoy your purchase!' },
+    { id: 'READY', label: 'Ready for Handoff', icon: MapPin, description: 'Awaiting pickup or direct vendor drop-off.' },
+    { id: 'COMPLETED', label: 'Completed', icon: Home, description: 'Handoff confirmed. Enjoy!' },
 ];
 
-const STATUS_ORDER = ['PENDING', 'PAID', 'PREPARING', 'READY', 'PICKED_UP', 'COMPLETED'];
+const STATUS_ORDER = ['PENDING', 'PAID', 'PREPARING', 'READY', 'COMPLETED'];
 
 export default function OrderTrackingPage({ params }: { params: { id: string } }) {
     const router = useRouter();
@@ -60,8 +62,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                // Unwrap params (Next.js 15 requirement, though usually sync in client components but good practice)
-                const { id } = await params; // Just to be safe if it's a promise in future
+                const { id } = await params;
                 const res = await fetch(`/api/orders/${id}`);
                 if (!res.ok) throw new Error('Failed to load order');
                 const data = await res.json();
@@ -72,7 +73,20 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                 setLoading(false);
             }
         };
+
         fetchOrder();
+
+        const interval = setInterval(fetchOrder, 10000);
+
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') fetchOrder();
+        };
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener('visibilitychange', handleVisibility);
+        };
     }, [params]);
 
     if (loading) return (
@@ -124,7 +138,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                 <Card>
                     <CardHeader>
                         <CardTitle>Order Status</CardTitle>
-                        <CardDescription>Estimated delivery time depends on runner availability.</CardDescription>
+                        <CardDescription>Estimated delivery time depends on vendor preparation.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isCancelled ? (
@@ -181,8 +195,8 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                             </div>
                             <Separator />
                             <div className="flex justify-between font-bold">
-                                <span>Total</span>
-                                <span>₵{order.items.reduce((acc, item) => acc + (item.product.price * item.quantity), 0).toFixed(2)}</span>
+                                <span>Total Paid</span>
+                                <span>₵{order.amount.toFixed(2)}</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -190,32 +204,99 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                     {/* Delivery Info */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">Delivery Info</CardTitle>
+                            <CardTitle className="text-base">Handoff Details</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Vendor</span>
-                                <span className="font-medium">{order.vendor.name}</span>
+                                <span className="text-muted-foreground">Vendor Shop</span>
+                                <span className="font-medium">{order.vendor.shopName || order.vendor.name}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-muted-foreground">Runner</span>
-                                <span className="font-medium">{order.runner ? order.runner.name : 'Searching...'}</span>
+                                <span className="text-muted-foreground">Fulfillment</span>
+                                <span className="font-bold text-xs uppercase tracking-wider text-primary animate-pulse-glow">
+                                    {order.fulfillmentType === 'DELIVERY' ? '🚚 Direct Delivery' : '📍 Self-Pickup'}
+                                </span>
                             </div>
-                            {order.pickupCode && (
-                                <div className="mt-4 p-4 bg-muted rounded-lg text-center">
-                                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Pickup Code</p>
-                                    <p className="text-2xl font-mono font-black tracking-widest">{order.pickupCode}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">Show this to the runner upon delivery.</p>
+
+                            {order.fulfillmentNote && (
+                                <div className="p-3 bg-foreground/5 rounded-xl border border-surface-border/50 text-xs">
+                                    <span className="font-bold text-[9px] uppercase tracking-wider text-foreground/45 block mb-1">Fulfillment Note</span>
+                                    <p className="font-semibold text-foreground/75 leading-relaxed">{order.fulfillmentNote}</p>
+                                </div>
+                            )}
+
+                            {order.vendor.phoneNumber && (
+                                <div className="grid grid-cols-2 gap-3 pt-2">
+                                    <a
+                                        href={`tel:${order.vendor.phoneNumber}`}
+                                        className="py-3 px-4 bg-background border border-surface-border rounded-2xl text-[10px] font-black uppercase tracking-wider text-foreground hover:bg-foreground/5 transition-all flex items-center justify-center gap-1.5"
+                                    >
+                                        <svg className="w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24">
+                                            <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.57a1 1 0 00-1.01.24l-2.2 2.2a15.09 15.09 0 01-6.59-6.59l2.2-2.2a1 1 0 00.24-1.01 11.4 11.4 0 01-.57-3.53A1 1 0 0011 3H4a1 1 0 00-1 1 17 17 0 0017 17 1 1 0 001 -1v-7a1 1 0 00-1-1z" />
+                                        </svg>
+                                        Call Vendor
+                                    </a>
+                                    <a
+                                        href={`https://wa.me/${order.vendor.phoneNumber.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(order.vendor.shopName || 'Vendor')},%20I'm%20coordinating%20my%20order%20%23${order.id.slice(-6).toUpperCase()}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 border border-transparent"
+                                    >
+                                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                            <path d="M12.031 2c-5.514 0-10 4.486-10 10 0 1.968.57 3.805 1.558 5.359l-1.558 5.641 5.812-1.523c1.472.859 3.178 1.354 4.99 1.354 5.514 0 10-4.486 10-10s-4.486-10-10-10zm0 18c-1.621 0-3.134-.482-4.421-1.298l-.317-.197-3.277.859.882-3.189-.228-.363c-.888-1.421-1.401-3.109-1.401-4.912 0-4.963 4.037-9 9-9s9 4.037 9 9-4.037 9-9 9zm4.646-6.425c-.254-.127-1.503-.742-1.737-.825-.233-.085-.403-.127-.573.127-.17.254-.658.825-.807.994-.148.17-.297.191-.551.064-.254-.127-1.071-.395-2.04-1.26-.754-.672-1.263-1.502-1.411-1.756-.148-.254-.016-.392.111-.518.114-.114.254-.297.381-.446.127-.148.17-.254.254-.424.085-.17.042-.318-.021-.446-.064-.127-.573-1.379-.785-1.887-.207-.5-.435-.433-.594-.442-.154-.008-.33-.008-.507-.008-.178 0-.467.067-.711.332-.244.265-.933.912-.933 2.226 0 1.314.954 2.585 1.087 2.76.133.175 1.879 2.87 4.55 4.024.636.275 1.132.439 1.52.562.639.203 1.22.175 1.679.106.512-.076 1.503-.615 1.716-1.21.213-.595.213-1.104.148-1.21-.063-.105-.233-.148-.487-.275z" />
+                                        </svg>
+                                        WhatsApp
+                                    </a>
+                                </div>
+                            )}
+
+                            {order.releaseKey && order.status !== 'COMPLETED' && (
+                                <div className="mt-4 p-5 bg-primary/5 rounded-2xl text-center border border-primary/10 relative overflow-hidden animate-pulse-glow">
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.25em] mb-2">Secure Release Key</p>
+                                    <p className="text-3xl font-mono font-black tracking-[0.3em] text-foreground pl-2">{order.releaseKey}</p>
+                                    <p className="text-[9px] text-foreground/40 mt-3 font-bold uppercase tracking-wider leading-relaxed">
+                                        Give this 6-digit key to the vendor when you receive your package.
+                                    </p>
                                 </div>
                             )}
                         </CardContent>
                     </Card>
+
+                    {order.status === 'COMPLETED' && order.items.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-base">Rate Your Experience</CardTitle>
+                                <CardDescription>Let others know what you think about these items.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {order.items.map((item, idx) => (
+                                    <Link
+                                        key={idx}
+                                        href={`/products/${item.product.id}`}
+                                        className="flex items-center justify-between p-3 rounded-xl hover:bg-surface/50 transition-all group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-surface overflow-hidden flex-shrink-0">
+                                                {item.product.imageUrl ? (
+                                                    <img src={item.product.imageUrl} alt={item.product.title} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-foreground/20 text-xs font-black">?</div>
+                                                )}
+                                            </div>
+                                            <span className="text-sm font-bold text-foreground/80">{item.product.title} ×{item.quantity}</span>
+                                        </div>
+                                        <span className="text-xs font-black text-primary uppercase tracking-wider group-hover:underline">Write Review →</span>
+                                    </Link>
+                                ))}
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
 
-            {/* PraiseTech Signature */}
+            {/* OMNI Signature */}
             <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
-                <p>Designed by PraiseTech • github/praisetechzw</p>
+                <p>© 2026 OMNI Student Marketplace • All Rights Reserved</p>
             </div>
         </div>
     );

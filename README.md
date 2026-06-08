@@ -1,10 +1,10 @@
 # OMNI Student Hub
 
-OMNI Student Hub is a comprehensive campus marketplace, last-mile logistics engine, and vendor engagement platform. It connects student buyers, campus vendors, and student delivery runners in a unified digital economy, secured by a custom escrow payment verification system.
+OMNI Student Hub is a comprehensive campus marketplace and vendor engagement platform. It connects student buyers and campus vendors in a unified digital economy, secured by a custom escrow payment verification system.
 
 The repository is organized as a decoupled monorepo containing:
 * **`student-hub/`**: Next.js App Router API server, merchant portals, and administrative tooling.
-* **`student-mobile/`**: React Native (Expo SDK 54) mobile app targeting students and delivery runners.
+* **`student-mobile/`**: React Native (Expo SDK 54) mobile app targeting students.
 
 ---
 
@@ -31,7 +31,7 @@ The repository is organized as a decoupled monorepo containing:
    * Eliminates student-to-student peer transactional risk.
    * Payments made via Paystack checkout are placed in a database-secured `HELD` state.
    * The buyer receives an AES-256 encrypted QR code payload containing transaction tokens.
-   * Scan verification decrypts the payload, completing the order, releasing funds to the vendor, and awarding delivery fees and XP to the runner in a single database transaction.
+   * Scan verification decrypts the payload, completing the order and releasing funds to the vendor in a single database transaction.
 
 3. **Logical Geolocation ("Flash-Match" Algorithm)**
    * Avoids heavy background battery drain and browser GPS tracking prompts.
@@ -56,7 +56,7 @@ student-hub/
 ├── public/                  # Static media, custom models (face-api weights)
 └── src/
     ├── app/                 # Next.js page routes, static views, and API endpoints
-    │   ├── api/             # REST routing layer (security, runner, payments, stories)
+    │   ├── api/             # REST routing layer (security, payments, stories)
     │   └── dashboard/       # Vendor, Admin, and Impersonation control centers
     ├── components/          # Reusable UI systems (theme, notifications, maps, story players)
     ├── context/             # React providers (Global Security, Themes, Queries)

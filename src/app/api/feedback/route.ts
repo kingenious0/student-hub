@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { isAuthorizedAdmin } from '@/lib/auth/admin';
+import { sanitizeInput } from '@/lib/security/validation';
 
 export async function POST(request: NextRequest) {
     try {
@@ -14,11 +15,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Message required' }, { status: 400 });
         }
 
+        const sanitizedUserName = sanitizeInput(userName || 'Anonymous Tester');
+        const sanitizedContent = sanitizeInput(content);
+
         const feedback = await prisma.feedback.create({
             data: {
-                userName: userName || 'Anonymous Tester',
+                userName: sanitizedUserName,
                 userId: userId || null,
-                content: content,
+                content: sanitizedContent,
                 rating: rating ? parseInt(rating) : undefined,
                 status: 'OPEN'
             }

@@ -79,14 +79,6 @@ export async function POST(
             data: statusUpdate,
         });
 
-        // If a runner was assigned, free them up
-        if (order.runnerId) {
-            await prisma.user.update({
-                where: { id: order.runnerId },
-                data: { runnerStatus: 'ONLINE' },
-            });
-        }
-
         return NextResponse.json({
             success: true,
             message: order.escrowStatus === 'HELD' ? 'Order cancelled and funds refunded to escrow.' : 'Order cleared successfully.',

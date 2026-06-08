@@ -1,11 +1,12 @@
 // src/app/search/page.tsx
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import ProductCard from '../../components/marketplace/ProductCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SearchIcon, CloseIcon } from '@/components/ui/Icons';
+import EnhancedProductCard from '@/components/marketplace/EnhancedProductCard';
+import { useCartStore } from '@/lib/store/cart';
 import Link from 'next/link';
 
 function SearchResults() {
@@ -16,6 +17,19 @@ function SearchResults() {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [visibleCount, setVisibleCount] = useState(12);
+    const addToCart = useCartStore((s) => s.addToCart);
+
+    const handleAddToCart = useCallback((product: any) => (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      addToCart({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        vendor: product.vendor,
+      });
+    }, [addToCart]);
 
     useEffect(() => {
         if (initialQuery) {
@@ -96,7 +110,22 @@ function SearchResults() {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: idx * 0.05 }}
                                     >
-                                        <ProductCard product={product} />
+                                        <EnhancedProductCard
+                                            id={product.id}
+                                            title={product.title}
+                                            price={product.price}
+                                            imageUrl={product.imageUrl}
+                                            category={product.category?.name}
+                                            vendorName={product.vendor?.name || 'Vendor'}
+                                            stockQuantity={product.stockQuantity}
+                                            averageRating={product.averageRating || undefined}
+                                            totalReviews={product.totalReviews}
+                                            hotspot={product.hotspot || product.vendor?.currentHotspot}
+                                            deliveryTime="15m"
+                                            categoryIcon={product.category?.icon || '📦'}
+                                            showShield={true}
+                                            onAddToCart={handleAddToCart(product)}
+                                        />
                                     </motion.div>
                                 ))}
                             </AnimatePresence>

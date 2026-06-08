@@ -208,41 +208,49 @@ export default function SecuritySetupPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center space-y-6"
           >
-            <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto">
-              <Shield className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <Shield className="w-10 h-10 text-primary" />
             </div>
             <div>
               <h2 className="text-3xl font-bold mb-2">Omni Vault Protection</h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-foreground/60 font-bold">
                 Replace passwords with secure device biometrics
               </p>
             </div>
             <div className="grid gap-4 max-w-md mx-auto text-left">
-              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-surface-border">
-                <Fingerprint className="w-6 h-6 text-blue-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-4 bg-foreground/5 rounded-2xl border border-surface-border">
+                <Fingerprint className="w-6 h-6 text-primary mt-0.5" />
                 <div>
-                  <h3 className="font-semibold mb-1 italic">Biometric Identity</h3>
-                  <p className="text-[11px] text-gray-600 dark:text-gray-400 uppercase tracking-tight">
+                  <h3 className="font-bold mb-1 italic">Biometric Identity</h3>
+                  <p className="text-[11px] text-foreground/40 font-bold uppercase tracking-tight">
                     Use your phone's fingerprint or FaceID. Biometric data never leaves your device.
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-surface-border">
-                <Lock className="w-6 h-6 text-blue-600 mt-0.5" />
+              <div className="flex items-start gap-3 p-4 bg-foreground/5 rounded-2xl border border-surface-border">
+                <Lock className="w-6 h-6 text-primary mt-0.5" />
                 <div>
-                  <h3 className="font-semibold mb-1 italic">90-Strong Encryption</h3>
-                  <p className="text-[11px] text-gray-600 dark:text-gray-400 uppercase tracking-tight">
+                  <h3 className="font-bold mb-1 italic">90-Strong Encryption</h3>
+                  <p className="text-[11px] text-foreground/40 font-bold uppercase tracking-tight">
                     Endpoints are secured using hardware-level cryptographic keys.
                   </p>
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => setStep("select-method")}
-              className="px-12 py-4 bg-primary text-black rounded-2xl hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-[0.2em] text-xs shadow-xl"
-            >
-              Initialize Setup →
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-2">
+              <button
+                onClick={() => setStep("select-method")}
+                className="w-full sm:w-auto px-12 py-4 bg-primary text-black rounded-2xl hover:scale-105 active:scale-95 transition-all font-black uppercase tracking-[0.2em] text-xs shadow-xl"
+              >
+                Secure Account →
+              </button>
+              <button
+                onClick={completeSetup}
+                className="w-full sm:w-auto px-8 py-4 bg-transparent text-foreground/50 border border-surface-border rounded-2xl hover:text-foreground hover:bg-surface transition-all font-black uppercase tracking-[0.2em] text-xs"
+              >
+                Skip for Now
+              </button>
+            </div>
           </motion.div>
         )
       
@@ -287,6 +295,14 @@ export default function SecuritySetupPage() {
                   <span className="block font-black uppercase italic text-sm">Master PIN</span>
                   <span className="text-[9px] text-foreground/40 font-bold uppercase tracking-widest">Recommended for Desktop</span>
                 </div>
+              </button>
+            </div>
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={completeSetup}
+                className="px-8 py-4 bg-transparent text-foreground/40 border border-surface-border rounded-2xl hover:text-foreground hover:bg-surface transition-all font-black uppercase tracking-[0.2em] text-[10px]"
+              >
+                Skip Security Setup for Now
               </button>
             </div>
           </motion.div>
@@ -405,17 +421,25 @@ export default function SecuritySetupPage() {
             </div>
             
             {!qrCodeUrl ? (
-              <button
-                onClick={setup2FA}
-                disabled={loading}
-                className="w-full px-8 py-4 bg-surface border-2 border-surface-border text-foreground rounded-2xl hover:border-primary transition-all font-black uppercase tracking-widest text-xs disabled:opacity-50"
-              >
-                {loading ? "Generating Payload..." : "Request 2FA Key"}
-              </button>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={setup2FA}
+                  disabled={loading}
+                  className="w-full px-8 py-4 bg-surface border-2 border-surface-border text-foreground rounded-2xl hover:border-primary transition-all font-black uppercase tracking-widest text-xs disabled:opacity-50"
+                >
+                  {loading ? "Generating Payload..." : "Request 2FA Key"}
+                </button>
+                <button
+                  onClick={completeSetup}
+                  className="w-full px-8 py-4 bg-transparent text-foreground/40 border border-surface-border rounded-2xl hover:text-foreground hover:bg-surface transition-all font-black uppercase tracking-widest text-xs"
+                >
+                  Skip 2FA Setup
+                </button>
+              </div>
             ) : (
               <div className="space-y-6">
-                <div className="bg-white p-6 rounded-[2rem] border-2 border-surface-border dark:bg-black">
-                  <img src={qrCodeUrl} alt="2FA QR Code" className="mx-auto w-64 h-64 mix-blend-multiply dark:mix-blend-normal" />
+                <div className="bg-background p-6 rounded-[2rem] border-2 border-surface-border">
+                  <img src={qrCodeUrl} alt="2FA QR Code" className="mx-auto w-64 h-64" />
                   <div className="mt-4 p-3 bg-surface rounded-xl font-mono text-[10px] text-center break-all text-foreground/40 uppercase tracking-tighter">
                     BACKUP KEY: {secret}
                   </div>
@@ -461,6 +485,12 @@ export default function SecuritySetupPage() {
                   className="w-full px-8 py-5 bg-primary text-black rounded-2xl transition-all font-black uppercase tracking-[0.2em] text-xs shadow-xl disabled:opacity-50"
                 >
                   {loading ? "Authenticating..." : "Authorize Identity →"}
+                </button>
+                <button
+                  onClick={completeSetup}
+                  className="w-full mt-2 py-4 bg-transparent text-foreground/40 border border-surface-border rounded-2xl hover:text-foreground hover:bg-surface transition-all font-black uppercase tracking-widest text-xs"
+                >
+                  Skip 2FA Setup
                 </button>
               </div>
             )}
@@ -528,14 +558,14 @@ export default function SecuritySetupPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-2 mb-4">
             <StepIndicator 
               current={step === "intro"} 
-              done={["biometric", "2fa", "complete"].includes(step)} 
+              done={["passkey", "pin", "2fa", "complete"].includes(step as any)} 
               num="1" 
               label="Intro" 
             />
             <div className="hidden sm:block w-12 h-0.5 bg-surface-border" />
             <StepIndicator 
-              current={step === "biometric"} 
-              done={["2fa", "complete"].includes(step)} 
+              current={step === "passkey" || step === "pin"} 
+              done={["2fa", "complete"].includes(step as any)} 
               num="2" 
               label="Biometric" 
             />

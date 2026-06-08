@@ -2,12 +2,28 @@
 
 import Link from 'next/link';
 import * as React from 'react';
+import EnhancedProductCard from '@/components/marketplace/EnhancedProductCard';
+import { useCartStore } from '@/lib/store/cart';
 
 export default function DealsPage() {
     const [timeLeft, setTimeLeft] = React.useState({ hours: 0, minutes: 0, seconds: 0 });
     const [flashSales, setFlashSales] = React.useState<any[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [endTime, setEndTime] = React.useState<Date | null>(null);
+
+    const addToCart = useCartStore((s) => s.addToCart);
+
+    const handleAddToCart = React.useCallback((sale: any) => (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        addToCart({
+            id: sale.product.id,
+            title: sale.product.title,
+            price: sale.salePrice,
+            imageUrl: sale.product.imageUrl,
+            vendor: sale.product.vendor,
+        });
+    }, [addToCart]);
 
     // Fetch flash sales from API
     React.useEffect(() => {
@@ -134,56 +150,24 @@ export default function DealsPage() {
                     <>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             {flashSales.map((sale) => (
-                                <Link
+                                <EnhancedProductCard
                                     key={sale.id}
-                                    href={`/products/${sale.product.id}`}
-                                    className="group bg-surface border border-surface-border rounded-2xl overflow-hidden hover:shadow-xl transition-all hover:scale-105"
-                                >
-                                    {/* Image */}
-                                    <div className="relative aspect-square bg-surface-hover flex items-center justify-center overflow-hidden">
-                                        <div className="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-black z-10">
-                                            -{sale.discountPercent}%
-                                        </div>
-                                        {sale.product.imageUrl ? (
-                                            <img
-                                                src={sale.product.imageUrl}
-                                                alt={sale.product.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="text-7xl">📦</div>
-                                        )}
-                                    </div>
-
-                                    {/* Info */}
-                                    <div className="p-4">
-                                        <h3 className="font-bold text-foreground mb-2 line-clamp-2">{sale.product.title}</h3>
-
-                                        <div className="flex items-baseline gap-2 mb-2">
-                                            <span className="text-2xl font-black text-primary">₵{sale.salePrice.toFixed(2)}</span>
-                                            <span className="text-sm text-foreground/40 line-through">₵{sale.originalPrice.toFixed(2)}</span>
-                                        </div>
-
-                                        {sale.stockRemaining <= 5 && sale.stockRemaining > 0 && (
-                                            <div className="text-xs font-bold text-orange-600 animate-pulse">
-                                                Only {sale.stockRemaining} left!
-                                            </div>
-                                        )}
-
-                                        {sale.stockRemaining > 5 && (
-                                            <div className="text-xs text-green-500 font-bold flex items-center gap-1">
-                                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                                In Stock
-                                            </div>
-                                        )}
-
-                                        {sale.stockRemaining === 0 && (
-                                            <div className="text-xs text-red-600 font-bold">
-                                                Sold Out
-                                            </div>
-                                        )}
-                                    </div>
-                                </Link>
+                                    id={sale.product.id}
+                                    title={sale.product.title}
+                                    price={sale.salePrice}
+                                    imageUrl={sale.product.imageUrl}
+                                    category={sale.product.category?.name}
+                                    vendorName={sale.product.vendor?.name || 'Vendor'}
+                                    stockQuantity={sale.stockRemaining}
+                                    isFlashSale={true}
+                                    originalPrice={sale.originalPrice}
+                                    discountPercent={sale.discountPercent}
+                                    hotspot={sale.product.hotspot || sale.product.vendor?.currentHotspot}
+                                    deliveryTime="15m"
+                                    categoryIcon="⚡"
+                                    showShield={true}
+                                    onAddToCart={handleAddToCart(sale)}
+                                />
                             ))}
                         </div>
 

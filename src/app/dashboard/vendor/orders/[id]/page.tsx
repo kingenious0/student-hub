@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-
-
+import { toast } from 'sonner';
+import { Phone, CheckCircle } from 'lucide-react';
 
 interface OrderDetail {
     id: string;
@@ -14,6 +14,8 @@ interface OrderDetail {
     escrowStatus: string;
     amount: number;
     createdAt: string;
+    fulfillmentType: 'PICKUP' | 'DELIVERY';
+    fulfillmentNote: string | null;
     items: Array<{
         product: {
             title: string;
@@ -26,10 +28,8 @@ interface OrderDetail {
     student: {
         name: string | null;
         email: string;
+        phoneNumber: string | null;
     };
-    runner: {
-        name: string | null;
-    } | null;
 }
 
 export default function VendorOrderDetails() {
@@ -39,9 +39,15 @@ export default function VendorOrderDetails() {
     const [order, setOrder] = useState<OrderDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
+    const [releaseKey, setReleaseKey] = useState('');
+    const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
 
     useEffect(() => {
         if (id) fetchOrder();
+        fetch('/api/vendor/tier')
+            .then(r => r.json())
+            .then(d => setVendorTier(d.tier))
+            .catch(() => {});
     }, [id]);
 
     const fetchOrder = async () => {
@@ -60,6 +66,8 @@ export default function VendorOrderDetails() {
         }
     };
 
+    const isFoodVendor = vendorTier === 'FOOD';
+
     const updateStatus = async (newStatus: string) => {
         setUpdating(true);
         try {
@@ -70,10 +78,48 @@ export default function VendorOrderDetails() {
             });
             const data = await res.json();
             if (data.success) {
-                setOrder(prev => prev ? { ...prev, status: newStatus } : null);
+                const actualStatus = data.status || newStatus;
+                setOrder(prev => prev ? {
+                    ...prev,
+                    status: actualStatus,
+                    escrowStatus: actualStatus === 'COMPLETED' ? 'RELEASED' : prev.escrowStatus,
+                } : null);
+                const label = isFoodVendor && newStatus === 'READY' ? 'COMPLETED' : actualStatus;
+                toast.success(`Order marked as ${label}`);
+                if (actualStatus === 'COMPLETED') {
+                    setTimeout(() => router.push('/dashboard/vendor'), 2000);
+                }
             }
         } catch (error) {
             console.error('Failed to update status:', error);
+            toast.error('Failed to update status');
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const handleVerifyKey = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!releaseKey || releaseKey.length !== 6) {
+            toast.error('Please enter a valid 6-digit Release Key');
+            return;
+        }
+        setUpdating(true);
+        try {
+            const res = await fetch(`/api/vendor/orders/${id}/complete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ releaseKey }),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                toast.success('Handoff verified successfully! Escrow released.');
+                setOrder(prev => prev ? { ...prev, status: 'COMPLETED', escrowStatus: 'RELEASED' } : null);
+            } else {
+                toast.error(data.error || 'Invalid Secure Key');
+            }
+        } catch (error) {
+            toast.error('Connection to transaction ledger failed.');
         } finally {
             setUpdating(false);
         }
@@ -174,8 +220,8 @@ export default function VendorOrderDetails() {
                         </div>
 
                         {/* Customer Info */}
-                        <div className="bg-surface border border-surface-border rounded-[2.5rem] p-8">
-                            <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6">Student Information</h2>
+                        <div className="bg-surface border border-surface-border rounded-[2.5rem] p-8 space-y-6">
+                            <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Student Information</h2>
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-foreground/10 rounded-full flex items-center justify-center text-xl">👤</div>
                                 <div>
@@ -183,20 +229,62 @@ export default function VendorOrderDetails() {
                                     <div className="text-foreground/40 text-[10px] font-black uppercase tracking-widest">{order.student.email}</div>
                                 </div>
                             </div>
+                            
+                            {order.student.phoneNumber && (
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-surface-border">
+                                    <a
+                                        href={`tel:${order.student.phoneNumber}`}
+                                        className="py-3 px-4 bg-background border border-surface-border rounded-2xl text-[10px] font-black uppercase tracking-wider text-foreground hover:bg-foreground/5 transition-all flex items-center justify-center gap-1.5"
+                                    >
+                                        <svg className="w-3.5 h-3.5 fill-current text-primary" viewBox="0 0 24 24">
+                                            <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.57a1 1 0 00-1.01.24l-2.2 2.2a15.09 15.09 0 01-6.59-6.59l2.2-2.2a1 1 0 00.24-1.01 11.4 11.4 0 01-.57-3.53A1 1 0 0011 3H4a1 1 0 00-1 1 17 17 0 0017 17 1 1 0 001 -1v-7a1 1 0 00-1-1z" />
+                                        </svg>
+                                        Call Customer
+                                    </a>
+                                    <a
+                                        href={`https://wa.me/${order.student.phoneNumber.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(order.student.name || 'Student')},%20this%20is%20your%20OMNI%20vendor.%20Coordinating%20order%20%23${order.id.slice(-6).toUpperCase()}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 border border-transparent"
+                                    >
+                                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                            <path d="M12.031 2c-5.514 0-10 4.486-10 10 0 1.968.57 3.805 1.558 5.359l-1.558 5.641 5.812-1.523c1.472.859 3.178 1.354 4.99 1.354 5.514 0 10-4.486 10-10s-4.486-10-10-10zm0 18c-1.621 0-3.134-.482-4.421-1.298l-.317-.197-3.277.859.882-3.189-.228-.363c-.888-1.421-1.401-3.109-1.401-4.912 0-4.963 4.037-9 9-9s9 4.037 9 9-4.037 9-9 9zm4.646-6.425c-.254-.127-1.503-.742-1.737-.825-.233-.085-.403-.127-.573.127-.17.254-.658.825-.807.994-.148.17-.297.191-.551.064-.254-.127-1.071-.395-2.04-1.26-.754-.672-1.263-1.502-1.411-1.756-.148-.254-.016-.392.111-.518.114-.114.254-.297.381-.446.127-.148.17-.254.254-.424.085-.17.042-.318-.021-.446-.064-.127-.573-1.379-.785-1.887-.207-.5-.435-.433-.594-.442-.154-.008-.33-.008-.507-.008-.178 0-.467.067-.711.332-.244.265-.933.912-.933 2.226 0 1.314.954 2.585 1.087 2.76.133.175 1.879 2.87 4.55 4.024.636.275 1.132.439 1.52.562.639.203 1.22.175 1.679.106.512-.076 1.503-.615 1.716-1.21.213-.595.213-1.104.148-1.21-.063-.105-.233-.148-.487-.275z" />
+                                        </svg>
+                                        WhatsApp
+                                    </a>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Fulfillment details */}
+                        <div className="bg-surface border border-surface-border rounded-[2.5rem] p-8 space-y-4">
+                            <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Fulfillment Protocol</h2>
+                            <div className="flex justify-between items-center text-sm border-b border-surface-border pb-2">
+                                <span className="text-muted-foreground text-xs uppercase tracking-wider font-bold">Type</span>
+                                <span className="font-black text-xs uppercase tracking-wider text-primary animate-pulse-glow">
+                                    {order.fulfillmentType === 'DELIVERY' ? '🚚 Direct Delivery' : '📍 Self-Pickup'}
+                                </span>
+                            </div>
+                            {order.fulfillmentNote && (
+                                <div className="p-4 bg-background/50 border border-surface-border rounded-2xl">
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-foreground/30 block mb-1">Fulfillment Note</span>
+                                    <p className="text-xs font-semibold leading-relaxed text-foreground/80">{order.fulfillmentNote}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Right Column: Actions & Runner */}
+                    {/* Right Column: Actions */}
                     <div className="space-y-8">
                         {/* Control Panel */}
                         <div className="bg-surface border border-surface-border rounded-[2.5rem] p-8">
                             <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 text-center">Control Panel</h2>
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {order.status === 'PAID' && (
                                     <button
                                         onClick={() => updateStatus('PREPARING')}
                                         disabled={updating}
-                                        className="w-full py-4 bg-primary hover:bg-primary/80 disabled:opacity-50 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg omni-glow"
+                                        className="w-full py-4 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg omni-glow"
                                     >
                                         Start Preparing
                                     </button>
@@ -207,39 +295,87 @@ export default function VendorOrderDetails() {
                                         disabled={updating}
                                         className="w-full py-4 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-orange-600/20"
                                     >
-                                        Mark Ready
+                                        {isFoodVendor ? 'Complete Order' : 'Mark Ready'}
                                     </button>
                                 )}
-                                {order.status === 'READY' && (
-                                    <div className="text-center py-4 bg-background/5 rounded-2xl border border-dashed border-surface-border">
-                                        <div className="text-2xl mb-1">📢</div>
-                                        <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">Awaiting Runner</p>
+                                {order.status === 'READY' && !isFoodVendor && (
+                                    <form onSubmit={handleVerifyKey} className="space-y-4">
+                                        <div className="text-center py-4 bg-background/5 rounded-2xl border border-dashed border-surface-border mb-2">
+                                            <div className="text-2xl mb-1">🤝</div>
+                                            <p className="text-[10px] font-black text-foreground/40 uppercase tracking-widest">Awaiting Escrow Unlock</p>
+                                        </div>
+                                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-center">
+                                            <p className="text-[9px] font-bold text-blue-400 uppercase tracking-wider leading-relaxed">
+                                                We sent a 6-digit PIN to the student's phone. Ask them to share it when they receive their items.
+                                            </p>
+                                        </div>
+                                        {order.student.phoneNumber && (
+                                            <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-foreground/60">
+                                                <Phone className="w-3 h-3" />
+                                                <span>Student: {order.student.phoneNumber}</span>
+                                            </div>
+                                        )}
+                                        <div className="space-y-2">
+                                            <label className="block text-[8px] font-black uppercase tracking-widest text-foreground/45">Enter Student's 6-Digit PIN</label>
+                                            <input
+                                                type="text"
+                                                maxLength={6}
+                                                value={releaseKey}
+                                                onChange={(e) => setReleaseKey(e.target.value)}
+                                                placeholder="e.g. 123456"
+                                                className="w-full bg-background border border-surface-border rounded-xl p-3 font-bold text-center tracking-[0.3em] focus:border-primary outline-none text-sm placeholder:tracking-normal placeholder:text-foreground/20 text-foreground"
+                                                required
+                                            />
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            disabled={updating}
+                                            className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-md shadow-emerald-500/10"
+                                        >
+                                            Complete Handoff & Release
+                                        </button>
+                                        <button
+                                            type="button"
+                                            disabled={updating}
+                                            onClick={async () => {
+                                                try {
+                                                    const res = await fetch(`/api/vendor/orders/${id}/resend-key`, { method: 'POST' });
+                                                    if (res.ok) toast.success('PIN resent to student');
+                                                    else toast.error('Failed to resend PIN');
+                                                } catch { toast.error('Network error'); }
+                                            }}
+                                            className="w-full py-2 text-[9px] font-bold text-foreground/30 hover:text-foreground/60 uppercase tracking-widest transition-colors"
+                                        >
+                                            Student lost their PIN? Resend
+                                        </button>
+                                    </form>
+                                )}
+                                {order.status === 'READY' && isFoodVendor && (
+                                    <button
+                                        onClick={() => updateStatus('COMPLETED')}
+                                        disabled={updating}
+                                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-emerald-600/20"
+                                    >
+                                        Complete Order
+                                    </button>
+                                )}
+                                {order.status === 'COMPLETED' && (
+                                    <div className="text-center py-6 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                                        <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-2 animate-pulse-glow" />
+                                        <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Transaction Completed</p>
+                                        <p className="text-[8px] text-foreground/40 uppercase tracking-wider mt-1 font-bold">Funds Released to Vault</p>
                                     </div>
                                 )}
-                                <p className="text-[9px] text-center text-foreground/20 mt-4 leading-relaxed font-black uppercase tracking-tighter">
-                                    Updating order status notifies the customer and relevant runners instantly.
-                                </p>
+                                {isFoodVendor ? (
+                                    <p className="text-[9px] text-center text-emerald-500/30 mt-4 leading-relaxed font-black uppercase tracking-tighter">
+                                        Food orders auto-complete when marked ready. Funds released instantly.
+                                    </p>
+                                ) : (
+                                    <p className="text-[9px] text-center text-foreground/20 mt-4 leading-relaxed font-black uppercase tracking-tighter">
+                                        Funds are held securely in Escrow until the secure 6-digit key is verified.
+                                    </p>
+                                )}
                             </div>
-                        </div>
-
-                        {/* Runner Info */}
-                        <div className="bg-surface border border-surface-border rounded-[2.5rem] p-8">
-                            <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6">Mission Runner</h2>
-                            {order.runner ? (
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center text-lg">🏃</div>
-                                    <div>
-                                        <div className="text-foreground font-black text-sm uppercase tracking-tight">{order.runner.name}</div>
-                                        <div className="text-green-400/60 text-[10px] font-black uppercase tracking-widest">EN ROUTE</div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="text-center py-4">
-                                    <div className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.3em] italic">
-                                        Not assigned yet
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

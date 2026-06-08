@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Shield, User, Bell, Palette, Lock, Key, Smartphone, Save, ArrowLeft, Mail, ShoppingBag, Megaphone, Eye, ChevronRight, Fingerprint, RefreshCcw } from 'lucide-react';
+import { Shield, User, Bell, Palette, Lock, Key, Smartphone, Save, ArrowLeft, Mail, Megaphone, Eye, ChevronRight, Fingerprint, RefreshCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import GoBack from '@/components/navigation/GoBack';
 import { useModal } from '@/context/ModalContext';
+import { subscribeUserToPush, unsubscribeUser } from '@/lib/notifications/client';
 
 export default function SettingsPage() {
   const { user, isLoaded } = useUser();
@@ -22,14 +23,14 @@ export default function SettingsPage() {
   
   const [formData, setFormData] = useState({
     name: '',
-    university: '',
     phoneNumber: '',
     notifications: {
       emailNotifications: true,
       orderUpdates: true,
       newReleases: true,
       marketingEmails: false,
-      securityAlerts: true
+      securityAlerts: true,
+      pushEnabled: false
     }
   });
 
@@ -49,14 +50,14 @@ export default function SettingsPage() {
         const notifs = data.notificationSettings || {};
         setFormData({
           name: data.name || user?.fullName || '',
-          university: data.university || 'KNUST',
           phoneNumber: data.phoneNumber || '',
           notifications: {
             emailNotifications: notifs.emailNotifications ?? true,
             orderUpdates: notifs.orderUpdates ?? true,
             newReleases: notifs.newReleases ?? true,
             marketingEmails: notifs.marketingEmails ?? false,
-            securityAlerts: notifs.securityAlerts ?? true
+            securityAlerts: notifs.securityAlerts ?? true,
+            pushEnabled: notifs.pushEnabled ?? false
           }
         });
       }
@@ -168,25 +169,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] ml-2">University Sector</label>
-                <div className="relative">
-                    <ShoppingBag className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary opacity-50" />
-                    <select 
-                        value={formData.university}
-                        onChange={(e) => setFormData({...formData, university: e.target.value})}
-                        className="w-full bg-surface-hover border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold focus:border-primary/50 outline-none transition-all appearance-none"
-                    >
-                        <option value="KNUST">KNUST</option>
-                        <option value="UG">University of Ghana</option>
-                        <option value="UCC">University of Cape Coast</option>
-                        <option value="UENR">UENR</option>
-                        <option value="UDS">UDS</option>
-                        <option value="UEW">UEW</option>
-                        <option value="UPSA">UPSA</option>
-                    </select>
-                </div>
-              </div>
+
             </div>
           </div>
         );
@@ -239,6 +222,26 @@ export default function SettingsPage() {
                   active={formData.notifications.newReleases}
                   onChange={(v) => setFormData({...formData, notifications: {...formData.notifications, newReleases: v}})}
                />
+                <GridToggle 
+                   title="Push Alerts"
+                   desc="Receive push notifications even when you're not on OMNI"
+                   active={formData.notifications.pushEnabled}
+                   onChange={async (v) => {
+                     setFormData({...formData, notifications: {...formData.notifications, pushEnabled: v}});
+                     if (v) {
+                       const ok = await subscribeUserToPush();
+                       if (ok) {
+                         localStorage.setItem('omni-push-enabled', 'true');
+                       } else {
+                         setFormData({...formData, notifications: {...formData.notifications, pushEnabled: false}});
+                         toast.error('Failed to enable push notifications');
+                       }
+                     } else {
+                       await unsubscribeUser();
+                       localStorage.removeItem('omni-push-enabled');
+                     }
+                   }}
+                />
                <GridToggle 
                   title="Security Hardening"
                   desc="Alerts for new logins or biometric resets"

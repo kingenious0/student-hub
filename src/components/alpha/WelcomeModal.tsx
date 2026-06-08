@@ -74,7 +74,7 @@ export default function WelcomeModal() {
                                     <span className="text-lg">📡</span>
                                     <div>
                                         <strong className="text-white block text-xs uppercase tracking-widest mb-1">Feedback Loop</strong>
-                                        <span className="text-xs">Use the "Insight Uplink" 📡 button on your screen to report any bugs or suggestions instantly.</span>
+                                        <span className="text-xs">Report any bugs or suggestions through the feedback form in your settings.</span>
                                     </div>
                                 </div>
                             </div>

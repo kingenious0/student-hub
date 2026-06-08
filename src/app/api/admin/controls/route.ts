@@ -39,14 +39,28 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { deliveryFee, platformFee, maintenanceMode } = body;
+        const { 
+            deliveryFee, 
+            platformFee, 
+            maintenanceMode,
+            paystackMode,
+            paystackTestSecretKey,
+            paystackTestPublicKey,
+            paystackLiveSecretKey,
+            paystackLivePublicKey
+        } = body;
 
         const config = await prisma.systemSettings.update({
             where: { id: 'GLOBAL_CONFIG' },
             data: {
                 deliveryFee: parseFloat(deliveryFee),
                 platformFee: parseFloat(platformFee),
-                maintenanceMode: maintenanceMode === true
+                maintenanceMode: maintenanceMode === true,
+                paystackMode: paystackMode || "TEST",
+                paystackTestSecretKey: paystackTestSecretKey || null,
+                paystackTestPublicKey: paystackTestPublicKey || null,
+                paystackLiveSecretKey: paystackLiveSecretKey || null,
+                paystackLivePublicKey: paystackLivePublicKey || null
             }
         });
 

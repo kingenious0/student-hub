@@ -1,19 +1,56 @@
 'use client';
 
 import Link from "next/link";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { SearchIcon, ShoppingCartIcon, ChevronRightIcon } from "@/components/ui/Icons";
-import { motion, AnimatePresence } from "framer-motion";
+import { useUser } from "@clerk/nextjs";
+import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
 
 import SmartFeed from "@/components/marketplace/SmartFeed";
 import GlobalSearch from "@/components/navigation/GlobalSearch";
+import ServicesShowcase from "@/components/services/ServicesShowcase";
 import { Suspense } from "react";
-import RefreshButton from "@/components/ui/RefreshButton";
 import * as React from "react";
 import { useScroll, useTransform } from "framer-motion";
 
+const FlashSalesSection = dynamic(() => import("@/components/marketplace/FlashSalesSection"), {
+    loading: () => (
+        <div className="space-y-8">
+            <div className="bg-surface border-y border-surface-border py-4 overflow-hidden -mx-4" />
+            <div className="bg-surface rounded-[3rem] p-8 md:p-12 border border-surface-border">
+                <div className="flex items-center gap-5 mb-12">
+                    <div className="w-14 h-14 bg-foreground/10 rounded-2xl animate-pulse" />
+                    <div className="space-y-2">
+                        <div className="h-8 w-48 bg-foreground/10 rounded-lg animate-pulse" />
+                        <div className="h-4 w-32 bg-foreground/10 rounded animate-pulse" />
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="bg-foreground/5 rounded-2xl p-4">
+                            <div className="aspect-square bg-foreground/10 rounded-xl mb-3 animate-pulse" />
+                            <div className="h-4 bg-foreground/10 rounded mb-2 animate-pulse" />
+                            <div className="h-6 w-20 bg-foreground/10 rounded animate-pulse" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    ),
+});
+
 export default function Home() {
+  const { user, isLoaded } = useUser();
+  const [dbRole, setDbRole] = React.useState<string | null>(null);
   const heroRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (isLoaded && user) {
+      fetch('/api/users/me')
+        .then(res => res.json())
+        .then(data => setDbRole(data?.role || null))
+        .catch(() => setDbRole(null));
+    }
+  }, [isLoaded, user]);
   const { scrollY } = useScroll();
   
   // Parallax values for hero elements
@@ -37,9 +74,9 @@ export default function Home() {
       
       {/* 0. GLOBAL BACKGROUND PARTICLES - Optimized CSS animations to prevent CPU redraws & hydration mismatches */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30 md:opacity-100">
-        <div className="absolute w-[350px] h-[350px] bg-primary/5 rounded-full blur-[100px] top-[15%] left-[10%] animate-pulse" style={{ animationDuration: '10s' }} />
-        <div className="absolute w-[400px] h-[400px] bg-primary/5 rounded-full blur-[120px] top-[55%] right-[5%] animate-pulse" style={{ animationDuration: '14s' }} />
-        <div className="absolute w-[320px] h-[320px] bg-primary/5 rounded-full blur-[90px] bottom-[15%] left-[20%] animate-pulse" style={{ animationDuration: '12s' }} />
+        <div className="absolute w-[200px] h-[200px] md:w-[350px] md:h-[350px] bg-primary/5 rounded-full blur-[80px] md:blur-[100px] top-[15%] left-[10%] md:animate-pulse" style={{ animationDuration: '10s' }} />
+        <div className="absolute w-[400px] h-[400px] bg-primary/5 rounded-full blur-[120px] top-[55%] right-[5%] hidden md:block md:animate-pulse" style={{ animationDuration: '14s' }} />
+        <div className="absolute w-[320px] h-[320px] bg-primary/5 rounded-full blur-[90px] bottom-[15%] left-[20%] hidden md:block md:animate-pulse" style={{ animationDuration: '12s' }} />
       </div>
 
       {/* 1. PREMIUM DYNAMIC HERO */}
@@ -50,10 +87,10 @@ export default function Home() {
         className="relative pt-32 pb-24 px-4 overflow-hidden group/hero z-10"
       >
         {/* Premium Dark Minimalist Background - Apple/Stripe Aesthetic */}
-        <div className="absolute inset-0 bg-[#09090b]">
+        <div className="absolute inset-0 bg-[#050505]">
            {/* Single Elegant Static Radial Glow - 0% CPU/GPU overhead, highly sophisticated */}
            <div className="absolute top-[-20%] left-[15%] w-[70%] h-[80%] rounded-full bg-gradient-to-br from-orange-500/15 via-rose-600/10 to-transparent blur-[130px] pointer-events-none" />
-           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.08] mix-blend-overlay pointer-events-none" />
+           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3D%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22noiseFilter%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.65%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23noiseFilter)%22%2F%3E%3C%2Fsvg%3E')] opacity-[0.08] mix-blend-overlay pointer-events-none" />
            
            {/* Interactive Glow Follower - High performance translation using direct CSS variables (0 React re-renders) */}
            <div 
@@ -69,53 +106,24 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col items-center text-center">
-            {/* Tagline */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-3 bg-white/5 backdrop-blur-2xl px-6 py-2.5 rounded-full border border-white/10 mb-8"
-            >
-              <div className="flex -space-x-3">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="w-7 h-7 rounded-full border-2 border-[#0a0a0a] bg-gray-800 overflow-hidden shadow-xl">
-                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i+50}`} alt="user" />
-                  </div>
-                ))}
-              </div>
-              <span className="text-white text-xs font-black uppercase tracking-[0.2em]">Verified Campus Vibes</span>
-            </motion.div>
-
             {/* Main Headline */}
             <motion.div
               style={{ y: contentY, opacity, willChange: 'transform, opacity' }}
-              className="mb-8 relative"
+              className="mb-8 relative w-full px-4"
             >
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-[12vw] md:text-[14rem] font-black text-white tracking-tighter leading-[0.75] italic uppercase select-none"
+                className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter leading-none italic uppercase select-none"
                 style={{ 
                   textShadow: '0 8px 24px rgba(0,0,0,0.2)', 
                   willChange: 'transform, opacity' 
                 }}
               >
-                Zero<br className="md:hidden" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30">Limits</span>
+                Campus<br className="sm:hidden" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30"> Market</span>
               </motion.h1>
-              
-              {/* Premium Static tilted badge - Animates smoothly only on hover, eliminating background CPU render overhead */}
-              <motion.div 
-                initial={{ opacity: 0, scale: 0, rotate: -6 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", delay: 0.8 }}
-                whileHover={{ scale: 1.1, rotate: -2 }}
-                className="absolute -top-10 -right-10 md:top-0 md:right-0 bg-[#39FF14] text-black px-6 py-3 rounded-2xl font-black text-2xl md:text-4xl shadow-[0_8px_20px_rgba(57,255,20,0.25)] border-4 border-black z-20 cursor-default transition-all duration-300 -rotate-6"
-                style={{ willChange: 'transform' }}
-              >
-                60% OFF
-              </motion.div>
             </motion.div>
 
             {/* Description */}
@@ -123,9 +131,9 @@ export default function Home() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="text-white/40 text-xl md:text-3xl font-bold mb-14 max-w-2xl leading-none tracking-tight"
+              className="text-white/40 text-lg md:text-2xl font-bold mb-14 max-w-2xl leading-normal tracking-tight px-4"
             >
-              The digital hub for the <span className="text-white">AAMUSTED</span> underground economy.
+              The peer-to-peer digital hub powering the <span className="text-white">USTED</span> student economy. Buy, sell, and trade safely.
             </motion.p>
 
             {/* CTA Button with Liquid Gradient */}
@@ -162,13 +170,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Dynamic Floating Elements with Parallax */}
+        {/* Dynamic Floating Elements - CSS only (zero JS cost) */}
         <div className="absolute inset-0 pointer-events-none hidden lg:block overflow-hidden">
-           <FloatingIcon icon="👟" className="top-1/4 left-[5%]" delay={0.5} depth={0.2} />
-           <FloatingIcon icon="⚡" className="top-1/2 right-[5%]" delay={2.5} depth={-0.1} />
-           <FloatingIcon icon="🔥" className="bottom-1/4 left-[10%]" delay={1.8} depth={0.3} />
-           <FloatingIcon icon="🛸" className="bottom-1/2 right-[8%]" delay={3.2} depth={-0.2} />
-           <FloatingIcon icon="💎" className="top-1/3 right-[15%]" delay={4.1} depth={0.15} />
+            <span className="absolute top-1/4 left-[5%] text-6xl select-none animate-float opacity-20" style={{ animationDelay: '0s', animationDuration: '6s' }}>👟</span>
+            <span className="absolute top-1/2 right-[5%] text-6xl select-none animate-float opacity-20" style={{ animationDelay: '1s', animationDuration: '7s' }}>⚡</span>
+            <span className="absolute bottom-1/4 left-[10%] text-6xl select-none animate-float opacity-20" style={{ animationDelay: '2s', animationDuration: '5s' }}>🔥</span>
+            <span className="absolute bottom-1/2 right-[8%] text-6xl select-none animate-float opacity-20" style={{ animationDelay: '3s', animationDuration: '8s' }}>🛸</span>
+            <span className="absolute top-1/3 right-[15%] text-6xl select-none animate-float opacity-20" style={{ animationDelay: '1.5s', animationDuration: '6.5s' }}>💎</span>
         </div>
       </motion.div>
 
@@ -208,42 +216,39 @@ export default function Home() {
                  <span className="text-primary text-[10px] font-black uppercase tracking-[0.5em]">Real-time Hub</span>
                  <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">Fresh <span className="text-foreground/20">Supply</span></h2>
               </div>
-              <RefreshButton />
-           </motion.div>
+            </motion.div>
            
-           <Suspense fallback={<div className="h-[600px] w-full glass rounded-[3rem] animate-pulse" />}>
+            <Suspense fallback={<div className="h-[600px] w-full bg-surface rounded-[3rem] animate-pulse border border-surface-border" />}>
               <SmartFeed />
            </Suspense>
         </section>
       </main>
+
+      {/* SERVICES SHOWCASE */}
+      <div className="bg-surface/50 border-y border-surface-border">
+        <ServicesShowcase />
+      </div>
 
 
 
       {/* Footer with Vendor/Runner CTAs */}
       <footer className="bg-surface border-t border-surface-border mt-20">
         <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-2 gap-4 mb-8 md:mb-12">
-            <Link href="/become-vendor" className="group relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-5 md:p-10 transition-all hover:scale-[1.02] active:scale-95">
-              <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left">
-                <div className="text-3xl md:text-4xl mb-2 md:mb-4">🏪</div>
-                <h3 className="text-sm md:text-2xl font-black uppercase tracking-tight mb-1 md:mb-2">Sell on Omni</h3>
-                <p className="text-white/80 text-[10px] md:text-sm font-medium mb-3 md:mb-6 line-clamp-2 md:line-clamp-none">Open your shop. Reach students.</p>
-                <span className="inline-block px-4 py-2 md:px-6 md:py-3 bg-white text-indigo-600 font-black uppercase text-[10px] md:text-xs tracking-widest rounded-lg md:rounded-xl group-hover:scale-105 transition-transform">
-                  Start Selling
-                </span>
-              </div>
-            </Link>
-
-            <Link href="/runner" className="group relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white p-5 md:p-10 transition-all hover:scale-[1.02] active:scale-95">
-              <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left">
-                <div className="text-3xl md:text-4xl mb-2 md:mb-4">⚡</div>
-                <h3 className="text-sm md:text-2xl font-black uppercase tracking-tight mb-1 md:mb-2">Become Runner</h3>
-                <p className="text-white/80 text-[10px] md:text-sm font-medium mb-3 md:mb-6 line-clamp-2 md:line-clamp-none">Earn money. Flexible hours.</p>
-                <span className="inline-block px-4 py-2 md:px-6 md:py-3 bg-white text-emerald-600 font-black uppercase text-[10px] md:text-xs tracking-widest rounded-lg md:rounded-xl group-hover:scale-105 transition-transform">
-                  Join Fleet
-                </span>
-              </div>
-            </Link>
+          <div className="max-w-3xl mx-auto mb-8 md:mb-12">
+            {(!isLoaded || (user?.publicMetadata?.role !== 'VENDOR' && dbRole !== 'VENDOR')) && (
+              <Link href="/become-vendor" className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-emerald-600 to-teal-700 text-primary-foreground p-8 md:p-12 transition-all hover:scale-[1.02] active:scale-95 block shadow-xl border border-primary/20">
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="text-5xl mb-4 animate-bounce" style={{ animationDuration: '3s' }}>🏪</div>
+                  <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tight mb-2">Sell on Omni</h3>
+                  <p className="text-primary-foreground/80 text-xs md:text-lg font-medium mb-6 max-w-lg leading-relaxed">
+                    Open your shop, reach over 10,000+ campus students daily, and receive secure escrow payouts directly to your MoMo wallet instantly.
+                  </p>
+                  <span className="inline-block px-8 py-4 bg-primary-foreground text-primary font-black uppercase text-xs tracking-widest rounded-2xl group-hover:scale-105 transition-transform shadow-2xl">
+                    Start Selling Now →
+                  </span>
+                </div>
+              </Link>
+            )}
           </div>
 
           {/* Footer Links */}
@@ -275,38 +280,7 @@ function CategoryPill({ href, icon, label, active = false }: { href: string; ico
 }
 
 
-// Floating Icon Component for Hero with Scroll Parallax
-function FloatingIcon({ icon, className, delay, depth = 0.1 }: { icon: string; className: string; delay: number; depth?: number }) {
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [0, 1000], [0, 1000 * depth]);
-  const rotate = useTransform(scrollY, [0, 1000], [0, 45]);
-
-  return (
-    <motion.div
-      style={{ y, rotate }}
-      initial={{ opacity: 0, scale: 0 }}
-      animate={{ 
-        opacity: [0, 0.2, 0.1], 
-        scale: 1,
-        y: [0, -20, 0] 
-      }}
-      transition={{ 
-        opacity: { duration: 1, delay },
-        scale: { duration: 0.5, delay },
-        y: { 
-          duration: 4 + Math.random() * 2,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: Math.random() * 2
-        }
-      }}
-      className={`absolute text-6xl select-none filter blur-[1px] hover:blur-0 transition-all duration-700 ${className}`}
-    >
-      {icon}
-    </motion.div>
-  )
-}
-
+// Floating Icon Component for Hero with Scroll Parallax (Bypassed entirely on mobile)
 // Quick Category Card (Animated)
 function QuickCategoryCard({ href, icon, label }: { href: string; icon: string; label: string }) {
   return (
@@ -342,263 +316,3 @@ function CategoryCard({ href, icon, label, color }: { href: string; icon: string
   )
 }
 
-// Flash Deal Card Component (Animated)
-function FlashDealCard({
-  title,
-  price,
-  originalPrice,
-  discount,
-  stock,
-  imageUrl
-}: {
-  title: string;
-  price: number;
-  originalPrice: number;
-  discount: number;
-  stock: number;
-  imageUrl?: string;
-}) {
-  const isLowStock = stock <= 5;
-
-  return (
-    <motion.div 
-      whileHover={{ y: -8 }}
-      className="bg-white dark:bg-surface rounded-3xl p-4 transition-all hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] cursor-pointer border border-surface-border group"
-    >
-      {/* Discount Badge */}
-      <div className="relative aspect-square bg-gray-100 dark:bg-black rounded-2xl mb-4 flex items-center justify-center overflow-hidden">
-        <div className="absolute top-2 left-2 bg-rose-600 text-white px-3 py-1 rounded-full text-[10px] font-black z-10 shadow-lg">
-          -{discount}%
-        </div>
-        
-        {imageUrl ? (
-          <img src={imageUrl} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-        ) : (
-          <div className="text-6xl group-hover:scale-125 transition-transform duration-500">📦</div>
-        )}
-        
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-
-      {/* Product Info */}
-      <h3 className="text-sm font-black text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors">{title}</h3>
-
-      {/* Price */}
-      <div className="flex items-baseline gap-2 mb-3">
-        <span className="text-xl font-black text-rose-600">₵{price}</span>
-        <span className="text-xs text-foreground/30 line-through font-bold">₵{originalPrice}</span>
-      </div>
-
-      {/* Stock Indicator */}
-      <div className="h-1.5 w-full bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden mb-2">
-         <motion.div 
-           initial={{ width: 0 }}
-           animate={{ width: `${(stock/20)*100}%` }}
-           className={`h-full ${isLowStock ? 'bg-orange-500' : 'bg-emerald-500'}`}
-         />
-      </div>
-      <p className={`text-[9px] font-black uppercase tracking-widest ${isLowStock ? 'text-orange-500' : 'text-foreground/40'}`}>
-        {isLowStock ? `Only ${stock} left` : 'In Stock'}
-      </p>
-    </motion.div>
-  );
-}
-
-// Flash Sales Section with LIVE Countdown and REAL DATA
-function FlashSalesSection() {
-  const [timeLeft, setTimeLeft] = React.useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [flashSales, setFlashSales] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [endTime, setEndTime] = React.useState<Date | null>(null);
-
-  // Trending Marquee Items
-  const trending = ["Iphone 16", "Fried Rice", "Macbook Air", "Sneakers", "T-Shirts", "Hostels", "Laptops"];
-
-  // Fetch flash sales from API
-  React.useEffect(() => {
-    fetch('/api/flash-sales')
-      .then(res => res.json())
-      .then(data => {
-        setFlashSales(data.flashSales || []);
-        if (data.endTime) {
-          setEndTime(new Date(data.endTime));
-        }
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Failed to fetch flash sales:', error);
-        setLoading(false);
-      });
-  }, []);
-
-  // Update countdown timer
-  React.useEffect(() => {
-    if (!endTime) {
-      const fallbackEndTime = new Date();
-      fallbackEndTime.setDate(fallbackEndTime.getDate() + 1);
-      fallbackEndTime.setHours(0, 0, 0, 0);
-      setEndTime(fallbackEndTime);
-      return;
-    }
-
-    const calculateTimeLeft = () => {
-      const difference = endTime.getTime() - new Date().getTime();
-      if (difference <= 0) return { hours: 0, minutes: 0, seconds: 0 };
-      return {
-        hours: Math.floor(difference / (1000 * 60 * 60)),
-        minutes: Math.floor((difference / 1000 / 60) % 60),
-        seconds: Math.floor((difference / 1000) % 60),
-      };
-    };
-
-    setTimeLeft(calculateTimeLeft());
-    const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
-    return () => clearInterval(timer);
-  }, [endTime]);
-
-  return (
-    <div className="space-y-8">
-      {/* 1. Trending Marquee */}
-      <div className="bg-surface border-y border-surface-border py-4 overflow-hidden -mx-4">
-        <motion.div 
-          animate={{ x: [0, -1000] }}
-          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-          className="flex whitespace-nowrap gap-12"
-        >
-          {[...trending, ...trending, ...trending].map((item, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/30">Trending</span>
-              <span className="text-sm font-black italic">{item}</span>
-              <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-            </div>
-          ))}
-        </motion.div>
-      </div>
-
-      <div className="bg-[#0a0a0a] rounded-[3rem] p-8 md:p-12 text-white relative overflow-hidden">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12 relative z-10">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 bg-rose-600 rounded-2xl flex items-center justify-center text-3xl animate-pulse shadow-[0_0_30px_rgba(225,29,72,0.4)]">
-              ⚡
-            </div>
-            <div>
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic leading-none mb-2">
-                Flash <span className="text-rose-600">Sales</span>
-              </h2>
-              <div className="flex items-center gap-2">
-                 <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-                 </span>
-                 <p className="text-white/40 text-[10px] font-black uppercase tracking-widest">Live Promotions</p>
-              </div>
-            </div>
-          </div>
-
-          {/* LIVE Countdown Timer */}
-          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl rounded-3xl p-4 border border-white/10">
-            <div className="flex items-center gap-3">
-              {[
-                { val: timeLeft.hours, label: 'h' },
-                { val: timeLeft.minutes, label: 'm' },
-                { val: timeLeft.seconds, label: 's' }
-              ].map((t, idx) => (
-                <React.Fragment key={idx}>
-                  <div className="flex flex-col items-center min-w-[3.5rem]">
-                    <span className="text-3xl font-black tabular-nums leading-none mb-1">
-                      {String(t.val).padStart(2, '0')}
-                    </span>
-                    <span className="text-[9px] font-black uppercase opacity-30 tracking-widest">{t.label}</span>
-                  </div>
-                  {idx < 2 && <span className="text-2xl font-black opacity-20">:</span>}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-        </div>
-
-      {/* Flash Sale Products */}
-      {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white/20 rounded-2xl p-4 animate-pulse">
-              <div className="aspect-square bg-white/30 rounded-xl mb-3"></div>
-              <div className="h-4 bg-white/30 rounded mb-2"></div>
-              <div className="h-6 bg-white/30 rounded"></div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {flashSales.slice(0, 4).map((sale) => (
-            <Link
-              key={sale.id}
-              href={`/products/${sale.product.id}`}
-              className="bg-white rounded-2xl p-4 hover:scale-105 transition-transform cursor-pointer"
-            >
-              {/* Discount Badge */}
-              <div className="relative aspect-square bg-gray-100 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
-                <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-lg text-xs font-black z-10">
-                  -{sale.discountPercent}%
-                </div>
-                {sale.product.imageUrl ? (
-                  <img
-                    src={sale.product.imageUrl}
-                    alt={sale.product.title}
-                    className="w-full h-full object-cover rounded-xl"
-                  />
-                ) : (
-                  <div className="text-5xl">📦</div>
-                )}
-              </div>
-
-              {/* Product Info */}
-              <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-2">
-                {sale.product.title}
-              </h3>
-
-              {/* Price */}
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-xl font-black text-orange-600">
-                  ₵{sale.salePrice.toFixed(2)}
-                </span>
-                <span className="text-xs text-gray-400 line-through">
-                  ₵{sale.originalPrice.toFixed(2)}
-                </span>
-              </div>
-
-              {/* Stock Indicator */}
-              {sale.stockRemaining <= 5 && sale.stockRemaining > 0 && (
-                <div className="text-xs font-bold text-orange-600 animate-pulse">
-                  Only {sale.stockRemaining} left!
-                </div>
-              )}
-              {sale.stockRemaining > 5 && (
-                <div className="text-xs text-green-600 font-bold">
-                  In Stock
-                </div>
-              )}
-              {sale.stockRemaining === 0 && (
-                <div className="text-xs text-red-600 font-bold">
-                  Sold Out
-                </div>
-              )}
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {/* View All Link */}
-      <div className="text-center">
-        <Link
-          href="/deals"
-          className="inline-block bg-white text-orange-600 px-8 py-3 rounded-full font-black uppercase text-sm tracking-widest hover:scale-105 active:scale-95 transition-transform shadow-lg"
-        >
-          See All Flash Deals →
-        </Link>
-      </div>
-      </div>
-    </div>
-  );
-}

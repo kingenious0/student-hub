@@ -8,13 +8,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { ensureUserExists } from '@/lib/auth/sync';
-import { validateData, productCreateSchema } from '@/lib/security/validation';
+import { validateData, productCreateSchema, sanitizeHtml } from '@/lib/security/validation';
 import { searchProducts, type SearchQuery } from '@/lib/utils/search';
 import { revalidateTag } from 'next/cache';
 import { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
     try {
+        // Extract client IP for rate limiting
+        const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 
+                   request.headers.get('x-real-ip') || 
+                   '127.0.0.1';
+
+        // Check rate limit: 100 requests per 1 minute
+        const { rateLimit } = await import('@/lib/security/rateLimit');
+        const limitCheck = await rateLimit(ip, 100, 60 * 1000);
+        
+        if (!limitCheck.success) {
+            return NextResponse.json(
+                { error: 'Too many requests. Please try again later.' },
+                { 
+                    status: 429, 
+                    headers: {
+                        'Retry-After': String(Math.max(1, limitCheck.reset - Math.floor(Date.now() / 1000))),
+                        'X-RateLimit-Limit': String(limitCheck.limit),
+                        'X-RateLimit-Remaining': String(limitCheck.remaining),
+                        'X-RateLimit-Reset': String(limitCheck.reset)
+                    }
+                }
+            );
+        }
+
         const { searchParams } = new URL(request.url);
 
         const q = searchParams.get('q')?.trim() || undefined;
@@ -80,7 +104,6 @@ export async function GET(request: NextRequest) {
                 select: {
                     id: true,
                     name: true,
-                    email: true,
                     currentHotspot: true,
                     lastActive: true,
                     isAcceptingOrders: true,
@@ -94,6 +117,7 @@ export async function GET(request: NextRequest) {
             const products = await prisma.product.findMany({ where, include });
             const mapped = products.map(product => ({
                 ...product,
+                price: Number(product.price),
                 rating: product.averageRating ?? 0,
             }));
 
@@ -205,7 +229,7 @@ export async function POST(request: NextRequest) {
         const product = await prisma.product.create({
             data: {
                 title,
-                description,
+                description: sanitizeHtml(description),
                 price,
                 categoryId,
                 hotspot: hotspot || dbUser.shopLandmark || null,

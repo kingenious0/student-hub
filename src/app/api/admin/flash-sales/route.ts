@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Calculate sale price
-        const originalPrice = product.price;
+        const originalPrice = Number(product.price);
         const salePrice = originalPrice * (1 - discountPercent / 100);
 
         // Create or update flash sale

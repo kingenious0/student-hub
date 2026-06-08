@@ -15,20 +15,32 @@ export async function GET() {
             where: { id: 'GLOBAL_CONFIG' }
         });
 
+        // Determine active Paystack public key based on DB settings
+        let paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ?? "";
+        if (config) {
+            if (config.paystackMode === 'LIVE' && config.paystackLivePublicKey) {
+                paystackPublicKey = config.paystackLivePublicKey;
+            } else if (config.paystackMode === 'TEST' && config.paystackTestPublicKey) {
+                paystackPublicKey = config.paystackTestPublicKey;
+            }
+        }
+
         // Default to safe values if not found
         return NextResponse.json({
             success: true,
             maintenanceMode: config?.maintenanceMode ?? false,
-            activeFeatures: config?.activeFeatures ?? ['MARKET', 'PULSE', 'RUNNER', 'ESCROW'],
+            activeFeatures: config?.activeFeatures ?? ['MARKET', 'PULSE', 'ESCROW'],
             globalNotice: config?.globalNotice ?? null,
-            contentOverride: config?.contentOverride ?? {}
+            contentOverride: config?.contentOverride ?? {},
+            paystackPublicKey,
+            paystackMode: config?.paystackMode ?? "TEST"
         });
     } catch (error) {
         console.error('System config fetch error:', error);
         return NextResponse.json({
             success: false,
             maintenanceMode: false,
-            activeFeatures: ['MARKET', 'PULSE', 'RUNNER', 'ESCROW'],
+            activeFeatures: ['MARKET', 'PULSE', 'ESCROW'],
             globalNotice: null
         });
     }

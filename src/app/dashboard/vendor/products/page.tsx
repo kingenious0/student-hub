@@ -35,10 +35,17 @@ export default function VendorProductsPage() {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
 
     useEffect(() => {
         fetchProducts();
+        fetch('/api/vendor/tier')
+            .then(r => r.ok && r.json())
+            .then(d => d?.tier && setVendorTier(d.tier))
+            .catch(() => {});
     }, []);
+
+    const isFood = vendorTier === 'FOOD';
 
     const fetchProducts = async () => {
         try {
@@ -94,12 +101,12 @@ export default function VendorProductsPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-2">
                     <GoBack fallback="/dashboard/vendor" />
-                    <h1 className="text-2xl font-bold tracking-tight">My Products</h1>
-                    <p className="text-muted-foreground text-sm">Manage your product catalog and inventory.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">{isFood ? 'My Menu' : 'My Products'}</h1>
+                    <p className="text-muted-foreground text-sm">{isFood ? 'Manage your food items, modifiers, and pricing.' : 'Manage your product catalog and inventory.'}</p>
                 </div>
                 <Link href="/dashboard/vendor/products/new">
                     <Button className="font-bold">
-                        <Plus className="mr-2 h-4 w-4" /> Add Product
+                        <Plus className="mr-2 h-4 w-4" /> {isFood ? 'Add Item' : 'Add Product'}
                     </Button>
                 </Link>
             </div>
@@ -149,13 +156,21 @@ export default function VendorProductsPage() {
                                     <Package className="h-12 w-12 text-muted-foreground/50" />
                                 )}
                                 
-                                {/* Stock Badge Overlay */}
-                                <div className="absolute top-2 right-2">
+                                {/* Stock / Food Badge Overlay */}
+                                <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+                                    {product.hasModifiers && (
+                                        <Badge className="bg-emerald-500/90 text-white text-[10px] border-none">
+                                            Customizable
+                                        </Badge>
+                                    )}
                                     <Badge 
                                         variant={product.stockQuantity > 0 ? "secondary" : "destructive"}
                                         className={product.stockQuantity > 0 ? "bg-background/80 backdrop-blur-sm text-foreground" : ""}
                                     >
-                                        {product.stockQuantity > 0 ? `${product.stockQuantity} in stock` : "Out of Stock"}
+                                        {isFood 
+                                            ? (product.stockQuantity > 0 || product.stockQuantity === 0 ? 'In Stock' : 'Sold Out')
+                                            : (product.stockQuantity > 0 ? `${product.stockQuantity} in stock` : "Out of Stock")
+                                        }
                                     </Badge>
                                 </div>
                             </div>
@@ -186,16 +201,23 @@ export default function VendorProductsPage() {
                                 </div>
                                 
                                 <p className="text-sm text-muted-foreground line-clamp-2 mb-3 h-10">
-                                    {product.description || 'No description provided.'}
+                                    {product.description ? product.description.replace(/<[^>]*>/g, '') : 'No description provided.'}
                                 </p>
 
                                 <div className="flex items-center justify-between mt-auto">
                                     <span className="font-bold text-lg">₵{product.price.toFixed(2)}</span>
-                                    {product.category && (
-                                        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                                            {product.category.name}
-                                        </span>
-                                    )}
+                                    <div className="flex items-center gap-1">
+                                        {product.modifierGroups?.length > 0 && (
+                                            <span className="text-[10px] text-emerald-500 font-medium">
+                                                +{product.modifierGroups.reduce((s: number, g: any) => s + (g._count?.modifiers || 0), 0)} options
+                                            </span>
+                                        )}
+                                        {product.category && (
+                                            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                                                {product.category.name}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -204,7 +226,7 @@ export default function VendorProductsPage() {
             )}
             
             <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
-                <p>Designed by PraiseTech • github/praisetechzw</p>
+                <p>© 2026 OMNI Student Marketplace • All Rights Reserved</p>
             </div>
         </div>
     );

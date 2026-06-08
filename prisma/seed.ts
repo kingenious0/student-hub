@@ -69,7 +69,7 @@ async function main() {
                     email: primaryEmail,
                     name: name,
                     role: role,
-                    university: 'KNUST', // Default
+                    university: 'USTED', // Default
                     onboarded: true,     // Auto-onboard existing users
                 }
             });

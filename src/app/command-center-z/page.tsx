@@ -578,10 +578,7 @@ export default function CommandCenterPage() {
                                     <div className="text-2xl mb-2">🏪</div>
                                     <div className="text-purple-500 font-black uppercase tracking-widest text-[10px]">Vendor Console</div>
                                 </a>
-                                <a href="/runner" target="_blank" className="p-4 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 transition-all group text-center">
-                                    <div className="text-2xl mb-2">⚡</div>
-                                    <div className="text-yellow-500 font-black uppercase tracking-widest text-[10px]">Runner Terminal</div>
-                                </a>
+
                                 <a href="/stories" target="_blank" className="p-4 rounded-2xl bg-pink-500/10 border border-pink-500/20 hover:bg-pink-500/20 transition-all group text-center">
                                     <div className="text-2xl mb-2">📹</div>
                                     <div className="text-pink-500 font-black uppercase tracking-widest text-[10px]">Pulse Feed</div>
@@ -709,7 +706,7 @@ export default function CommandCenterPage() {
                         <div>
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 ml-2">Active Protocols</h3>
                             <div className="grid grid-cols-2 gap-4">
-                                {['MARKET', 'MARKET_ACTIONS', 'PULSE', 'RUNNER', 'ESCROW', 'VENDOR'].map((feature) => {
+                                {['MARKET', 'MARKET_ACTIONS', 'PULSE', 'ESCROW', 'VENDOR'].map((feature) => {
                                     const active = settings?.activeFeatures.includes(feature);
                                     return (
                                         <button
@@ -1067,11 +1064,6 @@ export default function CommandCenterPage() {
                                         <p className="text-sm text-gray-300 italic">"{app.shopDesc}"</p>
                                     </div>
 
-                                    {app.user.isRunner && (
-                                        <div className="mb-4 flex items-center gap-2 text-yellow-500 text-xs bg-yellow-500/10 p-2 rounded">
-                                            <span>⚡ Is currently a Runner (Balance: ₵{app.user.balance})</span>
-                                        </div>
-                                    )}
 
                                     <div className="flex justify-end gap-3">
                                         <button

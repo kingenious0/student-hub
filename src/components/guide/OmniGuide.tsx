@@ -28,20 +28,6 @@ const MEMBER_STEPS = [
         content: 'Browse the feed to find products from students near you. Use the Search to find specific halls.',
         position: 'bottom-left'
     },
-    {
-        id: 'pulse',
-        target: 'omni-nav-pulse',
-        title: 'CAMPUS PULSE',
-        content: 'Intercept live signals. See what is happening on campus right now.',
-        position: 'bottom-left'
-    },
-    {
-        id: 'runner',
-        target: 'omni-nav-runner',
-        title: 'SHADOW RUNNER',
-        content: 'Want to earn cash? Activate Runner Mode to deliver items.',
-        position: 'bottom-left'
-    }
 ];
 
 // --- MOBILE MEMBER TOUR (Authenticated Mobile) ---
@@ -65,13 +51,6 @@ const MOBILE_MEMBER_STEPS = [
         target: 'omni-mobile-marketplace',
         title: 'MARKETPLACE',
         content: 'This is your feed. Buy, sell, and trade with students on campus.',
-        position: 'bottom'
-    },
-    {
-        id: 'mobile_pulse',
-        target: 'omni-mobile-pulse',
-        title: 'CAMPUS PULSE',
-        content: 'Watch live stories and stay updated with campus trends.',
         position: 'bottom'
     }
 ];
@@ -114,7 +93,7 @@ const ONBOARDING_STEPS = [
         id: 'onboard_student_select',
         target: 'omni-onboard-student',
         title: 'STUDENT ACCESS',
-        content: 'Select this if you want to buy items, browse the feed, or eventually become a Runner.',
+        content: 'Select this if you want to buy items or browse the feed.',
         position: 'right'
     },
     {
@@ -128,8 +107,7 @@ const ONBOARDING_STEPS = [
 
 const CONTAINER_MAP: Record<string, string> = {
     'omni-mobile-menu': 'omni-navbar',
-    'omni-mobile-marketplace': 'omni-drawer',
-    'omni-mobile-pulse': 'omni-drawer'
+    'omni-mobile-marketplace': 'omni-drawer'
 };
 
 export default function OmniGuide() {

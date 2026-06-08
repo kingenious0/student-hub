@@ -10,6 +10,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './ThemeToggle';
 import GlobalSearch from './GlobalSearch';
 import { useCartStore } from '@/lib/store/cart';
+import { useWishlistStore } from '@/lib/store/wishlist';
+import CartDrawer from './CartDrawer';
 import {
     MenuIcon,
     XIcon,
@@ -24,21 +26,26 @@ import {
     UserCircleIcon,
     ClockIcon
 } from '@/components/ui/Icons';
-import { Shield, Settings } from 'lucide-react';
+import { Shield, Settings, Tag, Bell } from 'lucide-react';
+import { OmniLogo } from '@/components/ui/OmniLogo';
 
 export default function Navbar() {
     const pathname = usePathname();
     const router = useRouter();
     const { user, isLoaded: clerkLoaded } = useUser();
     const itemCount = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
+    const wishlistCount = useWishlistStore((state) => state.items.length);
     const [mounted, setMounted] = useState(false);
+    const [pendingOrderCount, setPendingOrderCount] = useState(0);
+    const [notificationCount, setNotificationCount] = useState(0);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    const [dbUser, setDbUser] = useState<{ role: string; vendorStatus: string; isRunner: boolean; onboarded: boolean; university?: string } | null>(null);
+    const [dbUser, setDbUser] = useState<{ role: string; vendorStatus: string; onboarded: boolean; university?: string } | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const [globalNotice, setGlobalNotice] = useState<string | null>(null);
 
@@ -91,6 +98,7 @@ export default function Navbar() {
                 .then(res => res.json())
                 .then(data => setDbUser(data))
                 .catch(() => setDbUser(null));
+            useWishlistStore.getState().loadWishlist();
         } else if (clerkLoaded && !user) {
             setDbUser(null);
         }
@@ -103,10 +111,54 @@ export default function Navbar() {
         };
 
         fetchTicker();
-        const interval = setInterval(fetchTicker, 3000);
+        const tickerInterval = setInterval(fetchTicker, 3000);
 
+        return () => clearInterval(tickerInterval);
+    }, [clerkLoaded, user]);
+
+    // Fetch notification badge count
+    useEffect(() => {
+        if (!clerkLoaded || !user) return;
+        const fetchNotifCount = async () => {
+            try {
+                const res = await fetch('/api/notifications/unread');
+                if (res.ok) {
+                    const data = await res.json();
+                    setNotificationCount(data.count || 0);
+                }
+            } catch {}
+        };
+        fetchNotifCount();
+        const interval = setInterval(fetchNotifCount, 20000);
         return () => clearInterval(interval);
     }, [clerkLoaded, user]);
+
+    // Poll vendor pending order count (separate effect to avoid re-fetching dbUser)
+    const prevRoleRef = useRef<string | undefined>(undefined);
+    useEffect(() => {
+        const role = dbUser?.role;
+        if (role !== 'VENDOR') {
+            setPendingOrderCount(0);
+            prevRoleRef.current = role;
+            return;
+        }
+        if (prevRoleRef.current === role) return;
+        prevRoleRef.current = role;
+
+        const fetchPendingOrders = async () => {
+            try {
+                const res = await fetch('/api/vendor/orders');
+                if (res.ok) {
+                    const data = await res.json();
+                    const orders = data.orders || [];
+                    setPendingOrderCount(orders.filter((o: any) => o.status === 'PAID').length);
+                }
+            } catch {}
+        };
+        fetchPendingOrders();
+        const interval = setInterval(fetchPendingOrders, 15000);
+        return () => clearInterval(interval);
+    }, [dbUser?.role]);
 
     useEffect(() => {
         setIsDrawerOpen(false);
@@ -192,7 +244,7 @@ export default function Navbar() {
                         <button
                             id="omni-mobile-menu"
                             onClick={() => setIsDrawerOpen(true)}
-                            className="lg:hidden p-1 hover:bg-surface rounded-lg transition-colors"
+                            className="lg:hidden p-3 hover:bg-surface rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                             aria-label="Open Menu"
                         >
                             <MenuIcon className="w-6 h-6 text-foreground" />
@@ -203,27 +255,12 @@ export default function Navbar() {
                             (user?.publicMetadata?.role as string)?.toUpperCase() === 'ADMIN' ||
                             dbUser?.role?.toUpperCase() === 'GOD_MODE' ||
                             dbUser?.role?.toUpperCase() === 'ADMIN') ? (
-                            <div
-                                onClick={handleLogoClick}
-                                className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none"
-                            >
-                                <img
-                                    src="/OMNI-LOGO.ico"
-                                    alt="OMNI"
-                                    className="h-14 w-auto transition-transform group-hover:scale-110 invert-on-light"
-                                    style={{ filter: 'var(--invert-filter)' }}
-                                />
-                                <span className="hidden lg:block font-black tracking-tighter text-lg">OMNI</span>
+                            <div onClick={handleLogoClick} className="flex-shrink-0">
+                                <OmniLogo size="md" showTagline={false} className="transition-transform hover:scale-110" />
                             </div>
                         ) : (
-                            <Link href="/" className="flex items-center gap-2 group flex-shrink-0 cursor-pointer select-none">
-                                <img
-                                    src="/OMNI-LOGO.ico"
-                                    alt="OMNI"
-                                    className="h-14 w-auto transition-transform group-hover:scale-110 invert-on-light"
-                                    style={{ filter: 'var(--invert-filter)' }}
-                                />
-                                <span className="hidden lg:block font-black tracking-tighter text-lg">OMNI</span>
+                            <Link href="/" className="flex-shrink-0">
+                                <OmniLogo size="md" showTagline={false} className="transition-transform hover:scale-110" />
                             </Link>
                         )}
                     </div>
@@ -239,12 +276,49 @@ export default function Navbar() {
                         <SignedIn>
                             <div className="hidden lg:flex items-center gap-4 mr-2">
                                 <Link href="/" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
-                                <Link href="/orders" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Orders</Link>
+                                <Link href="/services" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Services</Link>
+                                <Link href="/orders" className="relative text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">
+                                    Orders
+                                    {dbUser?.role === 'VENDOR' && pendingOrderCount > 0 && (
+                                        <span className="absolute -top-2 -right-4 w-4 h-4 bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center">{pendingOrderCount}</span>
+                                    )}
+                                </Link>
+                                <Link href="/wishlist" className="relative text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">
+                                    Wishlist
+                                    {wishlistCount > 0 && (
+                                        <span className="absolute -top-2 -right-4 w-4 h-4 bg-primary text-primary-foreground text-[8px] font-black rounded-full flex items-center justify-center">{wishlistCount}</span>
+                                    )}
+                                </Link>
+                                {dbUser?.role === 'VENDOR' && (
+                                    <Link 
+                                        href="/dashboard/vendor" 
+                                        className="relative text-xs font-black text-primary hover:text-primary/80 transition-all bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20 uppercase tracking-wider"
+                                    >
+                                        🏪 Vendor Dashboard
+                                        {pendingOrderCount > 0 && (
+                                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full min-w-[16px] h-4 flex items-center justify-center shadow-lg">
+                                                {pendingOrderCount}
+                                            </span>
+                                        )}
+                                    </Link>
+                                )}
                             </div>
 
                             <Link
-                                href="/cart"
-                                className="relative p-2 text-foreground hover:text-primary transition-colors group"
+                                href="/notifications"
+                                className="relative p-3 text-foreground hover:text-primary transition-colors group cursor-pointer bg-transparent border-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                            >
+                                <Bell className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                {mounted && notificationCount > 0 && (
+                                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-background shadow-sm">
+                                        <span className="text-[10px] font-black text-white">{notificationCount > 99 ? '99+' : notificationCount}</span>
+                                    </div>
+                                )}
+                            </Link>
+
+                            <button
+                                onClick={() => setCartDrawerOpen(true)}
+                                className="relative p-3 text-foreground hover:text-primary transition-colors group cursor-pointer bg-transparent border-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                             >
                                 <ShoppingCartIcon className="w-6 h-6 group-hover:scale-110 transition-transform block" />
                                 {mounted && itemCount > 0 && (
@@ -252,7 +326,7 @@ export default function Navbar() {
                                         <span className="text-[10px] font-black text-white">{itemCount}</span>
                                     </div>
                                 )}
-                            </Link>
+                            </button>
 
                             <div className="hidden lg:block" id="omni-nav-profile">
                                 <UserButton appearance={{ elements: { avatarBox: "w-9 h-9 border-2 border-surface-border" } }}>
@@ -273,10 +347,10 @@ export default function Navbar() {
                         </SignedIn>
 
                         <SignedOut>
-                            <Link href="/sign-in" id="omni-nav-signin" className="hidden md:block px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest transition-all omni-glow active:scale-95">
+                            <Link href="/sign-in" id="omni-nav-signin" className="hidden md:block px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest transition-all omni-glow active:scale-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                                 Sign In
                             </Link>
-                            <Link href="/sign-in" className="md:hidden p-2 bg-primary/10 text-primary rounded-lg">
+                            <Link href="/sign-in" className="md:hidden p-2 bg-primary/10 text-primary rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                                 <UserCircleIcon className="w-5 h-5" />
                             </Link>
                         </SignedOut>
@@ -330,7 +404,8 @@ export default function Navbar() {
                                     </div>
                                     <button
                                         onClick={() => setIsDrawerOpen(false)}
-                                        className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                                        className="p-3 hover:bg-black/10 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                        aria-label="Close menu"
                                     >
                                         <XIcon className="w-6 h-6 text-foreground" />
                                     </button>
@@ -342,21 +417,14 @@ export default function Navbar() {
                                     <p className="text-xs font-bold text-foreground/60 uppercase tracking-widest mt-1">
                                         {dbUser?.role || 'Member'} • {dbUser?.onboarded ? 'Verified' : 'Guest'}
                                     </p>
-                                    <div className="flex items-center gap-2 mt-3 bg-surface/50 p-2 rounded-lg w-fit border border-surface-border/50">
-                                        <MapPinIcon className="w-3 h-3 text-primary" />
-                                        <span className="text-[10px] font-bold text-foreground/80 uppercase tracking-wide">
-                                            {dbUser?.university && UNIVERSITY_REGISTRY[dbUser.university as keyof typeof UNIVERSITY_REGISTRY]
-                                                ? UNIVERSITY_REGISTRY[dbUser.university as keyof typeof UNIVERSITY_REGISTRY].name
-                                                : (dbUser?.university || 'Select Campus')}
-                                        </span>
-                                    </div>
+
                                 </SignedIn>
                                 <SignedOut>
                                     <h2 className="text-xl font-black text-foreground uppercase tracking-tight">
                                         Hello, Guest
                                     </h2>
                                     <div className="mt-4">
-                                        <Link href="/sign-in" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest shadow-lg block text-center" onClick={() => setIsDrawerOpen(false)}>
+                                        <Link href="/sign-in" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest shadow-lg block text-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none" onClick={() => setIsDrawerOpen(false)}>
                                             Sign In / Sign Up
                                         </Link>
                                     </div>
@@ -379,61 +447,57 @@ export default function Navbar() {
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-xs font-black text-foreground uppercase tracking-widest">
-                                                        {dbUser?.role === 'VENDOR' ? 'Vendor Mode' : (dbUser?.vendorStatus === 'PENDING' ? 'Application Pending' : 'Become a Vendor')}
+                                                        {dbUser?.role === 'VENDOR' ? 'Vendor Dashboard' : (dbUser?.vendorStatus === 'PENDING' ? 'Application Pending' : 'Become a Vendor')}
                                                     </span>
                                                 </div>
                                             </div>
-                                            <ChevronRightIcon className="w-5 h-5 text-foreground/40" />
+                                            <div className="flex items-center gap-2 relative z-10">
+                                                {dbUser?.role === 'VENDOR' && pendingOrderCount > 0 && (
+                                                    <span className="bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full min-w-[16px] h-4 flex items-center justify-center shadow-lg">
+                                                        {pendingOrderCount}
+                                                    </span>
+                                                )}
+                                                <ChevronRightIcon className="w-5 h-5 text-foreground/40" />
+                                            </div>
                                         </Link>
                                     </div>
-
-                                    {/* HUSTLE: RUNNER */}
-                                    {dbUser?.role !== 'VENDOR' && (
-                                        <div className="mb-6 p-1 -mt-4">
-                                            <Link
-                                                href={dbUser?.isRunner ? "/runner" : "/runner"}
-                                                onClick={() => setIsDrawerOpen(false)}
-                                                className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-background to-surface border border-yellow-500/30 rounded-2xl shadow-lg relative overflow-hidden group"
-                                            >
-                                                <div className="absolute inset-0 bg-yellow-500/5 group-hover:bg-yellow-500/10 transition-colors"></div>
-                                                <div className="flex items-center gap-3 relative z-10">
-                                                    <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center text-black">
-                                                        <ZapIcon className="w-5 h-5" />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-black text-foreground uppercase tracking-widest">
-                                                            {dbUser?.isRunner ? 'Runner Mode' : 'Become a Runner'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <ChevronRightIcon className="w-5 h-5 text-foreground/40" />
-                                            </Link>
-                                        </div>
-                                    )}
 
                                     <div className="mb-6">
                                         <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3 px-2">
                                             Shop & Save
                                         </h3>
                                         <DrawerLink href="/" icon={<StoreIcon className="w-5 h-5" />} label="Marketplace" setIsOpen={setIsDrawerOpen} active={isActive('/')} />
-                                        <DrawerLink href="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} label="My Cart" setIsOpen={setIsDrawerOpen} badge={itemCount} active={isActive('/cart')} />
-                                        <DrawerLink href="/orders" icon={<PackageIcon className="w-5 h-5" />} label="My Orders" setIsOpen={setIsDrawerOpen} active={isActive('/orders')} />
+                                        <DrawerLink href="/services" icon={<Tag className="w-5 h-5" />} label="Services" setIsOpen={setIsDrawerOpen} active={isActive('/services')} />
+                                        <div
+                                            onClick={() => {
+                                                setIsDrawerOpen(false);
+                                                setCartDrawerOpen(true);
+                                            }}
+                                            className="flex items-center justify-between p-3 rounded-xl transition-all hover:bg-surface/50 cursor-pointer"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <span className="text-foreground/60"><ShoppingCartIcon className="w-5 h-5" /></span>
+                                                <span className="font-bold text-sm uppercase tracking-tight text-foreground/70">My Cart</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {itemCount > 0 && <span className="px-2 py-0.5 bg-primary text-primary-foreground text-[10px] font-black rounded-full">{itemCount}</span>}
+                                                <ChevronRightIcon className="w-4 h-4 text-foreground/20" />
+                                            </div>
+                                        </div>
+                                        <DrawerLink href="/orders" icon={<PackageIcon className="w-5 h-5" />} label="My Orders" setIsOpen={setIsDrawerOpen} active={isActive('/orders')} badge={dbUser?.role === 'VENDOR' ? pendingOrderCount : 0} />
+                                        <DrawerLink href="/dashboard/services" icon={<Tag className="w-5 h-5" />} label="My Services" setIsOpen={setIsDrawerOpen} active={pathname?.startsWith('/dashboard/services')} />
+                                        <DrawerLink href="/wishlist" icon={<HeartIcon className="w-5 h-5" />} label="Wishlist" setIsOpen={setIsDrawerOpen} active={isActive('/wishlist')} badge={wishlistCount} />
                                         <DrawerLink href="/security-setup" icon={<Shield className="w-5 h-5 text-blue-500" />} label="OMNI Security" setIsOpen={setIsDrawerOpen} active={isActive('/security-setup')} />
                                         <DrawerLink href="/settings" icon={<Settings className="w-5 h-5" />} label="Settings" setIsOpen={setIsDrawerOpen} active={isActive('/settings')} />
                                     </div>
 
                                     {/* Specialized Modes */}
-                                    {(dbUser?.role === 'VENDOR' || dbUser?.role === 'ADMIN') && (
+                                    {dbUser?.role === 'ADMIN' && (
                                         <div className="mb-6 p-4 bg-surface rounded-2xl border border-surface-border">
                                             <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3">
-                                                Business Terminal
+                                                Admin Dashboard
                                             </h3>
-                                            {dbUser?.role === 'VENDOR' && (
-                                                <DrawerLink href="/dashboard/vendor" icon={<StoreIcon className="w-5 h-5 text-[#39FF14]" />} label="Vendor Dashboard" setIsOpen={setIsDrawerOpen} active={isActive('/dashboard/vendor')} className="text-[#39FF14]" />
-                                            )}
-                                            {dbUser?.role === 'ADMIN' && (
-                                                <DrawerLink href="/dashboard/admin" icon={<ZapIcon className="w-5 h-5 text-red-500" />} label="Admin Command" setIsOpen={setIsDrawerOpen} active={isActive('/dashboard/admin')} className="text-red-500" />
-                                            )}
+                                            <DrawerLink href="/dashboard/admin" icon={<ZapIcon className="w-5 h-5 text-red-500" />} label="Admin Command" setIsOpen={setIsDrawerOpen} active={isActive('/dashboard/admin')} className="text-red-500" />
                                         </div>
                                     )}
 
@@ -443,6 +507,9 @@ export default function Navbar() {
                     </>
                 )}
             </AnimatePresence>
+
+            {/* Cart Drawer Component */}
+            <CartDrawer isOpen={cartDrawerOpen} onClose={() => setCartDrawerOpen(false)} />
         </>
     );
 }
@@ -454,7 +521,7 @@ function DrawerLink({ href, icon, label, setIsOpen, active, badge, live, classNa
             id={id}
             href={href}
             onClick={() => setIsOpen(false)}
-            className={`flex items-center justify-between p-3 rounded-xl transition-all ${active ? 'bg-surface border border-surface-border shadow-sm' : 'hover:bg-surface/50'} ${className}`}
+            className={`flex items-center justify-between p-3 rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${active ? 'bg-surface border border-surface-border shadow-sm' : 'hover:bg-surface/50'} ${className}`}
         >
             <div className="flex items-center gap-4">
                 <span className={`text-foreground/60 ${active ? 'text-foreground' : ''}`}>{icon}</span>

@@ -34,41 +34,19 @@ export async function POST(
         }
 
         if (order.status !== 'READY') {
-            return NextResponse.json({ error: 'Order must be READY to self-deliver' }, { status: 400 });
+            return NextResponse.json({ error: 'Order must be READY to be completed' }, { status: 400 });
         }
 
-        if (order.runnerId) {
-            return NextResponse.json({ error: 'Order already has a runner' }, { status: 400 });
-        }
-
-        // Execute Self-Delivery Assignment
-        await prisma.$transaction(async (tx) => {
-            // Update Order
-            await tx.order.update({
-                where: { id: orderId },
-                data: {
-                    runnerId: user.id,
-                    status: 'PICKED_UP',
-                    pickedUpAt: new Date(),
-                }
-            });
-
-            // Create/Update Mission
-            await tx.mission.upsert({
-                where: { orderId: orderId },
-                create: {
-                    orderId: orderId,
-                    runnerId: user.id,
-                    status: 'PICKED_UP'
-                },
-                update: {
-                    runnerId: user.id,
-                    status: 'PICKED_UP'
-                }
-            });
+        await prisma.order.update({
+            where: { id: orderId },
+            data: {
+                status: 'COMPLETED',
+                escrowStatus: 'RELEASED',
+                deliveredAt: new Date(),
+            }
         });
 
-        return NextResponse.json({ success: true, message: 'Self-delivery activated' });
+        return NextResponse.json({ success: true, message: 'Order completed' });
 
     } catch (error) {
         console.error('Self-delivery Error:', error);

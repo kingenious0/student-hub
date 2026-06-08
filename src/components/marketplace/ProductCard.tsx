@@ -4,11 +4,12 @@
 import { useState, useEffect } from 'react';
 import { useModal } from '@/context/ModalContext';
 import { motion } from 'framer-motion';
-import { ZapIcon, MapPinIcon, PlusIcon } from '@/components/ui/Icons';
+import { MapPinIcon, PlusIcon } from '@/components/ui/Icons';
 import { useCartStore } from '@/lib/store/cart';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import Image from 'next/image';
 import { toast } from 'sonner';
 
 // Custom Star Icon
@@ -26,9 +27,10 @@ interface Product {
     category: { name: string; icon: string | null };
     vendor: { name: string; currentHotspot: string | null };
     hotspot: string | null;
-    // New Fields
     averageRating?: number;
     totalReviews?: number;
+    viewCount?: number;
+    salesCount?: number;
     isInStock?: boolean;
     stockQuantity?: number;
     flashSale?: {
@@ -126,9 +128,11 @@ export default function ProductCard({
             {/* Image Container - Aspect Square */}
             <div className="aspect-square relative flex items-center justify-center bg-muted overflow-hidden">
                 {product.imageUrl ? (
-                    <img
+                    <Image
                         src={product.imageUrl}
                         alt={product.title}
+                        fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
                     />
@@ -140,13 +144,7 @@ export default function ProductCard({
 
                 {/* Overlay: Badges */}
                 <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-                    {/* Hotspot Badge */}
-                    {product.hotspot && (
-                        <Badge variant="secondary" className="bg-black/60 text-white backdrop-blur-md text-[10px] px-2 h-5 gap-1 border-0">
-                            <MapPinIcon className="w-3 h-3 text-primary" />
-                            {product.hotspot}
-                        </Badge>
-                    )}
+
                     {/* External Custom Badge (from SmartFeed) */}
                     {badge && (
                         <Badge className={`${badgeColor || 'bg-primary'} text-white text-[10px] px-2 h-5 border-0`}>
@@ -217,6 +215,27 @@ export default function ProductCard({
                         <span className="text-[10px] text-muted-foreground font-medium">({reviewCount})</span>
                     </div>
                 )}
+
+                {/* Social Proof */}
+                <div className="flex items-center gap-2 pt-0.5">
+                    {(product.viewCount ?? 0) > 50 && (
+                        <span className="text-[9px] font-bold text-foreground/40 uppercase tracking-wider flex items-center gap-1">
+                            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            {product.viewCount}
+                        </span>
+                    )}
+                    {(product.salesCount ?? 0) > 0 && (
+                        <span className="text-[9px] font-bold text-primary/60 uppercase tracking-wider flex items-center gap-1">
+                            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            {product.salesCount}
+                        </span>
+                    )}
+                </div>
 
                 {/* Price */}
                 <div className="flex items-baseline gap-2 pt-1">

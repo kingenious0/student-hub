@@ -187,7 +187,7 @@ export default function BecomeVendorPage() {
                         <BenefitCard 
                             icon="🚀" 
                             title="Fast Delivery" 
-                            description="Our campus runner network delivers within 15-30 minutes. Happy customers!" 
+                            description="Offer fast delivery to earn more customers." 
                         />
                         <BenefitCard 
                             icon="📊" 

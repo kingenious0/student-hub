@@ -34,53 +34,18 @@ export async function POST(request: NextRequest) {
 
         console.log(`[PaymentVerify] Paystack Success. Amount: ${verification.data.amount}`);
 
-        // 2. Find OrderGroup
-        const orderGroup = await prisma.orderGroup.findUnique({
-            where: { paystackRef: reference },
-            include: { orders: true }
-        });
+        // 2. Process payment verification using the shared helper
+        const { confirmOrderGroupPayment } = await import('@/lib/payments/verify');
+        const result = await confirmOrderGroupPayment(reference);
 
-        if (!orderGroup) {
-            console.error(`[PaymentVerify] OrderGroup Not Found for ref: ${reference}`);
-            return NextResponse.json({ error: 'Order Record Not Found', ref: reference }, { status: 404 });
+        if (!result.success) {
+            return NextResponse.json({ error: result.error || 'Verification Failed' }, { status: result.status || 400 });
         }
-
-        // Idempotency check (if already paid, return existing)
-        // Group doesn't have explicit paid status yet (I added 'status' in schema but check orders)
-        const isAlreadyPaid = orderGroup.orders.some(o => o.status !== 'PENDING' && o.status !== 'CANCELLED');
-
-        if (isAlreadyPaid) {
-            return NextResponse.json({
-                success: true,
-                message: 'Payment already processed',
-            });
-        }
-
-        // 3. Process Payments & Generate Keys
-        // We update each order individually to give unique keys
-        const updates = orderGroup.orders.map(async (order) => {
-            const releaseKey = Math.floor(100000 + Math.random() * 900000).toString();
-            return prisma.order.update({
-                where: { id: order.id },
-                data: {
-                    status: 'PAID',
-                    escrowStatus: 'HELD',
-                    releaseKey: releaseKey,
-                    paidAt: new Date()
-                }
-            });
-        });
-
-        const updatedOrders = await Promise.all(updates);
-
-        // Update Group Status? (Optional, if I added status field)
-        // prisma.orderGroup.update(...)
 
         return NextResponse.json({
             success: true,
             message: 'Payment verified. Orders confirmed.',
-            order: updatedOrders[0],
-            orders: updatedOrders
+            orders: result.orders
         });
 
     } catch (error) {

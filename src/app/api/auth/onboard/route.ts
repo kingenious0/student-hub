@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 import { createGeofence } from '@/lib/location/radar-server';
+import { linkGuestOrdersByPhone } from '@/lib/orders/link-guest-orders';
 
 export async function POST(request: NextRequest) {
     try {
@@ -42,11 +43,11 @@ export async function POST(request: NextRequest) {
 
         // Everyone starts as STUDENT by default (Jumia-style)
         // They can apply to become a vendor later via /become-vendor
-        await prisma.user.upsert({
+        const newUser = await prisma.user.upsert({
             where: { clerkId: userId },
             update: {
                 name: name,
-                university: university || 'KNUST',
+                university: university || 'USTED',
                 onboarded: true,
                 phoneNumber: phoneNumber
             },
@@ -55,16 +56,33 @@ export async function POST(request: NextRequest) {
                 email: email,
                 name: name,
                 role: 'STUDENT', // Everyone starts as STUDENT
-                university: university || 'KNUST',
+                university: university || 'USTED',
                 onboarded: true,
                 vendorStatus: 'NOT_APPLICABLE',
                 phoneNumber: phoneNumber
             }
         });
 
-        // Create response - We DO NOT set the identity cookie here anymore.
-        // User must complete security setup to get the cookie.
-        const response = NextResponse.json({ success: true });
+        // Link any guest orders from previous guest checkout using the same phone number
+        let linkedOrderCount = 0;
+        if (phoneNumber) {
+            linkedOrderCount = await linkGuestOrdersByPhone(phoneNumber, newUser.id);
+            if (linkedOrderCount > 0) {
+                console.log(`[Onboarding] Linked ${linkedOrderCount} guest order(s) to user ${newUser.id}`);
+            }
+        }
+
+        // Create response - For the USTED MVP, we set the identity cookie directly
+        // after onboarding to allow frictionless access without high-friction biometric gating.
+        const response = NextResponse.json({ success: true, linkedOrders: linkedOrderCount });
+        
+        response.cookies.set('OMNI_IDENTITY_VERIFIED', 'TRUE', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 30, // 30 days
+            path: '/',
+        });
         
         return response;
     } catch (error) {

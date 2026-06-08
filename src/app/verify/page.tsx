@@ -53,6 +53,14 @@ export default function VerifyIdentityPage() {
         setHasPasskey(data.hasPasskey)
         setHasPin(!!data.securityPin)
 
+        // If security onboarding was completed but they skipped setting up both PIN and Passkey,
+        // it means security protocols are optional and not enabled for this user.
+        // We auto-verify them immediately to prevent an authentication dead-lock.
+        if (data.securitySetupComplete && !data.hasPasskey && !data.securityPin) {
+          handleSuccess()
+          return
+        }
+
         if (!data.securitySetupComplete && !data.hasPasskey && !data.securityPin) {
           router.push('/security-setup')
           return
@@ -310,7 +318,7 @@ export default function VerifyIdentityPage() {
 
           {/* Footer HUD */}
           <div className="mt-12 flex justify-between items-center font-mono text-[7px] text-foreground/20 italic font-black uppercase tracking-widest">
-            <span>Auth_Server: v2.0.4</span>
+            <span>System_Core: Online</span>
             <span className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-[#39FF14] rounded-full animate-pulse" />
               Connection_Encrypted

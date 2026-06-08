@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useUser } from '@clerk/nextjs';
 
 interface FeedProduct {
@@ -73,7 +74,7 @@ export default function SmartFeed() {
                 </div>
                 <div className="space-y-4 max-w-md px-4">
                     <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">
-                        AAMUSTED’s Biggest Hustle is About to Begin
+                        USTED's Biggest Hustle is About to Begin
                     </h2>
                     <p className="text-sm text-foreground/60 font-medium leading-relaxed">
                         The marketplace is fresh, and the opportunity is huge. <br />
@@ -175,7 +176,14 @@ function ProductCard({ product, index, compact = false, badge, badgeColor = 'bg-
             >
                 <div className={`${compact ? 'h-32' : 'h-40 md:h-56'} bg-background relative overflow-hidden flex-shrink-0`}>
                     {product.imageUrl ? (
-                        <img src={product.imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
+                        <Image 
+                            src={product.imageUrl} 
+                            alt={product.title} 
+                            fill 
+                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw" 
+                            className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                            loading="lazy" 
+                        />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-3xl">📦</div>
                     )}

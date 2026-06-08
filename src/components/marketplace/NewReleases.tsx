@@ -167,9 +167,7 @@ export default function NewReleases() {
                                         </p>
 
                                         <div className="flex items-center gap-2 mb-6 flex-wrap">
-                                            <div className="px-2.5 py-1 bg-foreground/5 rounded-full text-[8px] font-black text-primary uppercase tracking-widest border border-primary/10">
-                                                📍 {product.hotspot || 'HQ'}
-                                            </div>
+
                                             <div className="px-2.5 py-1 bg-foreground/5 rounded-full text-[8px] font-black text-foreground/40 uppercase tracking-widest border border-foreground/10">
                                                 {product.category.name}
                                             </div>

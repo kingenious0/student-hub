@@ -124,47 +124,47 @@ export function ModalProvider({ children }: { children: ReactNode }) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+                        className="fixed inset-0 z-[10000] bg-black/75 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
                         onClick={handleCancel}
                     >
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 50 }}
+                            initial={{ scale: 0.95, opacity: 0, y: 30 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 50 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 30 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className={`w-full max-w-[420px] glass-strong rounded-[2.5rem] border-2 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden ${config.variant === 'error' ? 'border-red-500/30' : 'border-primary/20'
+                            className={`w-full max-w-[360px] sm:max-w-[390px] bg-zinc-950/98 rounded-[2rem] border-2 shadow-[0_0_50px_rgba(0,0,0,0.7)] overflow-hidden ${config.variant === 'error' ? 'border-red-500/40' : 'border-emerald-500/30'
                                 }`}
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Visual Header */}
-                            <div className="pt-12 pb-6 flex flex-col items-center gap-6 relative px-8">
+                            <div className="pt-8 pb-4 flex flex-col items-center gap-4 relative px-6">
                                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-primary/10 blur-[60px] rounded-full pointer-events-none" />
-                                <div className="relative z-10 bg-white/5 p-4 rounded-3xl border border-white/10 shadow-2xl">
-                                    {getIcon()}
+                                <div className="relative z-10 bg-white/5 p-3 rounded-2xl border border-white/10 shadow-2xl">
+                                    <div className="scale-90">{getIcon()}</div>
                                 </div>
                                 <div className="text-center relative z-10">
-                                    <h3 className="text-xl font-black uppercase tracking-[0.2em] text-white mb-2">
+                                    <h3 className="text-sm sm:text-md font-black uppercase tracking-[0.2em] text-white mb-1.5 px-2">
                                         {config.title}
                                     </h3>
-                                    <div className="w-12 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto rounded-full" />
+                                    <div className="w-10 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto rounded-full" />
                                 </div>
                             </div>
 
                             {/* Message */}
-                            <div className="px-10 pb-10">
-                                <p className="text-white/60 text-center font-bold text-sm tracking-tight leading-relaxed uppercase">
+                            <div className="px-6 sm:px-8 pb-6 pt-2">
+                                <p className="text-zinc-300 text-center font-bold text-xs uppercase tracking-wider leading-relaxed">
                                     {config.message}
                                 </p>
 
                                 {config.type === 'PROMPT' && (
-                                    <div className="mt-8 relative group">
-                                        <div className="absolute -inset-1 bg-primary/20 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+                                    <div className="mt-6 relative group">
+                                        <div className="absolute -inset-1 bg-primary/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
                                         <input
                                             type="text"
                                             value={inputValue}
                                             onChange={(e) => setInputValue(e.target.value)}
                                             placeholder={config.placeholder}
-                                            className="relative w-full bg-black/40 border-2 border-white/5 rounded-2xl px-6 py-4 text-white font-black uppercase text-xs tracking-widest placeholder:text-white/20 focus:border-primary/50 focus:outline-none transition-all"
+                                            className="relative w-full bg-black/40 border border-white/5 rounded-xl px-5 py-3 text-white font-black uppercase text-xs tracking-widest placeholder:text-white/20 focus:border-primary/50 focus:outline-none transition-all"
                                             autoFocus
                                             onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
                                         />
@@ -173,20 +173,20 @@ export function ModalProvider({ children }: { children: ReactNode }) {
                             </div>
 
                             {/* Actions */}
-                            <div className="p-4 bg-white/[0.02] border-t border-white/5 flex gap-4">
+                            <div className="p-3 bg-white/[0.02] border-t border-zinc-800/40 flex gap-3">
                                 {config.cancelText && (
                                     <button
                                         onClick={handleCancel}
-                                        className="flex-1 py-5 rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] text-white/40 hover:text-white hover:bg-white/10 transition-all border border-transparent hover:border-white/10"
+                                        className="flex-1 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] text-white/40 hover:text-white hover:bg-white/10 transition-all border border-white/5 hover:border-white/10"
                                     >
                                         {config.cancelText}
                                     </button>
                                 )}
                                 <button
                                     onClick={handleConfirm}
-                                    className={`flex-1 py-5 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.3em] transition-all omni-glow active:scale-95 ${config.variant === 'error'
-                                            ? 'bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]'
-                                            : 'bg-primary text-primary-foreground shadow-[0_0_20px_rgba(var(--primary-glow))]'
+                                    className={`flex-1 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[0.25em] transition-all omni-glow active:scale-95 ${config.variant === 'error'
+                                            ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)]'
+                                            : 'bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-glow))]'
                                         }`}
                                 >
                                     {config.confirmText || 'Acknowledge'}

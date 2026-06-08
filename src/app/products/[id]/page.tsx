@@ -1,19 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { SignedIn, SignedOut, useUser, useClerk } from '@clerk/nextjs';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { useCartStore } from '@/lib/store/cart';
+import { useWishlistStore } from '@/lib/store/wishlist';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import ImageGallery from 'react-image-gallery';
-import 'react-image-gallery/styles/css/image-gallery.css'; // Ensure CSS is imported
+import 'react-image-gallery/styles/css/image-gallery.css';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ZapIcon, MapPinIcon, CheckCircleIcon, ClockIcon } from '@/components/ui/Icons';
-import { cn } from '@/lib/utils';
+import { ZapIcon, MapPinIcon, CheckCircleIcon, HeartIcon } from '@/components/ui/Icons';
+import ReviewList from '@/components/reviews/ReviewList';
+import ReviewForm from '@/components/reviews/ReviewForm';
+import ProductRecommendations from '@/components/marketplace/ProductRecommendations';
 import Link from 'next/link';
 
 // Custom Star Icon
@@ -31,12 +33,22 @@ export default function ProductDetailsPage() {
     const addToCart = useCartStore((state) => state.addToCart);
     const cartItems = useCartStore((state) => state.items);
     const [quantity, setQuantity] = useState(1);
-    const [isGhostAdmin, setIsGhostAdmin] = useState(false);
+    const { isInWishlist, addItem, removeItem } = useWishlistStore();
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [reviewListKey, setReviewListKey] = useState(0);
+    const [selectedModifiers, setSelectedModifiers] = useState<Record<string, string | string[]>>({});
+    const viewTrackedRef = useRef(false);
 
     // Initial Auth Check
+    const isGhostAdmin = typeof window !== 'undefined' && localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
+
+    // Track product view
     useEffect(() => {
-        setIsGhostAdmin(localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true');
-    }, []);
+        if (params.id && !viewTrackedRef.current) {
+            viewTrackedRef.current = true;
+            fetch(`/api/products/${params.id}/view`, { method: 'POST' }).catch(() => {});
+        }
+    }, [params.id]);
 
     // TanStack Query for caching and instant load
     const { data: product, isLoading, error } = useQuery({
@@ -91,11 +103,51 @@ export default function ProductDetailsPage() {
         galleryImages.unshift({ original: product.imageUrl, thumbnail: product.imageUrl });
     }
 
+    // Modifier helpers
+    const hasModifiers = product.hasModifiers && product.modifierGroups?.length > 0;
+
+    const getSelectedModifiersList = () => {
+        if (!hasModifiers) return [];
+        const list: Array<{ groupName: string; optionName: string; priceDiff: number }> = [];
+        for (const group of product.modifierGroups) {
+            const val = selectedModifiers[group.id];
+            if (!val) continue;
+            if (Array.isArray(val)) {
+                for (const optionId of val) {
+                    const opt = group.modifiers.find((m: any) => m.id === optionId);
+                    if (opt) list.push({ groupName: group.name, optionName: opt.name, priceDiff: opt.priceDiff });
+                }
+            } else {
+                const opt = group.modifiers.find((m: any) => m.id === val);
+                if (opt) list.push({ groupName: group.name, optionName: opt.name, priceDiff: opt.priceDiff });
+            }
+        }
+        return list;
+    };
+
+    const modifiersTotal = getSelectedModifiersList().reduce((sum, m) => sum + m.priceDiff, 0);
+    const effectivePrice = currentPrice + modifiersTotal;
+
+    const handleModifierChange = (groupId: string, optionId: string, maxSelect: number) => {
+        setSelectedModifiers(prev => {
+            if (maxSelect <= 1) {
+                return { ...prev, [groupId]: optionId };
+            }
+            const current = (prev[groupId] as string[]) || [];
+            if (current.includes(optionId)) {
+                return { ...prev, [groupId]: current.filter(id => id !== optionId) };
+            }
+            return { ...prev, [groupId]: [...current, optionId] };
+        });
+    };
+
     const handleAddToCart = () => {
         if (!user) {
             router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
             return;
         }
+
+        const modifiers = getSelectedModifiersList();
 
         addToCart({
             id: product.id,
@@ -104,11 +156,14 @@ export default function ProductDetailsPage() {
             imageUrl: product.imageUrl || '',
             vendorId: product.vendorId,
             vendorName: product.vendor.shopName || product.vendor.name,
-            flashSaleId: product.flashSale?.isActive ? 'active' : undefined
+            flashSaleId: product.flashSale?.isActive ? 'active' : undefined,
+            selectedModifiers: modifiers,
         }, quantity);
 
         toast.success(`${product.title} added to cart`, {
-            description: "Keep shopping or proceed to checkout.",
+            description: modifiers.length > 0
+                ? `With ${modifiers.map(m => m.optionName).join(', ')}`
+                : "Keep shopping or proceed to checkout.",
             action: {
                 label: "View Cart",
                 onClick: () => router.push('/cart')
@@ -117,12 +172,12 @@ export default function ProductDetailsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#050505] transition-colors duration-500 pb-32">
+        <div className="min-h-screen bg-background text-foreground transition-colors duration-500 pb-32">
             {/* Minimalist Sticky Header */}
             <motion.div
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
-                className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-black/5 dark:border-white/5"
+                className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-surface-border"
             >
                 <div className="max-w-7xl mx-auto px-4 md:px-8 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-6">
@@ -130,11 +185,12 @@ export default function ProductDetailsPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => router.back()}
-                            className="rounded-full hover:bg-black/5 dark:hover:bg-white/10"
+                            className="rounded-full hover:bg-foreground/10"
+                            aria-label="Go back"
                         >
                             <span className="text-xl">←</span>
                         </Button>
-                        <div className="h-6 w-px bg-black/10 dark:bg-white/10 hidden md:block"></div>
+                        <div className="h-6 w-px bg-foreground/10 hidden md:block"></div>
                         <span className="font-bold text-sm md:text-base tracking-tight opacity-0 md:opacity-100 transition-opacity">
                             {product.title}
                         </span>
@@ -162,12 +218,12 @@ export default function ProductDetailsPage() {
                     {/* LEFT COLUMN: Immersive Gallery */}
                     <div className="relative">
                         <div className="sticky top-32 space-y-8">
-                            <div className="relative rounded-[2rem] overflow-hidden bg-white dark:bg-zinc-900 shadow-2xl shadow-black/5 dark:shadow-white/5 border border-black/5 dark:border-white/5 group">
+                            <div className="relative rounded-[2rem] overflow-hidden bg-surface shadow-2xl shadow-foreground/5 border border-foreground/5 group" style={{ maxHeight: '70vh' }}>
                                 <ImageGallery
                                     items={galleryImages}
                                     showPlayButton={false}
-                                    showFullscreenButton={true}
-                                    showNav={true}
+                                    showFullscreenButton={false}
+                                    showNav={galleryImages.length > 1}
                                     autoPlay={false}
                                     infinite={true}
                                     showThumbnails={galleryImages.length > 1}
@@ -191,7 +247,7 @@ export default function ProductDetailsPage() {
 
                         {/* Breadcrumbs & Badges */}
                         <div className="flex flex-wrap items-center gap-3 mb-6">
-                            <Link href={`/category/${product.categoryId}`} className="px-3 py-1 rounded-full border border-black/10 dark:border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all">
+                            <Link href={`/category/${product.categoryId}`} className="px-3 py-1 rounded-full border border-surface-border text-[10px] font-black uppercase tracking-widest hover:bg-foreground hover:text-background transition-all">
                                 {product.category?.name || 'Collection'}
                             </Link>
                             {product.hotspot && (
@@ -208,12 +264,12 @@ export default function ProductDetailsPage() {
                         </div>
 
                         {/* Product Title */}
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-black dark:text-white tracking-tighter leading-[0.9] mb-6">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tighter leading-[0.9] mb-6">
                             {product.title}
                         </h1>
 
                         {/* Ratings & Vendor */}
-                        <div className="flex items-center gap-6 mb-8 pb-8 border-b border-black/5 dark:border-white/5">
+                        <div className="flex items-center gap-6 mb-6 pb-6 border-b border-surface-border flex-wrap">
                             <div className="flex items-center gap-2">
                                 <div className="flex text-primary">
                                     {[...Array(5)].map((_, i) => (
@@ -222,7 +278,7 @@ export default function ProductDetailsPage() {
                                 </div>
                                 <span className="text-sm font-bold opacity-60">({reviewCount} verified reviews)</span>
                             </div>
-                            <div className="h-4 w-px bg-black/10 dark:bg-white/10"></div>
+                            <div className="h-4 w-px bg-foreground/10"></div>
                             <div className="flex items-center gap-2 text-sm">
                                 <span className="opacity-60">Sold by</span>
                                 <Link
@@ -231,18 +287,64 @@ export default function ProductDetailsPage() {
                                 >
                                     {product.vendor.shopName || product.vendor.name}
                                 </Link>
+                                {product.vendor.phoneNumber && (
+                                    <>
+                                        <span className="h-4 w-px bg-foreground/10"></span>
+                                        <a
+                                            href={`tel:${product.vendor.phoneNumber}`}
+                                            className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-full transition-all"
+                                        >
+                                            <svg className="w-3 h-3 fill-current inline-block mr-1" viewBox="0 0 24 24">
+                                                <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.57a1 1 0 00-1.01.24l-2.2 2.2a15.09 15.09 0 01-6.59-6.59l2.2-2.2a1 1 0 00.24-1.01 11.4 11.4 0 01-.57-3.53A1 1 0 0011 3H4a1 1 0 00-1 1 17 17 0 0017 17 1 1 0 001 -1v-7a1 1 0 00-1-1z" />
+                                            </svg>
+                                            Call Vendor
+                                        </a>
+                                    </>
+                                )}
                             </div>
+                        </div>
+
+                        {/* Social Proof Badges */}
+                        <div className="flex items-center gap-4 mb-6 flex-wrap">
+                            {product.viewCount > 0 && (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground/5 text-foreground/60 text-[10px] font-bold uppercase tracking-wider">
+                                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                    {product.viewCount} views
+                                </div>
+                            )}
+                            {product.salesCount > 0 && (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider">
+                                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    {product.salesCount} sold
+                                </div>
+                            )}
+                            {!isOutOfStock && product.stockQuantity !== undefined && product.stockQuantity > 10 && (
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-wider">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                    In Stock
+                                </div>
+                            )}
                         </div>
 
                         {/* Price Block */}
                         <div className="mb-8">
-                            <div className="flex items-baseline gap-4">
-                                <span className="text-6xl font-black tracking-tighter text-black dark:text-white">
-                                    ₵{currentPrice.toFixed(2)}
+                            <div className="flex items-baseline gap-4 flex-wrap">
+                                <span className="text-6xl font-black tracking-tighter text-foreground">
+                                    ₵{effectivePrice.toFixed(2)}
                                 </span>
                                 {isOnSale && originalPrice && (
-                                    <span className="text-xl font-medium text-black/40 dark:text-white/40 line-through decoration-2 decoration-red-500/50">
+                                    <span className="text-xl font-bold text-foreground/40 line-through decoration-2 decoration-red-500/50">
                                         ₵{originalPrice.toFixed(2)}
+                                    </span>
+                                )}
+                                {modifiersTotal > 0 && (
+                                    <span className="text-sm font-bold text-emerald-500">
+                                        (+₵{modifiersTotal.toFixed(2)} customization)
                                     </span>
                                 )}
                             </div>
@@ -253,8 +355,63 @@ export default function ProductDetailsPage() {
                             )}
                         </div>
 
+                        {/* Modifier Groups — food customization */}
+                        {hasModifiers && (
+                            <div className="mb-8 space-y-4">
+                                <h3 className="text-sm font-black uppercase tracking-wider text-foreground/60">Customize Your Order</h3>
+                                {product.modifierGroups.map((group: any) => (
+                                    <div key={group.id} className="p-4 rounded-2xl border border-surface-border bg-background/50">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="text-xs font-black uppercase tracking-wider">{group.name}</span>
+                                            <div className="flex items-center gap-2">
+                                                {group.isRequired && (
+                                                    <span className="text-[10px] font-bold uppercase text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full">Required</span>
+                                                )}
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    {group.maxSelect === 1 ? 'Choose 1' : `Choose up to ${group.maxSelect}`}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {group.modifiers.map((mod: any) => {
+                                                const isSelected = group.maxSelect <= 1
+                                                    ? selectedModifiers[group.id] === mod.id
+                                                    : (selectedModifiers[group.id] as string[])?.includes(mod.id);
+                                                return (
+                                                    <button
+                                                        key={mod.id}
+                                                        type="button"
+                                                        onClick={() => handleModifierChange(group.id, mod.id, group.maxSelect)}
+                                                        className={`w-full flex items-center justify-between p-3 rounded-xl border-2 text-left transition-all active:scale-[0.98] touch-manipulation ${
+                                                            isSelected
+                                                                ? 'border-primary bg-primary/5 text-foreground'
+                                                                : 'border-transparent bg-foreground/5 text-foreground/70 hover:text-foreground hover:bg-foreground/10'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                                                isSelected ? 'border-primary' : 'border-foreground/30'
+                                                            }`}>
+                                                                {isSelected && (
+                                                                    <div className={`w-2.5 h-2.5 rounded-full bg-primary ${group.maxSelect > 1 ? 'rounded-sm' : ''}`} />
+                                                                )}
+                                                            </div>
+                                                            <span className="text-sm font-bold">{mod.name}</span>
+                                                        </div>
+                                                        <span className={`text-xs font-bold ${mod.priceDiff > 0 ? 'text-emerald-500' : 'text-muted-foreground'} shrink-0 ml-2`}>
+                                                            {mod.priceDiff > 0 ? `+₵${mod.priceDiff.toFixed(2)}` : 'Free'}
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                         {/* Action Module */}
-                        <div className="p-1 rounded-[2rem] bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900 dark:to-black border border-black/5 dark:border-white/5 shadow-xl shadow-black/5 dark:shadow-white/5 mb-10">
+                        <div className="p-1 rounded-[2rem] bg-gradient-to-b from-surface to-background border border-surface-border shadow-xl shadow-foreground/5 mb-10">
                             <div className="p-6 md:p-8">
                                 {/* Stock Status Text */}
                                 <div className="mb-6 flex items-center justify-between">
@@ -280,23 +437,47 @@ export default function ProductDetailsPage() {
 
                                 {/* Controls */}
                                 <div className="space-y-4">
-                                    <div className="flex gap-4">
-                                        {/* Quantity Pill */}
-                                        <div className="flex items-center bg-black/5 dark:bg-white/5 rounded-full p-1 border border-black/5 dark:border-white/5 h-16 w-40">
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <div className="flex gap-4 w-full sm:w-auto">
+                                            {/* Quantity Pill */}
+                                            <div className="flex-1 sm:flex-initial flex items-center bg-foreground/5 rounded-full p-1 border border-surface-border h-16 w-full sm:w-40">
+                                                <button
+                                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                                    disabled={quantity <= 1 || isOutOfStock}
+                                                    aria-label="Decrease quantity"
+                                                    className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                >
+                                                    −
+                                                </button>
+                                                <span className="flex-1 text-center font-black text-xl tabular-nums">{quantity}</span>
+                                                <button
+                                                    onClick={() => setQuantity(quantity + 1)}
+                                                    disabled={isOutOfStock}
+                                                    aria-label="Increase quantity"
+                                                    className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-foreground/10 rounded-full transition-all disabled:opacity-30 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+
+                                            {/* Wishlist Button */}
                                             <button
-                                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                                disabled={quantity <= 1 || isOutOfStock}
-                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white dark:hover:bg-zinc-800 rounded-full transition-all disabled:opacity-30"
+                                                onClick={() => {
+                                                    if (isInWishlist(product.id)) {
+                                                        removeItem(product.id);
+                                                        toast.success('Removed from wishlist');
+                                                    } else {
+                                                        addItem(product.id);
+                                                        toast.success('Added to wishlist');
+                                                    }
+                                                }}
+                                                aria-label={isInWishlist(product.id) ? 'Remove from wishlist' : 'Add to wishlist'}
+                                                className={`w-16 h-16 rounded-full border flex items-center justify-center transition-all flex-shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${isInWishlist(product.id)
+                                                        ? 'bg-red-500/10 border-red-500/30 text-red-500'
+                                                        : 'bg-foreground/5 border-surface-border text-foreground/40 hover:text-red-500 hover:border-red-500/30'
+                                                    }`}
                                             >
-                                                −
-                                            </button>
-                                            <span className="flex-1 text-center font-black text-xl tabular-nums">{quantity}</span>
-                                            <button
-                                                onClick={() => setQuantity(quantity + 1)}
-                                                disabled={isOutOfStock}
-                                                className="w-12 h-full flex items-center justify-center text-xl font-medium hover:bg-white dark:hover:bg-zinc-800 rounded-full transition-all disabled:opacity-30"
-                                            >
-                                                +
+                                                <HeartIcon className={`w-6 h-6 transition-all ${isInWishlist(product.id) ? 'fill-current scale-110' : ''}`} />
                                             </button>
                                         </div>
 
@@ -304,25 +485,38 @@ export default function ProductDetailsPage() {
                                         <button
                                             onClick={handleAddToCart}
                                             disabled={isOutOfStock || isGhostAdmin}
-                                            className="flex-1 h-16 bg-black dark:bg-white text-white dark:text-black rounded-full font-black text-sm md:text-base uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-black/20 dark:shadow-white/20 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3"
+                                            className="w-full sm:flex-1 h-16 bg-primary text-black rounded-full font-black text-sm md:text-base uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                         >
                                             <div className="w-1 h-1 rounded-full bg-current"></div>
                                             {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
                                         </button>
                                     </div>
 
-                                    {/* Quick Buy Button */}
+                                    {/* Instant Checkout */}
                                     <button
-                                        onClick={handleAddToCart}
+                                        onClick={() => {
+                                            if (!user) {
+                                                router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
+                                                return;
+                                            }
+                                            const modifiers = getSelectedModifiersList();
+                                            sessionStorage.setItem('omni_checkout_modifiers', JSON.stringify({
+                                                productId: product.id,
+                                                quantity,
+                                                selectedModifiers: modifiers,
+                                                effectivePrice,
+                                            }));
+                                            router.push(`/checkout/${product.id}?quantity=${quantity}`);
+                                        }}
                                         disabled={isOutOfStock || isGhostAdmin}
-                                        className="w-full h-14 rounded-full border-2 border-black/10 dark:border-white/10 font-bold uppercase tracking-widest text-xs hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                                        className="w-full h-14 rounded-full border-2 border-primary/30 bg-primary/5 font-black uppercase tracking-widest text-xs text-primary hover:bg-primary/10 hover:border-primary/50 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
                                         Instant Checkout
                                     </button>
                                 </div>
 
                                 {/* Trust Indicators */}
-                                <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-dashed border-black/10 dark:border-white/10">
+                                <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-dashed border-surface-border">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
                                             <ZapIcon className="w-5 h-5" />
@@ -348,12 +542,12 @@ export default function ProductDetailsPage() {
                         {/* Content Tabs */}
                         <div className="mt-8">
                             <Tabs defaultValue="details" className="w-full">
-                                <TabsList className="w-full bg-transparent border-b border-black/5 dark:border-white/5 p-0 h-auto gap-8 justify-start rounded-none">
+                                <TabsList className="w-full bg-transparent border-b border-surface-border p-0 h-auto gap-8 justify-start rounded-none">
                                     {['details', 'specs', 'reviews'].map(tab => (
                                         <TabsTrigger
                                             key={tab}
                                             value={tab}
-                                            className="bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-4 font-black text-xs uppercase tracking-widest text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors shadow-none"
+                                            className="bg-transparent data-[state=active]:bg-transparent border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-0 py-4 font-black text-xs uppercase tracking-widest text-foreground/40 hover:text-foreground transition-colors shadow-none data-[state=active]:shadow-none"
                                         >
                                             {tab}
                                         </TabsTrigger>
@@ -365,7 +559,7 @@ export default function ProductDetailsPage() {
                                         <motion.div
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            className="prose prose-lg prose-neutral dark:prose-invert max-w-none leading-relaxed font-light"
+                                            className="prose prose-lg prose-neutral prose-invert max-w-none leading-relaxed font-light"
                                             dangerouslySetInnerHTML={{ __html: product.description || '<p class="opacity-50 italic">No description available.</p>' }}
                                         />
                                     </TabsContent>
@@ -376,16 +570,16 @@ export default function ProductDetailsPage() {
                                             animate={{ opacity: 1, y: 0 }}
                                             className="grid grid-cols-1 md:grid-cols-2 gap-4"
                                         >
-                                            <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 flex justify-between items-center">
+                                            <div className="p-4 rounded-xl bg-black/5 bg-foreground/5 flex justify-between items-center">
                                                 <span className="font-bold text-xs uppercase tracking-widest opacity-50">Condition</span>
                                                 <span className="font-medium">New</span>
                                             </div>
-                                            <div className="p-4 rounded-xl bg-black/5 dark:bg-white/5 flex justify-between items-center">
+                                            <div className="p-4 rounded-xl bg-black/5 bg-foreground/5 flex justify-between items-center">
                                                 <span className="font-bold text-xs uppercase tracking-widest opacity-50">Category</span>
                                                 <span className="font-medium">{product.category?.name}</span>
                                             </div>
                                             {product.details && Object.entries(product.details).map(([key, value]) => (
-                                                <div key={key} className="p-4 rounded-xl bg-black/5 dark:bg-white/5 flex justify-between items-center">
+                                                <div key={key} className="p-4 rounded-xl bg-black/5 bg-foreground/5 flex justify-between items-center">
                                                     <span className="font-bold text-xs uppercase tracking-widest opacity-50 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
                                                     <span className="font-medium">{String(value)}</span>
                                                 </div>
@@ -393,12 +587,61 @@ export default function ProductDetailsPage() {
                                         </motion.div>
                                     </TabsContent>
 
-                                    <TabsContent key="reviews" value="reviews" className="mt-8 focus:outline-none">
-                                        <div className="text-center py-24 border border-dashed border-black/10 dark:border-white/10 rounded-3xl">
-                                            <div className="text-4xl mb-4 opacity-20">💬</div>
-                                            <p className="font-black text-sm uppercase tracking-widest mb-4 opacity-50">No reviews yet</p>
-                                            <Button variant="outline" className="rounded-full">Be the first to review</Button>
-                                        </div>
+                                    <TabsContent key="reviews" value="reviews" className="mt-8 space-y-8 focus:outline-none">
+                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6 rounded-2xl bg-black/5 bg-foreground/5 border border-black/5 border-foreground/5">
+                                                <div className="flex items-center gap-5">
+                                                    <span className="text-5xl font-black tabular-nums text-foreground">{rating.toFixed(1)}</span>
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex text-primary">
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <StarIcon key={i} className="w-4 h-4" fill={i < Math.round(rating)} />
+                                                            ))}
+                                                        </div>
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-foreground/40">
+                                                            {reviewCount} review{reviewCount !== 1 ? 's' : ''}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <ReviewList key={reviewListKey} productId={params.id as string} />
+
+                                            <div className="border-t border-black/5 border-foreground/5 pt-8">
+                                                {user ? (
+                                                    <>
+                                                        {showReviewForm ? (
+                                                            <ReviewForm
+                                                                productId={params.id as string}
+                                                                onReviewSubmitted={() => {
+                                                                    setShowReviewForm(false);
+                                                                    setReviewListKey((k) => k + 1);
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <Button
+                                                                onClick={() => setShowReviewForm(true)}
+                                                                variant="outline"
+                                                                className="rounded-full"
+                                                            >
+                                                                Write a Review
+                                                            </Button>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div className="text-center py-8 rounded-2xl border border-dashed border-black/10 border-foreground/10">
+                                                        <p className="text-sm font-medium text-foreground/50 mb-4">Sign in to leave a review</p>
+                                                        <Button
+                                                            onClick={() => openSignIn()}
+                                                            variant="outline"
+                                                            className="rounded-full"
+                                                        >
+                                                            Sign In
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </motion.div>
                                     </TabsContent>
                                 </AnimatePresence>
                             </Tabs>
@@ -408,15 +651,59 @@ export default function ProductDetailsPage() {
                 </div>
             </main>
 
+            {/* Cross-sell & Upsell Sections */}
+            <div className="max-w-7xl mx-auto px-4 md:px-8">
+                <ProductRecommendations
+                    productId={params.id as string}
+                    type="category"
+                    title="Similar Items"
+                />
+                <ProductRecommendations
+                    productId={params.id as string}
+                    type="vendor"
+                    title="More from this Vendor"
+                />
+                <ProductRecommendations
+                    productId={params.id as string}
+                    type="bought-together"
+                    title="Frequently Bought Together"
+                />
+            </div>
+
             {/* Global Style overrides for Gallery */}
             <style jsx global>{`
-                .premium-gallery .image-gallery-content .image-gallery-slide .image-gallery-image {
-                    max-height: 600px;
-                    object-fit: contain; /* or cover for cleaner look depending on aspect ratio */
-                    padding: 2rem;
+                .premium-gallery {
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .premium-gallery .image-gallery-content {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    flex: 1;
+                }
+                .premium-gallery .image-gallery-slide-wrapper {
+                    flex: 1;
+                    min-height: 0;
+                }
+                .premium-gallery .image-gallery-swipe {
+                    height: 100%;
+                }
+                .premium-gallery .image-gallery-slides {
+                    height: 100%;
+                }
+                .premium-gallery .image-gallery-slide {
+                    height: 100%;
+                }
+                .premium-gallery .image-gallery-slide .image-gallery-image {
+                    height: 100%;
+                    object-fit: contain;
+                    padding: 1.5rem;
                     background: transparent;
                 }
-                .premium-gallery .image-gallery-thumbnail.active, .premium-gallery .image-gallery-thumbnail:hover {
+                .premium-gallery .image-gallery-thumbnail.active,
+                .premium-gallery .image-gallery-thumbnail:hover {
                     border: 2px solid currentColor;
                     border-radius: 8px;
                     opacity: 1;
@@ -429,6 +716,9 @@ export default function ProductDetailsPage() {
                 .premium-gallery .image-gallery-icon {
                     color: white;
                     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+                }
+                .premium-gallery .image-gallery-thumbnails-wrapper {
+                    flex-shrink: 0;
                 }
             `}</style>
         </div>

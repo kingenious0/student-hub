@@ -15,7 +15,7 @@ interface CreateGeofenceParams {
 
 /**
  * Creates a geofence in Radar.io.
- * Useful for registering Vendors (shops) or Student Homes dynamically.
+ * Useful for registering Vendors (shops) dynamically.
  */
 export const createGeofence = async ({
     tag,
@@ -74,50 +74,4 @@ export const identifyUser = async (userId: string, metadata: Record<string, any>
     return await response.json();
 }
 
-interface CreateTripParams {
-    externalId: string; // e.g., order ID
-    destinationGeofenceTag?: string; // e.g., 'vendor' or 'customer'
-    destinationGeofenceExternalId?: string; // ID of the destination geofence
-    userId: string; // The runner's ID
-    mode?: 'car' | 'foot' | 'bike' | 'truck' | 'motorbike';
-    metadata?: Record<string, any>;
-}
 
-/**
- * Start a Trip in Radar to track ETA and arrival.
- */
-export const createTrip = async ({
-    externalId,
-    destinationGeofenceTag,
-    destinationGeofenceExternalId,
-    userId,
-    mode = 'motorbike',
-    metadata
-}: CreateTripParams) => {
-    if (!SECRET_KEY) throw new Error('Radar Secret Key missing');
-
-    const response = await fetch(`${RADAR_API_URL}/trips`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `${SECRET_KEY}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            externalId,
-            destinationGeofenceTag,
-            destinationGeofenceExternalId,
-            userId, // The runner
-            mode,
-            metadata,
-            status: 'started' // Start immediately
-        })
-    });
-
-    if (!response.ok) {
-        // Don't throw, just warn, so we don't break the order flow
-        console.warn(`Failed to create Radar trip`, await response.text());
-        return null;
-    }
-
-    return await response.json();
-};

@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
                 data: {
                     id: 'GLOBAL_CONFIG',
                     maintenanceMode: false,
-                    activeFeatures: ['MARKET', 'PULSE', 'RUNNER', 'ESCROW', 'VENDOR'],
+                    activeFeatures: ['MARKET', 'PULSE', 'ESCROW', 'VENDOR'],
                     contentOverride: {}
                 }
             });

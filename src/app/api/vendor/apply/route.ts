@@ -78,13 +78,15 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        // Update user to mark they've applied AND UPGRADE ROLE
+        // Update user to mark they've applied AND UPGRADE ROLE AND SAVE SHOP INFO
         await prisma.user.update({
             where: { clerkId: userId },
             data: {
                 appliedForVendor: true,
                 role: 'VENDOR',
-                vendorStatus: 'ACTIVE'
+                vendorStatus: 'ACTIVE',
+                shopName: shopName,
+                phoneNumber: phoneNumber
             }
         });
 

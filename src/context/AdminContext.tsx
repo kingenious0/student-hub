@@ -14,6 +14,7 @@ interface AdminContextType {
     toggleGhostEdit: () => void;
     setGhostAdmin: (value: boolean) => void;
     refreshConfig: () => Promise<void>;
+    isConfigLoaded: boolean;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -23,9 +24,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const [isGhostAdmin, setIsGhostAdmin] = useState(false);
     const [superAccess, setSuperAccess] = useState(false);
     const [ghostEditMode, setGhostEditMode] = useState(false);
-    const [activeFeatures, setActiveFeatures] = useState<string[]>(['MARKET', 'PULSE', 'RUNNER', 'ESCROW', 'VENDOR']);
+    const [activeFeatures, setActiveFeatures] = useState<string[]>(['MARKET', 'PULSE', 'ESCROW', 'VENDOR']);
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [contentOverrides, setContentOverrides] = useState<Record<string, any>>({});
+    const [isConfigLoaded, setIsConfigLoaded] = useState(false);
 
     useEffect(() => {
         if (!isLoaded) return; // Wait for Clerk to load
@@ -85,12 +87,15 @@ export function AdminProvider({ children }: { children: ReactNode }) {
                 setIsGhostAdmin(localGhost);
                 setSuperAccess(localGhost);
             }
+
+            // Complete configuration loading
+            await refreshConfig();
+            setIsConfigLoaded(true);
         };
 
         checkAdminStatus();
 
-        // Initial Config Fetch & Polling
-        refreshConfig();
+        // Initial Polling Setup
         const interval = setInterval(refreshConfig, 2000); // 2s poll for fast sync
         return () => clearInterval(interval);
     }, [isLoaded, user]); // Re-run when User changes
@@ -128,7 +133,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const toggleGhostEdit = () => setGhostEditMode(prev => !prev);
 
     return (
-        <AdminContext.Provider value={{ isGhostAdmin, superAccess, activeFeatures, maintenanceMode, contentOverrides, isFeatureEnabled, ghostEditMode, toggleGhostEdit, setGhostAdmin, refreshConfig }}>
+        <AdminContext.Provider value={{ isGhostAdmin, superAccess, activeFeatures, maintenanceMode, contentOverrides, isFeatureEnabled, ghostEditMode, toggleGhostEdit, setGhostAdmin, refreshConfig, isConfigLoaded }}>
             {children}
         </AdminContext.Provider>
     );

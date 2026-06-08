@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { revalidateTag } from 'next/cache';
+import { sanitizeHtml } from '@/lib/security/validation';
 
 export async function GET(
     request: NextRequest,
@@ -14,15 +15,19 @@ export async function GET(
         const product = await prisma.product.findUnique({
             where: { id },
             include: {
+                modifierGroups: {
+                    include: { modifiers: true },
+                    orderBy: { name: 'asc' },
+                },
                 vendor: {
                     select: {
                         id: true,
                         name: true,
-                        clerkId: true,
                         currentHotspot: true,
                         lastActive: true,
                         shopName: true,
-                        vendorStatus: true
+                        vendorStatus: true,
+                        phoneNumber: true
                     },
                 },
                 category: true,
@@ -92,8 +97,8 @@ export async function PATCH(
             where: { id },
             data: {
                 title: body.title,
-                description: body.description,
-                price: parseFloat(body.price),
+                description: body.description ? sanitizeHtml(body.description) : undefined,
+                price: body.price !== undefined ? Math.round(Number(body.price) * 100) / 100 : undefined,
                 imageUrl: body.imageUrl,
                 hotspot: body.hotspot,
                 categoryId: body.categoryId,

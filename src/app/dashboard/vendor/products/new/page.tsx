@@ -1,10 +1,22 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import ProductForm from '@/components/vendor/products/ProductForm';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export default function NewProductPage() {
+    const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
+
+    useEffect(() => {
+        fetch('/api/vendor/tier')
+            .then(r => r.ok && r.json())
+            .then(d => d?.tier && setVendorTier(d.tier))
+            .catch(() => {});
+    }, []);
+
+    const isFood = vendorTier === 'FOOD';
+
     return (
         <div className="min-h-screen bg-background pb-24 transition-colors duration-300">
             {/* Header */}
@@ -15,10 +27,12 @@ export default function NewProductPage() {
                     </Link>
                     <div>
                         <h1 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-3">
-                            Add New Product
+                            {isFood ? 'Add Menu Item' : 'Add Product'}
                             <span className="text-sm bg-primary/20 text-primary px-3 py-1 rounded-full tracking-widest border border-primary/20">BETA</span>
                         </h1>
-                        <p className="text-foreground/60 mt-2 font-medium text-lg">Create a "God Tier" listing with rich media and details.</p>
+                        <p className="text-foreground/60 mt-2 font-medium text-lg">
+                            {isFood ? 'Add a new item to your menu with customization options.' : 'Create a "God Tier" listing with rich media and details.'}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -28,7 +42,7 @@ export default function NewProductPage() {
             </div>
 
             <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
-                <p>Designed by PraiseTech • github/praisetechzw</p>
+                <p>© 2026 OMNI Student Marketplace • All Rights Reserved</p>
             </div>
         </div>
     );

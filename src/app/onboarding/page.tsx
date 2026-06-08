@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
 import { useModal } from '@/context/ModalContext';
+import { OmniLogo } from '@/components/ui/OmniLogo';
 import { toast } from 'sonner';
 
 export default function OnboardingPage() {
@@ -12,7 +13,6 @@ export default function OnboardingPage() {
     const modal = useModal();
     const [loading, setLoading] = useState(false);
     const [name, setName] = useState('');
-    const [university, setUniversity] = useState('KNUST');
     const [phoneNumber, setPhoneNumber] = useState('');
 
     const router = useRouter();
@@ -55,14 +55,14 @@ export default function OnboardingPage() {
     };
 
     const handleComplete = async () => {
-        if (!name || !university) return;
+        if (!name) return;
 
         setLoading(true);
         try {
             const res = await fetch('/api/auth/onboard', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, university, phoneNumber }),
+                body: JSON.stringify({ name, phoneNumber }),
             });
 
             if (res.ok) {
@@ -90,7 +90,7 @@ export default function OnboardingPage() {
                 >
                     {/* Logo */}
                     <div className="flex justify-center mb-6">
-                        <img src="/OMNI-LOGO.ico" alt="OMNI" className="h-24 md:h-28 w-auto invert-on-light" />
+                        <OmniLogo size="xl" showTagline={true} />
                     </div>
 
                     {/* Header */}
@@ -118,38 +118,6 @@ export default function OnboardingPage() {
                             />
                         </div>
 
-                        {/* University */}
-                        <div className="text-left">
-                            <label className="text-xs font-black uppercase tracking-widest text-foreground/60 mb-2 block">
-                                University
-                            </label>
-                            <select
-                                value={university}
-                                onChange={(e) => setUniversity(e.target.value)}
-                                className="w-full bg-background border-2 border-surface-border rounded-xl p-4 font-bold focus:border-primary outline-none transition-colors"
-                            >
-                                <option value="KNUST">KNUST</option>
-                                <option value="UG">University of Ghana</option>
-                                <option value="UCC">University of Cape Coast</option>
-                                <option value="UENR">University of Energy and Natural Resources</option>
-                                <option value="UDS">University for Development Studies</option>
-                                <option value="UEW">University of Education, Winneba</option>
-                                <option value="AAMUSTED">Akenten Appiah-Menka University of Skills Training and Entrepreneurial Development (AAMUSTED)</option>
-                                <option value="UMAT">University of Mines and Technology</option>
-                                <option value="UHAS">University of Health and Allied Sciences</option>
-                                <option value="UNIMAC">University of Media, Arts and Communication</option>
-                                <option value="UPSA">UPSA</option>
-                                <option value="GIMPA">GIMPA</option>
-                                <option value="GTUC">Ghana Technology University College</option>
-                                <option value="ACCRA_TECH">Accra Technical University</option>
-                                <option value="KUMASI_TECH">Kumasi Technical University</option>
-                                <option value="HO_TECH">Ho Technical University</option>
-                                <option value="TAKORADI_TECH">Takoradi Technical University</option>
-                                <option value="CAPE_COAST_TECH">Cape Coast Technical University</option>
-                                <option value="OTHER">Other</option>
-                            </select>
-                        </div>
-
                         {/* Phone Number */}
                         <div className="text-left">
                             <label className="text-xs font-black uppercase tracking-widest text-foreground/60 mb-2 block">
@@ -163,13 +131,16 @@ export default function OnboardingPage() {
                                 placeholder="e.g. 055 123 4567"
                                 required
                             />
+                            <p className="text-[10px] text-amber-500 font-bold mt-1.5">
+                                ⚠️ Use the same number you used for guest checkout to recover your orders
+                            </p>
                         </div>
 
                         {/* Submit Button */}
                         <button
                             onClick={handleComplete}
-                            disabled={!name || !university || !phoneNumber || loading}
-                            className={`w-full py-5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all ${name && university && phoneNumber && !loading
+                            disabled={!name || !phoneNumber || loading}
+                            className={`w-full py-5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all ${name && phoneNumber && !loading
                                 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:scale-105 active:scale-95 shadow-lg'
                                 : 'bg-surface-border text-foreground/20 cursor-not-allowed'
                                 }`}

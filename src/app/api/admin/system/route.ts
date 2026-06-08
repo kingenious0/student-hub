@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
             settings = await prisma.systemSettings.create({
                 data: {
                     maintenanceMode: false,
-                    activeFeatures: ["MARKET", "PULSE", "RUNNER", "ESCROW"],
+                    activeFeatures: ["MARKET", "PULSE", "ESCROW"],
                     globalNotice: null
                 }
             });
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
             create: {
                 id: 'GLOBAL_CONFIG',
                 maintenanceMode: maintenanceMode || false,
-                activeFeatures: activeFeatures || ["MARKET", "PULSE", "RUNNER", "ESCROW"],
+                activeFeatures: activeFeatures || ["MARKET", "PULSE", "ESCROW"],
                 globalNotice
             },
             update: {

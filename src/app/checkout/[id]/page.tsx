@@ -5,8 +5,6 @@ import CheckoutForm from '@/components/checkout/CheckoutForm';
 import { redirect } from 'next/navigation';
 import Script from 'next/script';
 
-
-
 export default async function CheckoutPage({
     params,
 }: {
@@ -15,14 +13,15 @@ export default async function CheckoutPage({
     const { userId } = await auth();
     const { id } = await params;
 
-    if (!userId) {
-        redirect('/');
-    }
+    let studentEmail = '';
+    let isGuest = true;
 
-    const clerkUser = await currentUser();
-    // Safely extract email or use a placeholder (Paystack requires a valid email format with standard TLD)
-    const rawEmail = clerkUser?.emailAddresses?.[0]?.emailAddress || `${clerkUser?.username || clerkUser?.id || 'guest'}@omni-marketplace.com`;
-    const studentEmail = rawEmail.trim().toLowerCase();
+    if (userId) {
+        const clerkUser = await currentUser();
+        const rawEmail = clerkUser?.emailAddresses?.[0]?.emailAddress || `${clerkUser?.username || clerkUser?.id || 'guest'}@omni-marketplace.com`;
+        studentEmail = rawEmail.trim().toLowerCase();
+        isGuest = false;
+    }
 
     const [product, systemSettings] = await Promise.all([
         prisma.product.findUnique({
@@ -103,8 +102,9 @@ export default async function CheckoutPage({
                         <CheckoutForm
                             productId={product.id}
                             productTitle={product.title}
-                            productPrice={product.price}
+                            productPrice={Number(product.price)}
                             email={studentEmail}
+                            isGuest={isGuest}
                             vendorLandmark={product.hotspot || 'Main Campus'}
                             deliveryFee={deliveryFee}
                         />

@@ -35,7 +35,8 @@ export async function GET(req: NextRequest) {
                 student: {
                     select: {
                         name: true,
-                        email: true
+                        email: true,
+                        phoneNumber: true
                     }
                 }
             },

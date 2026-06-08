@@ -21,10 +21,15 @@ export async function GET(req: NextRequest) {
             }
         });
 
+        if (!vendor) {
+            return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+        }
+
         // Debug logging
         console.log(`[VendorDashboard] Fetching for ClerkID: ${userId}, VendorID: ${vendor.id}`);
 
-        if (!vendor || vendor.role !== 'VENDOR') {
+        const isAuthorized = vendor.role === 'VENDOR' || vendor.role === 'ADMIN' || vendor.role === 'GOD_MODE';
+        if (!isAuthorized) {
             return NextResponse.json({ error: 'Not a vendor' }, { status: 403 });
         }
 
@@ -40,7 +45,6 @@ export async function GET(req: NextRequest) {
                 where: { vendorId: vendor.id }
             }),
 
-            // Recent orders (for list)
             prisma.order.findMany({
                 where: { vendorId: vendor.id },
                 select: {
@@ -48,10 +52,15 @@ export async function GET(req: NextRequest) {
                     amount: true,
                     status: true,
                     createdAt: true,
-                    product: {
+                    items: {
                         select: {
-                            title: true
-                        }
+                            product: {
+                                select: {
+                                    title: true
+                                }
+                            }
+                        },
+                        take: 1
                     }
                 },
                 orderBy: { createdAt: 'desc' },
@@ -117,6 +126,16 @@ export async function GET(req: NextRequest) {
 
         const monthlyRevenue = Array.from(revenueMap).map(([name, total]) => ({ name, total }));
 
+        const recentOrdersMapped = orders.map(order => ({
+            id: order.id,
+            amount: order.amount,
+            status: order.status,
+            createdAt: order.createdAt,
+            product: {
+                title: order.items[0]?.product?.title || 'Marketplace Item'
+            }
+        }));
+
         return NextResponse.json({
             stats: {
                 totalProducts,
@@ -126,7 +145,7 @@ export async function GET(req: NextRequest) {
                 activeFlashSales,
             },
             monthlyRevenue,
-            recentOrders: orders
+            recentOrders: recentOrdersMapped
         });
 
     } catch (error) {

@@ -9,14 +9,14 @@
    ======================================== */
 
 :root {
-  /* Light Mode Palette */
+  /* Light Mode Palette - Forest Emerald */
   --surface: #ffffff;
   --surface-border: #e2e8f0;
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --accent: oklch(0.97 0 0);
-  --primary-glow: rgba(79, 70, 229, 0.2);
-  --omni-green: #39FF14;
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --accent: #10B981;
+  --primary-glow: rgba(5, 150, 105, 0.15);
+  --omni-green: #10B981;
 
   /* Glassmorphism Variables */
   --glass-bg: rgba(255, 255, 255, 0.7);
@@ -59,21 +59,35 @@
 }
 
 [data-theme="omni"] {
-  /* Dark Mode Palette (OMNI Theme) */
+  /* Dark Mode Palette (OMNI Theme - Electric Emerald) */
   --background: #050505;
   --foreground: #ffffff;
   --surface: #0d1117;
   --surface-border: rgba(255, 255, 255, 0.05);
-  --primary: #39FF14;
+  --primary: #10B981;
   --primary-foreground: #000000;
-  --accent: #39FF14;
-  --primary-glow: rgba(57, 255, 20, 0.4);
+  --accent: #10B981;
+  --primary-glow: rgba(16, 185, 129, 0.35);
 
   /* Dark Glassmorphism */
   --glass-bg: rgba(13, 17, 23, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   --blur-amount: 20px;
+
+  /* UI Components Variables for OMNI Dark Mode */
+  --card: #0d1117;
+  --card-foreground: #ffffff;
+  --popover: #0d1117;
+  --popover-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #10B981;
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: rgba(255, 255, 255, 0.6);
+  --secondary: rgba(255, 255, 255, 0.08);
+  --secondary-foreground: #ffffff;
+  --accent-foreground: #000000;
 }
 
 @theme inline {
@@ -485,11 +499,18 @@ body {
 }
 
 /* ========================================
-   🌓 LOGO AUTO-INVERT
+   🌊 CSS-ONLY FLOATING ANIMATION (zero JS)
    ======================================== */
 
-html:not([data-theme='omni']) .invert-on-light {
-  filter: brightness(0);
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-20px) rotate(5deg); }
+  50% { transform: translateY(-10px) rotate(-5deg); }
+  75% { transform: translateY(-25px) rotate(3deg); }
+}
+
+.animate-float {
+  animation: float var(--float-duration, 6s) ease-in-out infinite;
 }
 
 /* ========================================
@@ -551,40 +572,6 @@ body.drawer-open {
   }
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
 /* Hide Scrollbar Utilities (Fix + Alias) */
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -606,7 +593,7 @@ body.drawer-open {
   background: rgba(156, 163, 175, 0.5);
   border-radius: 10px;
 }
-.dark ::-webkit-scrollbar-thumb {
+[data-theme="omni"] ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -623,4 +610,8 @@ body.drawer-open {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@media (display-mode: standalone) {
+  body { padding-top: env(safe-area-inset-top); }
 }

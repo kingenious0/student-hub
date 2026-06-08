@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { sendSMS } from '@/lib/sms/wigal';
+import { sendPushNotification } from '@/lib/notifications/push';
 
 export async function POST(
     request: NextRequest,
@@ -55,40 +56,56 @@ export async function POST(
             return NextResponse.json({ error: 'Invalid Release Key' }, { status: 400 });
         }
 
-        // Execute Completion
+        // Execute Completion + Credit Vendor Balance
         await prisma.$transaction(async (tx) => {
-            // Update Order
             await tx.order.update({
                 where: { id: orderId },
                 data: {
                     status: 'COMPLETED',
                     escrowStatus: 'RELEASED',
+                    releaseKey: null,
+                    deliveredAt: new Date(),
                 }
             });
-
-            // Update Mission if exists
-            const mission = await tx.mission.findUnique({
-                where: { orderId: orderId }
+            await tx.user.update({
+                where: { id: order.vendorId },
+                data: {
+                    balance: { increment: order.amount }
+                }
             });
-
-            if (mission) {
-                await tx.mission.update({
-                    where: { orderId: orderId },
-                    data: { status: 'COMPLETED' }
-                });
-            }
         });
 
-        // Send Notification
+        // Send Notifications
         if (order.student?.phoneNumber) {
             const primaryItem = order.items?.[0];
-            const itemTitle = primaryItem ? primaryItem.product.title : 'Order';
+            const itemTitle = primaryItem?.product?.title || 'Order';
             const displayTitle = order.items.length > 1 ? `${itemTitle} +${order.items.length - 1}` : itemTitle;
 
             await sendSMS(
                 order.student.phoneNumber,
                 `OMNI: Order Completed. Delivery confirmed for ${displayTitle}. Thank you for trading.`
             );
+        }
+
+        const studentPushSubs = await prisma.pushSubscription.findMany({
+            where: { userId: order.studentId }
+        });
+        if (studentPushSubs.length > 0) {
+            const primaryItem = order.items?.[0];
+            const itemTitle = primaryItem?.product?.title || 'Order';
+            const displayTitle = order.items.length > 1 ? `${itemTitle} +${order.items.length - 1} more` : itemTitle;
+            const results = await Promise.all(
+                studentPushSubs.map(sub =>
+                    sendPushNotification(
+                        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+                        { title: '✅ Order Completed!', body: `Your order for ${displayTitle} is complete.`, url: `/orders/${order.id}/track` }
+                    )
+                )
+            );
+            const expired = results.filter(r => r.expired).map(r => r.endpoint).filter(Boolean) as string[];
+            if (expired.length > 0) {
+                await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: expired } } });
+            }
         }
 
         return NextResponse.json({ success: true, message: 'Order Completed' });

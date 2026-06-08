@@ -34,12 +34,13 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid Runner Key!' }, { status: 400 });
         }
 
-        // Update Status to PICKED_UP (Starts Stage 2: Express Delivery)
+        // Mark order as completed (student picked up)
         const updatedOrder = await prisma.order.update({
             where: { id: orderId },
             data: {
-                status: 'PICKED_UP',
-                pickedUpAt: new Date()
+                status: 'COMPLETED',
+                escrowStatus: 'RELEASED',
+                deliveredAt: new Date()
             }
         });
 

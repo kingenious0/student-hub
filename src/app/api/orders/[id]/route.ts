@@ -35,6 +35,7 @@ export async function GET(
                     select: {
                         name: true,
                         email: true,
+                        phoneNumber: true,
                     }
                 },
                 vendor: {
@@ -42,13 +43,11 @@ export async function GET(
                         id: true,
                         name: true,
                         clerkId: true,
+                        phoneNumber: true,
+                        shopName: true,
                     }
                 },
-                runner: {
-                    select: {
-                        name: true,
-                    }
-                }
+
             }
         });
 
@@ -56,12 +55,11 @@ export async function GET(
             return NextResponse.json({ error: 'Order not found' }, { status: 404 });
         }
 
-        // Check if user is student, vendor, or runner for this order
+        // Check if user is student or vendor for this order
         const isStudent = order.studentId === user.id;
         const isVendor = order.vendorId === user.id;
-        const isRunner = order.runnerId === user.id;
 
-        if (!isStudent && !isVendor && !isRunner) {
+        if (!isStudent && !isVendor) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 

@@ -20,10 +20,20 @@ export async function GET(req: NextRequest) {
             }
         });
 
-        if (!vendor || vendor.role !== 'VENDOR') {
+        const isAuthorized = vendor.role === 'VENDOR' || vendor.role === 'ADMIN' || vendor.role === 'GOD_MODE';
+        if (!vendor || !isAuthorized) {
             return NextResponse.json({ error: 'Not a vendor' }, { status: 403 });
         }
 
+        // --- SELF-HEALING RECONCILIATION LOOP ---
+        // 1. Fetch all completed orders
+        const allCompletedOrders = await prisma.order.aggregate({
+            where: { vendorId: vendor.id, status: 'COMPLETED' },
+            _sum: { amount: true }
+        });
+        const totalCompletedRevenue = allCompletedOrders._sum.amount || 0;
+
+        // 2. Fetch all payout requests
         const payouts = await prisma.payoutRequest.findMany({
             where: { vendorId: vendor.id },
             orderBy: { createdAt: 'desc' }
@@ -37,14 +47,31 @@ export async function GET(req: NextRequest) {
             .filter(p => p.status === 'PROCESSED')
             .reduce((sum, p) => sum + p.amount, 0);
 
+        // 3. Calculate expected balance
+        const expectedBalance = Math.max(0, totalCompletedRevenue - totalWithdrawn - pendingPayouts);
+
+        // 4. If current db balance is out of sync, update it automatically
+        let currentBalance = vendor.balance;
+        if (Math.abs(vendor.balance - expectedBalance) > 0.01) {
+            await prisma.user.update({
+                where: { id: vendor.id },
+                data: { balance: expectedBalance }
+            });
+            currentBalance = expectedBalance;
+            console.log(`[EarningsReconciliation] Vendor ${vendor.id} balance healed from GHS ${vendor.balance} to GHS ${expectedBalance}`);
+        }
+
+        // Strip notes from payouts before returning to vendor (internal admin visibility only)
+        const sanitizedPayouts = payouts.map(({ notes, ...rest }) => rest);
+
         return NextResponse.json({
             stats: {
-                balance: vendor.balance,
+                balance: currentBalance,
                 frozenBalance: vendor.frozenBalance,
                 pendingPayouts,
                 totalWithdrawn,
             },
-            payouts
+            payouts: sanitizedPayouts
         });
 
     } catch (error) {

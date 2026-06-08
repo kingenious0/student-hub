@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useModal } from '@/context/ModalContext';
 import { toast } from 'sonner';
 import GoBack from '@/components/navigation/GoBack';
+import WithdrawModal from '@/components/vendor/WithdrawModal';
 
 export default function EarningsPage() {
     const modal = useModal();
@@ -153,71 +154,12 @@ export default function EarningsPage() {
             </div>
 
             {/* Request Payout Modal */}
-            {showForm && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-background border-2 border-surface-border rounded-3xl max-w-md w-full p-8">
-                        <h2 className="text-2xl font-black uppercase tracking-tighter mb-6">Request Payout</h2>
-
-                        <form onSubmit={handleRequestPayout} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-foreground/60 mb-2">Amount (₵)</label>
-                                <input
-                                    type="number"
-                                    value={formData.amount}
-                                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                                    max={stats.balance}
-                                    min="1"
-                                    placeholder={`Max: ${stats.balance}`}
-                                    className="w-full px-4 py-3 bg-surface border-2 border-surface-border rounded-xl font-bold"
-                                    required
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-foreground/60 mb-2">Network</label>
-                                    <select
-                                        value={formData.network}
-                                        onChange={(e) => setFormData({ ...formData, network: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface border-2 border-surface-border rounded-xl font-bold"
-                                    >
-                                        <option value="MTN">MTN</option>
-                                        <option value="VODA">Telecel</option>
-                                        <option value="AT">AT</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-foreground/60 mb-2">Number</label>
-                                    <input
-                                        type="tel"
-                                        value={formData.momoNumber}
-                                        onChange={(e) => setFormData({ ...formData, momoNumber: e.target.value })}
-                                        placeholder="024..."
-                                        className="w-full px-4 py-3 bg-surface border-2 border-surface-border rounded-xl font-bold"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3 pt-4">
-                                <button
-                                    type="submit"
-                                    className="flex-1 py-3 bg-green-500 text-white rounded-xl font-black uppercase tracking-widest hover:bg-green-600"
-                                >
-                                    Confirm
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowForm(false)}
-                                    className="px-6 py-3 bg-surface-hover text-foreground rounded-xl font-bold"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <WithdrawModal 
+                isOpen={showForm} 
+                onClose={() => setShowForm(false)} 
+                maxAmount={stats.balance} 
+                onSuccess={fetchData} 
+            />
         </div>
     );
 }

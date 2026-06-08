@@ -27,9 +27,18 @@ export async function GET(req: NextRequest) {
             include: {
                 category: {
                     select: {
-                        name: true
+                        name: true,
+                        slug: true,
                     }
-                }
+                },
+                modifierGroups: {
+                    select: {
+                        id: true,
+                        name: true,
+                        isRequired: true,
+                        _count: { select: { modifiers: true } },
+                    }
+                },
             },
             orderBy: { createdAt: 'desc' }
         });
@@ -62,26 +71,47 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { title, description, price, categoryId, imageUrl, images, stockQuantity, details } = body;
+        const { title, description, price, categoryId, imageUrl, images, stockQuantity, details, isReadyMade, modifierGroups } = body;
 
         // Validate
         if (!title || !price || !categoryId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
+        const hasModifiers = modifierGroups?.length > 0;
+
         // Create product
         const product = await prisma.product.create({
             data: {
                 title,
                 description: description || '',
-                price: parseFloat(price),
+                price: Math.round(Number(price) * 100) / 100,
                 categoryId,
                 vendorId: vendor.id,
                 imageUrl: imageUrl || null,
-                images: images || [], // New Field
-                details: details || {}, // New Field
+                images: images || [],
+                details: details || {},
                 stockQuantity: stockQuantity ? parseInt(stockQuantity) : 0,
                 isInStock: stockQuantity ? parseInt(stockQuantity) > 0 : false,
+                isReadyMade: isReadyMade !== undefined ? Boolean(isReadyMade) : true,
+                hasModifiers,
+                ...(hasModifiers && {
+                    modifierGroups: {
+                        create: modifierGroups.map((g: any) => ({
+                            name: g.name,
+                            isRequired: g.isRequired || false,
+                            minSelect: g.minSelect || 0,
+                            maxSelect: g.maxSelect || 1,
+                            modifiers: {
+                                create: (g.modifiers || []).map((m: any) => ({
+                                    name: m.name,
+                                    priceDiff: Math.round(Number(m.priceDiff || 0) * 100) / 100,
+                                    isDefault: m.isDefault || false,
+                                })),
+                            },
+                        })),
+                    },
+                }),
             }
         });
 

@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Calculate prices
-        const originalPrice = product.price;
+        const originalPrice = Number(product.price);
         const discountDec = parseInt(discountPercent) / 100;
         const salePrice = originalPrice - (originalPrice * discountDec);
 

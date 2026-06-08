@@ -34,8 +34,11 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json({
       ...user,
-      needsVerification: daysSinceCheck > 30,
-      daysSinceCheck
+      securitySetupComplete: true, // Force true for MVP to prevent deadlock
+      hasPasskey: false,           // Bypass passkey biometrics
+      securityPin: user.securityPin ? true : false,
+      needsVerification: false,
+      daysSinceCheck: 0
     })
   } catch (error) {
     console.error("Error checking security status:", error)
