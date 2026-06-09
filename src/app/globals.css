@@ -618,3 +618,20 @@ body.drawer-open {
 @media (display-mode: standalone) {
   body { padding-top: env(safe-area-inset-top); }
 }
+
+/* ========================================
+   🌊 LaHustle Bounce Wave Animation
+   ======================================== */
+@keyframes bounceWave {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.bounce-letter {
+  display: inline-block;
+  animation: bounceWave 1.2s ease-in-out infinite;
+}
