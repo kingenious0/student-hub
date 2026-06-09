@@ -35,7 +35,7 @@ export default function BecomeVendorPage() {
             });
 
             if (res.ok) {
-                modal.alert('✅ Application Submitted! Your vendor account is now active. Welcome to the OMNI marketplace.', 'Onboarding Success', 'success');
+                modal.alert('✅ Application Submitted! Your vendor account is now active. Welcome to the LaHustle marketplace.', 'Onboarding Success', 'success');
                 router.push('/dashboard/vendor');
             } else {
                 const error = await res.json();
@@ -71,7 +71,7 @@ export default function BecomeVendorPage() {
                         {/* Left: Text */}
                         <div>
                             <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6">
-                                Start Selling on Omni
+                                Start Selling on LaHustle
                             </h1>
                             <p className="text-2xl font-bold mb-8 text-white/90">
                                 Reach 10,000+ Students on Your Campus Daily
@@ -171,7 +171,7 @@ export default function BecomeVendorPage() {
                         whileInView={{ opacity: 1, scale: 1 }}
                         className="text-4xl font-black uppercase tracking-tighter text-center mb-16"
                     >
-                        Why Sell on <span className="text-primary italic">Omni?</span>
+                        Why Sell on <span className="text-primary italic">LaHustle?</span>
                     </motion.h2>
                     <div className="grid md:grid-cols-2 gap-8">
                         <BenefitCard 

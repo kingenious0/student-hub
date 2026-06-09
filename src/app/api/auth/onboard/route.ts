@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
         const email = user.emailAddresses.find(e => e.id === user.primaryEmailAddressId)?.emailAddress
             || user.emailAddresses[0]?.emailAddress
-            || `${user.id}@omni-placeholder.com`; // Fallback used if user signed up with Phone Number only
+            || `${user.id}@LaHustle-placeholder.com`; // Fallback used if user signed up with Phone Number only
 
         console.log('Final email to use:', email);
 
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         // after onboarding to allow frictionless access without high-friction biometric gating.
         const response = NextResponse.json({ success: true, linkedOrders: linkedOrderCount });
         
-        response.cookies.set('OMNI_IDENTITY_VERIFIED', 'TRUE', {
+        response.cookies.set('LH_IDENTITY_VERIFIED', 'TRUE', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',

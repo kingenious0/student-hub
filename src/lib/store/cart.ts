@@ -88,8 +88,8 @@ export const useCartStore = create<CartStore>()(
                                 cartItemId: generateCartItemId(),
                                 title: product.title,
                                 price: Number(product.price),
-                                imageUrl: product.imageUrl,
-                                vendorId: product.vendor?.id || product.vendorId,
+                                imageUrl: product.imageUrl ?? null,
+                                vendorId: product.vendor?.id || product.vendorId || '',
                                 vendorName: product.vendor?.name || product.vendorName || 'Vendor',
                                 quantity: qty,
                                 selectedModifiers: product.selectedModifiers || [],
@@ -130,7 +130,7 @@ export const useCartStore = create<CartStore>()(
             touchActivity: () => set({ lastActivityAt: Date.now() }),
         }),
         {
-            name: 'omni-cart-storage',
+            name: 'LaHustle-cart-storage',
             onRehydrateStorage: () => {
                 return (state) => {
                     if (state) {

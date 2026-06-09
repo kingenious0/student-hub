@@ -138,7 +138,7 @@ export default function VendorOrderDetails() {
             <div className="min-h-screen bg-background flex flex-col items-center justify-center text-foreground">
                 <h1 className="text-4xl font-black mb-4">404</h1>
                 <p className="text-foreground/40 mb-8 font-bold uppercase tracking-widest text-xs">Order not found or access denied.</p>
-                <Link href="/dashboard/vendor" className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest omni-glow">
+                <Link href="/dashboard/vendor" className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest lh-glow">
                     Back to Dashboard
                 </Link>
             </div>
@@ -242,7 +242,7 @@ export default function VendorOrderDetails() {
                                         Call Customer
                                     </a>
                                     <a
-                                        href={`https://wa.me/${order.student.phoneNumber.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(order.student.name || 'Student')},%20this%20is%20your%20OMNI%20vendor.%20Coordinating%20order%20%23${order.id.slice(-6).toUpperCase()}`}
+                                        href={`https://wa.me/${order.student.phoneNumber.replace(/[^0-9]/g, '')}?text=Hi%20${encodeURIComponent(order.student.name || 'Student')},%20this%20is%20your%20LaHustle%20vendor.%20Coordinating%20order%20%23${order.id.slice(-6).toUpperCase()}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10 border border-transparent"
@@ -284,7 +284,7 @@ export default function VendorOrderDetails() {
                                     <button
                                         onClick={() => updateStatus('PREPARING')}
                                         disabled={updating}
-                                        className="w-full py-4 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg omni-glow"
+                                        className="w-full py-4 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg lh-glow"
                                     >
                                         Start Preparing
                                     </button>

@@ -138,7 +138,7 @@ export default function BanOverlay() {
                                         </a>
 
                                         <div className="flex justify-center">
-                                            <a href="mailto:appeals@omni.com" className="text-xs text-white/30 hover:text-white uppercase tracking-widest transition-colors border-b border-transparent hover:border-white">
+                                            <a href="mailto:appeals@LaHustle.com" className="text-xs text-white/30 hover:text-white uppercase tracking-widest transition-colors border-b border-transparent hover:border-white">
                                                 Request Case Review
                                             </a>
                                         </div>

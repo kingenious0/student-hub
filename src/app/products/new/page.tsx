@@ -399,7 +399,7 @@ export default function NewProductPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex-1 px-6 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50 omni-glow active:scale-95 shadow-lg shadow-primary/20"
+                                className="flex-1 px-6 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50 lh-glow active:scale-95 shadow-lg shadow-primary/20"
                             >
                                 {loading ? 'Validating...' : '🚀 Launch Product'}
                             </button>

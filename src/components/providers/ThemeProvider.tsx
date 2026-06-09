@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'standard' | 'omni';
+type Theme = 'standard' | 'lahustle';
 
 interface ThemeContextType {
     theme: Theme;
@@ -13,19 +13,19 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setTheme] = useState<Theme>('omni');
+    const [theme, setTheme] = useState<Theme>('lahustle');
 
     useEffect(() => {
-        const savedTheme = localStorage.getItem('omni-theme') as Theme;
+        const savedTheme = localStorage.getItem('lahustle-theme') as Theme;
         if (savedTheme) {
             setTimeout(() => setTheme(savedTheme), 0);
             document.documentElement.setAttribute('data-theme', savedTheme);
         } else {
-            document.documentElement.setAttribute('data-theme', 'omni');
+            document.documentElement.setAttribute('data-theme', 'lahustle');
         }
 
         // Apply custom accent color
-        const savedColor = localStorage.getItem('omni-theme-color');
+        const savedColor = localStorage.getItem('lahustle-theme-color');
         if (savedColor) {
             document.documentElement.style.setProperty('--primary', savedColor);
             const glow = savedColor.replace('rgb', 'rgba').replace(')', ', 0.4)');
@@ -34,10 +34,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const toggleTheme = () => {
-        const newTheme = theme === 'omni' ? 'standard' : 'omni';
+        const newTheme = theme === 'lahustle' ? 'standard' : 'lahustle';
         setTheme(newTheme);
         document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('omni-theme', newTheme);
+        localStorage.setItem('lahustle-theme', newTheme);
     };
 
     return (

@@ -109,7 +109,7 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
     }, []);
 
     const form = useForm<z.infer<typeof productSchema>>({
-        resolver: zodResolver(productSchema),
+        resolver: zodResolver(productSchema) as any,
         defaultValues: {
             title: initialData?.title || '',
             price: initialData?.price || 0,
@@ -151,7 +151,7 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                 // Get Signature
                 const signRes = await fetch('/api/cloudinary-sign', {
                     method: 'POST',
-                    body: JSON.stringify({ folder: 'omni-products' })
+                    body: JSON.stringify({ folder: 'LaHustle-products' })
                 });
                 const signData = await signRes.json();
 
@@ -717,7 +717,7 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                                 { name: 'Fiverr', fee: 20, color: 'bg-red-400/80', textColor: 'text-red-400' },
                                 { name: 'Amazon', fee: 15, color: 'bg-orange-400/80', textColor: 'text-orange-400' },
                                 { name: 'Etsy', fee: 6.5, color: 'bg-yellow-400/80', textColor: 'text-yellow-400' },
-                                { name: 'OMNI', fee: 5, color: 'bg-emerald-400', textColor: 'text-emerald-400', isOurs: true },
+                                { name: 'LaHustle', fee: 5, color: 'bg-emerald-400', textColor: 'text-emerald-400', isOurs: true },
                             ].map(p => (
                                 <div key={p.name} className="flex items-center gap-3">
                                     <span className={`w-14 text-[10px] font-bold ${p.textColor} shrink-0`}>{p.name}</span>
@@ -739,9 +739,9 @@ export default function ProductForm({ initialData, showTitle = true }: ProductFo
                 </div>
             </div>
 
-            {/* OMNI Signature */}
+            {/* LaHustle Signature */}
             <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
-                <p>© 2026 OMNI Student Marketplace • All Rights Reserved</p>
+                <p>© 2026 LaHustle Student Marketplace • All Rights Reserved</p>
             </div>
         </form>
     );

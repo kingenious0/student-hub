@@ -19,7 +19,7 @@ export async function POST() {
         // Create response and set the Identity Verified Cookie
         const response = NextResponse.json({ success: true });
         
-        response.cookies.set('OMNI_IDENTITY_VERIFIED', 'TRUE', {
+        response.cookies.set('LH_IDENTITY_VERIFIED', 'TRUE', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',

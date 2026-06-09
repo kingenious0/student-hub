@@ -14,7 +14,7 @@ export default function SignUpPage() {
                 <div className="relative z-10">
                     <div className="flex items-center gap-3">
                         <ZapIcon className="w-8 h-8 text-primary" />
-                        <h1 className="text-2xl font-black tracking-tighter">OMNI</h1>
+                        <h1 className="text-2xl font-black tracking-tighter">LaHustle</h1>
                     </div>
                 </div>
 
@@ -29,7 +29,7 @@ export default function SignUpPage() {
                 </div>
 
                 <div className="relative z-10 flex gap-4 text-xs font-bold uppercase tracking-widest text-white/40">
-                    <span>© 2026 OMNI Inc.</span>
+                    <span>© 2026 LaHustle Inc.</span>
                     <span>•</span>
                     <span>Secure & Encrypted</span>
                 </div>

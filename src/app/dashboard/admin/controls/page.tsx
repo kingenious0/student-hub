@@ -527,7 +527,7 @@ export default function SystemControlsPage() {
                         <button
                             type="submit"
                             disabled={saving}
-                            className="w-full py-6 bg-primary text-primary-foreground rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] omni-glow hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
+                            className="w-full py-6 bg-primary text-primary-foreground rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] lh-glow hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
                         >
                             {saving ? 'COMMITTING CHANGES...' : 'COMMIT SYSTEM COMMAND'}
                         </button>

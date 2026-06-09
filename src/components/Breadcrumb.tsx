@@ -23,7 +23,7 @@ export default function Breadcrumb({ items, customItems }: BreadcrumbProps) {
 
         const paths = pathname?.split('/').filter(Boolean) || [];
         const breadcrumbs: BreadcrumbItem[] = [
-            { label: 'OMNI', href: '/marketplace' }
+            { label: 'LaHustle', href: '/marketplace' }
         ];
 
         let currentPath = '';

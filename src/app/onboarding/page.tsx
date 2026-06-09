@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
 import { useModal } from '@/context/ModalContext';
-import { OmniLogo } from '@/components/ui/OmniLogo';
+import { LaHustleLogo } from '@/components/ui/LaHustleLogo';
 import { toast } from 'sonner';
 
 export default function OnboardingPage() {
@@ -90,12 +90,12 @@ export default function OnboardingPage() {
                 >
                     {/* Logo */}
                     <div className="flex justify-center mb-6">
-                        <OmniLogo size="xl" showTagline={true} />
+                        <LaHustleLogo size="xl" showTagline={true} />
                     </div>
 
                     {/* Header */}
                     <div>
-                        <h1 className="text-5xl font-black uppercase tracking-tighter mb-3">Welcome to OMNI</h1>
+                        <h1 className="text-5xl font-black uppercase tracking-tighter mb-3">Welcome to LaHustle</h1>
                         <p className="text-foreground/60 font-bold text-sm">
                             Let's get you started in seconds
                         </p>
@@ -150,7 +150,7 @@ export default function OnboardingPage() {
 
                         {/* Info Text */}
                         <p className="text-xs text-foreground/40 text-center mt-4">
-                            You can become a vendor later by clicking "Sell on Omni"
+                            You can become a vendor later by clicking "Sell on LaHustle"
                         </p>
                     </div>
                 </motion.div>

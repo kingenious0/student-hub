@@ -3,7 +3,7 @@
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { cn } from '@/lib/utils';
 
-interface OmniLogoProps {
+interface LaHustleLogoProps {
     className?: string;
     showTagline?: boolean;
     size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -18,11 +18,11 @@ const sizes = {
     xl: { icon: 'h-14', wordmark: 'text-2xl', tagline: 'text-sm' },
 };
 
-export function OmniLogo({ className, showTagline = true, size = 'md', onClick, priority }: OmniLogoProps) {
+export function LaHustleLogo({ className, showTagline = true, size = 'md', onClick, priority }: LaHustleLogoProps) {
     const { theme } = useTheme();
-    const isDark = theme === 'omni';
+    const isDark = theme === 'lahustle';
     const wordmarkColor = isDark ? '#ffffff' : '#0a0a0a';
-    const taglineColor = isDark ? '#10B981' : '#059669';
+    const taglineColor = isDark ? '#39FF14' : '#059669';
 
     const s = sizes[size];
 
@@ -39,12 +39,12 @@ export function OmniLogo({ className, showTagline = true, size = 'md', onClick, 
             >
                 <defs>
                     <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#34D399" />
-                        <stop offset="100%" stopColor="#059669" />
+                        <stop offset="0%" stopColor="#39FF14" />
+                        <stop offset="100%" stopColor="#000000" />
                     </linearGradient>
                     <linearGradient id="g2" x1="1" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#10B981" />
-                        <stop offset="100%" stopColor="#047857" />
+                        <stop offset="0%" stopColor="#39FF14" />
+                        <stop offset="100%" stopColor="#1a3a00" />
                     </linearGradient>
                 </defs>
                 <g transform="translate(256, 130)">
@@ -61,7 +61,7 @@ export function OmniLogo({ className, showTagline = true, size = 'md', onClick, 
                     textAnchor="middle"
                     letterSpacing="8"
                 >
-                    OMNI
+                    LaHustle
                 </text>
                 {showTagline && (
                     <text
@@ -90,7 +90,7 @@ export function OmniLogo({ className, showTagline = true, size = 'md', onClick, 
                     MARKETPLACE
                 </span>
                 {showTagline && (
-                    <span className={cn('font-semibold uppercase tracking-[0.3em] text-emerald-500', s.tagline)}>
+                    <span className={cn('font-semibold uppercase tracking-[0.3em] text-[var(--brand)]', s.tagline)}>
                         Student Marketplace
                     </span>
                 )}

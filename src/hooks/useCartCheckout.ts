@@ -49,8 +49,8 @@ export function useCartCheckout() {
     fetchSettings()
 
     if (typeof window !== "undefined") {
-      const isVerified = document.cookie.split("; ").some(c => c.startsWith("OMNI_IDENTITY_VERIFIED=TRUE"))
-      const syncId = document.cookie.split("; ").find(c => c.trim().startsWith("OMNI_HYBRID_SYNCED="))?.split("=")[1]
+      const isVerified = document.cookie.split("; ").some(c => c.startsWith("LH_IDENTITY_VERIFIED=TRUE"))
+      const syncId = document.cookie.split("; ").find(c => c.trim().startsWith("LH_HYBRID_SYNCED="))?.split("=")[1]
       if (isVerified) {
         setIsHybridAuth(true)
         if (syncId) setHybridClerkId(syncId)

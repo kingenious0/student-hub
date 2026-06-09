@@ -80,7 +80,7 @@ export default function ServiceDetailPage() {
 
   const handleWhatsApp = () => {
     const msg = encodeURIComponent(
-      `Hi! I'm interested in your service "${service.title}" listed on OMNI.`
+      `Hi! I'm interested in your service "${service.title}" listed on LaHustle.`
     )
     const phone = (service.contactWhatsApp || service.contactPhone).replace(/[^0-9]/g, '')
     window.open(`https://wa.me/${phone}?text=${msg}`, '_blank')

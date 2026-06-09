@@ -149,7 +149,7 @@ export default function VendorStorefrontClient({
             <div className="border-t border-surface-border py-8">
                 <div className="max-w-6xl mx-auto px-4 text-center">
                     <p className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.3em]">
-                        Powered by OMNI Student Marketplace
+                        Powered by LaHustle Student Marketplace
                     </p>
                 </div>
             </div>

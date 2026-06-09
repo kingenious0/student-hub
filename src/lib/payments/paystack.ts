@@ -345,7 +345,7 @@ export async function getBalance(): Promise<{ currency: string; balance: number 
 export async function initiateTransfer(
     amountGHS: number,
     recipientCode: string,
-    reason: string = 'OMNI Vendor Withdrawal'
+    reason: string = 'LaHustle Vendor Withdrawal'
 ): Promise<{ transfer_code: string; status: string }> {
     // Paystack transfers expect amount in PESEWAS (GHS * 100)
     const amountInPesewas = Math.round(amountGHS * 100);

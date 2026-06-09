@@ -58,7 +58,7 @@ export default function ProductCard({
     const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
-        setIsAdmin(localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true');
+        setIsAdmin(localStorage.getItem('LH_GOD_MODE_UNLOCKED') === 'true');
     }, []);
 
     const handleDelete = async (e: React.MouseEvent) => {
@@ -76,7 +76,7 @@ export default function ProductCard({
         try {
             const res = await fetch(`/api/admin/products/${product.id}`, {
                 method: 'DELETE',
-                headers: { 'x-admin-key': 'omniadmin.com' }
+                headers: { 'x-admin-key': 'LaHustleadmin.com' }
             });
             if (res.ok) {
                 window.location.reload();

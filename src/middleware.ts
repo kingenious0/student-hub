@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isAdminRoute = createRouteMatcher(['/dashboard/admin(.*)', '/admin(.*)', '/api/admin(.*)']);
-const isPublicRoute = createRouteMatcher(['/', '/sign-in(.*)', '/sign-up(.*)', '/verify', '/api/system/config(.*)', '/omni-gate', '/command-center-z', '/marketplace(.*)', '/products(.*)', '/cart(.*)', '/wishlist(.*)', '/stories(.*)', '/search(.*)', '/category(.*)', '/become-vendor', '/api/marketplace(.*)', '/api/products(.*)', '/api/category(.*)', '/security-setup', '/api/security(.*)', '/checkout(.*)', '/order-success(.*)', '/vendor/(.*)']);
+const isPublicRoute = createRouteMatcher(['/', '/sign-in(.*)', '/sign-up(.*)', '/verify', '/api/system/config(.*)', '/LaHustle-gate', '/command-center-z', '/marketplace(.*)', '/products(.*)', '/cart(.*)', '/wishlist(.*)', '/stories(.*)', '/search(.*)', '/category(.*)', '/become-vendor', '/api/marketplace(.*)', '/api/products(.*)', '/api/category(.*)', '/security-setup', '/api/security(.*)', '/checkout(.*)', '/order-success(.*)', '/vendor/(.*)']);
 const isIdentityRoute = createRouteMatcher(['/onboarding(.*)', '/api/auth/onboard(.*)', '/api/auth/sync(.*)', '/api/users/me(.*)', '/api/orders(.*)', '/api/vendor(.*)', '/api/push(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
@@ -24,7 +24,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     // Check for BOSS TOKEN first - allows Command Center to work without Clerk login
-    const bossToken = req.cookies.get('OMNI_BOSS_TOKEN');
+    const bossToken = req.cookies.get('LH_BOSS_TOKEN');
     console.log('[MIDDLEWARE] Admin route check - Token:', bossToken?.value, 'Path:', pathname);
 
     if (bossToken && bossToken.value === 'AUTHORIZED_ADMIN') {
@@ -48,7 +48,7 @@ export default clerkMiddleware(async (auth, req) => {
   // 2. IDENTITY PROTECTION (The Strict Guard)
   // If signed in, not on a public route, and not already on the onboarding flow
   if (userId && !isPublicRoute(req) && !isIdentityRoute(req)) {
-    const identityVerified = req.cookies.get('OMNI_IDENTITY_VERIFIED');
+    const identityVerified = req.cookies.get('LH_IDENTITY_VERIFIED');
 
     if (!identityVerified || identityVerified.value !== 'TRUE') {
       console.log(`[IDENTITY GUARD] User ${userId} unauthorized for ${pathname}. Redirecting to /onboarding`);
@@ -74,11 +74,11 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   // Security: Clear Administrative Tokens if signed out
-  // NOTE: We do NOT clear OMNI_IDENTITY_VERIFIED here because that is our Hybrid Sync bridge
+  // NOTE: We do NOT clear LH_IDENTITY_VERIFIED here because that is our Hybrid Sync bridge
   // for the mobile app which functions even if the web clerk session isn't hot yet.
-  if (!userId && req.cookies.has('OMNI_BOSS_TOKEN')) {
+  if (!userId && req.cookies.has('LH_BOSS_TOKEN')) {
     const response = NextResponse.next();
-    response.cookies.delete('OMNI_BOSS_TOKEN');
+    response.cookies.delete('LH_BOSS_TOKEN');
     return response;
   }
 });

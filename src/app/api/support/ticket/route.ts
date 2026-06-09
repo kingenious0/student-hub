@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
         // SMS notification to the admin
         const adminPhone = process.env.ADMIN_SUPPORT_PHONE || '0597626090';
         if (adminPhone) {
-            const smsText = `OMNI SUPPORT: New Ticket from ${name}. Subj: ${subject}. Check your email.`;
+            const smsText = `LaHustle SUPPORT: New Ticket from ${name}. Subj: ${subject}. Check your email.`;
             await sendSMS(adminPhone, smsText);
         }
 

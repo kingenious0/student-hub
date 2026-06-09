@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ReactNode } from 'react';
 
-interface OmniDialogProps {
+interface LaHustleDialogProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
@@ -14,7 +14,7 @@ interface OmniDialogProps {
     variant?: 'default' | 'destructive' | 'success';
 }
 
-export default function OmniDialog({
+export default function LaHustleDialog({
     isOpen,
     onClose,
     onConfirm,
@@ -23,7 +23,7 @@ export default function OmniDialog({
     confirmLabel = 'Confirm',
     cancelLabel = 'Cancel',
     variant = 'default',
-}: OmniDialogProps) {
+}: LaHustleDialogProps) {
     if (!isOpen) return null;
 
     const isDestructive = variant === 'destructive';

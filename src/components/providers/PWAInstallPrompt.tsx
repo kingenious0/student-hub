@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 
-const HIDDEN_KEY = 'omni-pwa-hidden';
+const HIDDEN_KEY = 'LaHustle-pwa-hidden';
 
 function isStandalone() {
   return typeof window !== 'undefined' && (
     window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true
+    (window.navigator as any).standalone === true
   );
 }
 
@@ -48,7 +48,7 @@ export default function PWAInstallPrompt() {
 
     const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as any);
     };
     window.addEventListener('beforeinstallprompt', handler);
 
@@ -98,9 +98,9 @@ export default function PWAInstallPrompt() {
     <>
       <div className="fixed bottom-0 left-0 right-0 z-[999] bg-surface border-t border-surface-border px-4 py-3 flex items-center justify-between gap-3 shadow-2xl">
         <div className="flex items-center gap-3 min-w-0">
-          <img src="/omni-icon.svg" alt="" className="w-9 h-9 shrink-0" />
+          <img src="/LaHustle-icon.svg" alt="" className="w-9 h-9 shrink-0" />
           <div className="min-w-0">
-            <p className="text-xs font-bold text-foreground truncate">Install OMNI for easy access</p>
+            <p className="text-xs font-bold text-foreground truncate">Install LaHustle for easy access</p>
             <p className="text-[9px] text-foreground/40 font-bold uppercase tracking-widest truncate">
               {isIOSPlatform ? 'Open in Safari → Share → Add to Home Screen' : 'One-tap install, works offline'}
             </p>
@@ -144,16 +144,16 @@ export default function PWAInstallPrompt() {
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
-            <img src="/omni-icon.svg" alt="" className="w-12 h-12 mb-4" />
+            <img src="/LaHustle-icon.svg" alt="" className="w-12 h-12 mb-4" />
             <h3 className="text-base font-black uppercase tracking-tight text-foreground mb-4">
-              Install OMNI{isIOSPlatform ? ' on iPhone' : ''}
+              Install LaHustle{isIOSPlatform ? ' on iPhone' : ''}
             </h3>
             {isIOSPlatform ? (
               <ol className="space-y-3">
                 {[
                   { step: '1', text: 'Tap the Share button', detail: 'Square icon with arrow at the bottom of Safari' },
                   { step: '2', text: 'Scroll down & tap "Add to Home Screen"', detail: 'Look for the + icon in the share sheet' },
-                  { step: '3', text: 'Tap "Add" in the top-right corner', detail: 'OMNI will appear on your home screen' },
+                  { step: '3', text: 'Tap "Add" in the top-right corner', detail: 'LaHustle will appear on your home screen' },
                 ].map((item) => (
                   <li key={item.step} className="flex gap-3 items-start">
                     <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">{item.step}</span>
@@ -180,7 +180,7 @@ export default function PWAInstallPrompt() {
                   <li className="flex gap-3 items-start">
                     <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">2</span>
                     <div>
-                      <p className="text-sm font-bold text-foreground">Or use Chrome menu: ⋮ → Install OMNI</p>
+                      <p className="text-sm font-bold text-foreground">Or use Chrome menu: ⋮ → Install LaHustle</p>
                       <p className="text-[10px] text-foreground/40 font-bold">Find it under the three-dot menu in your browser</p>
                     </div>
                   </li>

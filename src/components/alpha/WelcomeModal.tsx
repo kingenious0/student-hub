@@ -7,14 +7,14 @@ export default function WelcomeModal() {
 
     useEffect(() => {
         // Unique key for version 1 of alpha test
-        const hasSeen = localStorage.getItem('OMNI_ALPHA_WELCOME_V1_KCS');
+        const hasSeen = localStorage.getItem('LH_ALPHA_WELCOME_V1_KCS');
         if (!hasSeen) {
             setTimeout(() => setIsOpen(true), 1500); // 1.5s delay for dramatic effect
         }
     }, []);
 
     const handleAccept = () => {
-        localStorage.setItem('OMNI_ALPHA_WELCOME_V1_KCS', 'true');
+        localStorage.setItem('LH_ALPHA_WELCOME_V1_KCS', 'true');
         setIsOpen(false);
     };
 

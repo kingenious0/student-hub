@@ -90,7 +90,7 @@ export default function SettingsPage() {
       });
 
       if (response.ok) {
-        toast.success('Settings synchronized with OMNI Cloud');
+        toast.success('Settings synchronized with LaHustle Cloud');
         // No need to fetch immediately if we want to avoid flicker/reset
         // But updating cached data is good
         const data = await response.json();
@@ -111,12 +111,12 @@ export default function SettingsPage() {
     // Generate a glow color (approximate)
     const glow = color.replace('rgb', 'rgba').replace(')', ', 0.4)');
     document.documentElement.style.setProperty('--primary-glow', glow);
-    localStorage.setItem('omni-theme-color', color);
+    localStorage.setItem('LaHustle-theme-color', color);
     toast.success(`Visual Matrix Updated to ${color}`);
   };
 
   useEffect(() => {
-    const savedColor = localStorage.getItem('omni-theme-color');
+    const savedColor = localStorage.getItem('LaHustle-theme-color');
     if (savedColor) {
       document.documentElement.style.setProperty('--primary', savedColor);
       const glow = savedColor.replace('rgb', 'rgba').replace(')', ', 0.4)');
@@ -214,31 +214,31 @@ export default function SettingsPage() {
                   title="Mission Updates"
                   desc="Real-time alerts for active orders and delivery status"
                   active={formData.notifications.orderUpdates}
-                  onChange={(v) => setFormData({...formData, notifications: {...formData.notifications, orderUpdates: v}})}
+                   onChange={(v: boolean) => setFormData({...formData, notifications: {...formData.notifications, orderUpdates: v}})}
                />
                <GridToggle 
-                  title="Marketplace Incursions"
-                  desc="Notifications for new products and flash sales"
-                  active={formData.notifications.newReleases}
-                  onChange={(v) => setFormData({...formData, notifications: {...formData.notifications, newReleases: v}})}
+                   title="Marketplace Incursions"
+                   desc="Notifications for new products and flash sales"
+                   active={formData.notifications.newReleases}
+                   onChange={(v: boolean) => setFormData({...formData, notifications: {...formData.notifications, newReleases: v}})}
                />
                 <GridToggle 
                    title="Push Alerts"
-                   desc="Receive push notifications even when you're not on OMNI"
+                   desc="Receive push notifications even when you're not on LaHustle"
                    active={formData.notifications.pushEnabled}
-                   onChange={async (v) => {
+                   onChange={async (v: boolean) => {
                      setFormData({...formData, notifications: {...formData.notifications, pushEnabled: v}});
                      if (v) {
                        const ok = await subscribeUserToPush();
                        if (ok) {
-                         localStorage.setItem('omni-push-enabled', 'true');
+                         localStorage.setItem('LaHustle-push-enabled', 'true');
                        } else {
                          setFormData({...formData, notifications: {...formData.notifications, pushEnabled: false}});
                          toast.error('Failed to enable push notifications');
                        }
                      } else {
                        await unsubscribeUser();
-                       localStorage.removeItem('omni-push-enabled');
+                       localStorage.removeItem('LaHustle-push-enabled');
                      }
                    }}
                 />
@@ -246,7 +246,7 @@ export default function SettingsPage() {
                   title="Security Hardening"
                   desc="Alerts for new logins or biometric resets"
                   active={formData.notifications.securityAlerts}
-                  onChange={(v) => setFormData({...formData, notifications: {...formData.notifications, securityAlerts: v}})}
+                   onChange={(v: boolean) => setFormData({...formData, notifications: {...formData.notifications, securityAlerts: v}})}
                />
             </div>
           </div>
@@ -312,7 +312,7 @@ export default function SettingsPage() {
           <button 
                 onClick={handleSave}
                 disabled={isSaving}
-                className="group relative flex items-center justify-center gap-3 bg-primary py-4 px-10 rounded-2xl font-black text-xs uppercase tracking-widest text-primary-foreground omni-glow transition-all active:scale-95 disabled:opacity-50"
+                className="group relative flex items-center justify-center gap-3 bg-primary py-4 px-10 rounded-2xl font-black text-xs uppercase tracking-widest text-primary-foreground lh-glow transition-all active:scale-95 disabled:opacity-50"
             >
                 {isSaving ? (
                     <RefreshCcw className="w-4 h-4 animate-spin" />
@@ -401,7 +401,7 @@ function NavTab({ active, onClick, icon, label }: { active: boolean; onClick: ()
       onClick={onClick}
       className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all whitespace-nowrap min-w-fit lg:w-full relative group overflow-hidden ${
         active 
-          ? 'bg-primary text-primary-foreground omni-glow shadow-xl shadow-primary/20' 
+          ? 'bg-primary text-primary-foreground lh-glow shadow-xl shadow-primary/20' 
           : 'text-foreground/40 hover:bg-white/5 hover:text-foreground'
       }`}
     >

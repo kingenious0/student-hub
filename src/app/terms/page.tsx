@@ -4,7 +4,7 @@ export default function TermsPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-12 border-b border-surface-border pb-12">
           <h1 className="text-6xl font-black uppercase tracking-tighter text-primary mb-4">Terms of Nexus</h1>
-          <p className="text-xl text-foreground/60">The legal framework governing your interactions within the OMNI marketplace.</p>
+          <p className="text-xl text-foreground/60">The legal framework governing your interactions within the LaHustle marketplace.</p>
           <div className="mt-8 flex gap-4">
             <span className="bg-surface border border-surface-border px-4 py-2 rounded-full text-xs font-bold uppercase">Version 1.4</span>
             <span className="bg-surface border border-surface-border px-4 py-2 rounded-full text-xs font-bold uppercase">Effective: Jan 2026</span>
@@ -16,7 +16,7 @@ export default function TermsPage() {
             <div className="absolute left-0 top-0 text-4xl font-black text-primary/20 italic">01</div>
             <h2 className="text-2xl font-black uppercase tracking-tight text-primary mb-4">The Agreement</h2>
             <p className="text-lg leading-relaxed text-foreground/80">
-              By accessing OMNI, you enter into a binding agreement with the OMNI Network. If you do not agree to these terms, you must immediate terminate your session and delete all local cache associated with the platform.
+              By accessing LaHustle, you enter into a binding agreement with the LaHustle Network. If you do not agree to these terms, you must immediate terminate your session and delete all local cache associated with the platform.
             </p>
           </section>
 
@@ -24,7 +24,7 @@ export default function TermsPage() {
             <div className="absolute left-0 top-0 text-4xl font-black text-primary/20 italic">02</div>
             <h2 className="text-2xl font-black uppercase tracking-tight text-primary mb-4">Account Integrity</h2>
             <p className="text-lg leading-relaxed text-foreground/80">
-              You are the sole custodian of your OMNI credentials. Sharing accounts between students is strictly prohibited to maintain the integrity of our trust-score system. Any breach occurring via your account is your legal responsibility.
+              You are the sole custodian of your LaHustle credentials. Sharing accounts between students is strictly prohibited to maintain the integrity of our trust-score system. Any breach occurring via your account is your legal responsibility.
             </p>
           </section>
 
@@ -40,7 +40,7 @@ export default function TermsPage() {
             <div className="absolute left-0 top-0 text-4xl font-black text-primary/20 italic">04</div>
             <h2 className="text-2xl font-black uppercase tracking-tight text-primary mb-4">Escrow & Disputes</h2>
             <p className="text-lg leading-relaxed text-foreground/80">
-              OMNI acts as a neutral facilitator. Our escrow system holds funds until delivery is verified via QR scan. Disputes are resolved via Campus Hub moderators. Our decision in these matters is final and binding.
+              LaHustle acts as a neutral facilitator. Our escrow system holds funds until delivery is verified via QR scan. Disputes are resolved via Campus Hub moderators. Our decision in these matters is final and binding.
             </p>
           </section>
 
@@ -56,7 +56,7 @@ export default function TermsPage() {
             <div className="absolute left-0 top-0 text-4xl font-black text-primary/20 italic">06</div>
             <h2 className="text-2xl font-black uppercase tracking-tight text-primary mb-4">Limitation of Assets</h2>
             <p className="text-lg leading-relaxed text-foreground/80">
-              OMNI provides the infrastructure but is not the manufacturer/owner of goods sold. Our liability is limited to the transaction value held in escrow.
+              LaHustle provides the infrastructure but is not the manufacturer/owner of goods sold. Our liability is limited to the transaction value held in escrow.
             </p>
           </section>
 
@@ -66,7 +66,7 @@ export default function TermsPage() {
               Our legal department is available for inquiries regarding these terms.
             </p>
             <a 
-              href="mailto:legal@omni-hub.com" 
+              href="mailto:legal@LaHustle-hub.com" 
               className="inline-block bg-foreground text-background px-8 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all"
             >
               Contact Legal Office
@@ -75,7 +75,7 @@ export default function TermsPage() {
         </div>
 
         <footer className="mt-24 text-center text-foreground/20 text-xs font-bold uppercase tracking-[0.5em]">
-          OMNI NETWORK &copy; 2026 // ALL RIGHTS RESERVED
+          LaHustle NETWORK &copy; 2026 // ALL RIGHTS RESERVED
         </footer>
       </div>
     </div>

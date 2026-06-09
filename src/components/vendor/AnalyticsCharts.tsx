@@ -36,7 +36,7 @@ export default function AnalyticsCharts({ salesData, productData }: AnalyticsCha
                 <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="absolute top-0 right-0 p-4 opacity-30 font-black text-4xl md:text-6xl text-primary">GH₵</div>
                 <h3 className="text-sm md:text-lg font-black uppercase tracking-widest mb-6 flex items-center gap-2 relative z-10">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse omni-glow"></span>
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse lh-glow"></span>
                     <span className="gradient-text">Live Revenue Trend</span>
                 </h3>
                 <div className="h-[250px] w-full chart-glow relative z-10">

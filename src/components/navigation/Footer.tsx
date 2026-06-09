@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { OmniLogo } from '@/components/ui/OmniLogo'
+import { LaHustleLogo } from '@/components/ui/LaHustleLogo'
 
 export default function Footer() {
     const pathname = usePathname()
@@ -34,10 +34,10 @@ export default function Footer() {
                 
                 {/* Brand & Copyright */}
                 <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-                    <OmniLogo size="sm" showTagline={false} />
+                    <LaHustleLogo size="sm" showTagline={false} />
                     <span className="hidden sm:inline text-foreground/20">•</span>
                     <span className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em]">
-                        © {new Date().getFullYear()} OMNI Marketplace
+                        © {new Date().getFullYear()} LaHustle
                     </span>
                 </div>
 

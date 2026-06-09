@@ -166,7 +166,7 @@ export default function VendorDashboard() {
                                 Copy Link
                             </button>
                             <a
-                                href={`https://wa.me/?text=${encodeURIComponent(`🛒 Check out ${shopName || user?.firstName || 'my store'} on OMNI Student Marketplace!\n\nBrowse products and order directly:\n${window.location.origin}/vendor/${userId}\n\n📱 Powered by OMNI`)}`}
+                                href={`https://wa.me/?text=${encodeURIComponent(`🛒 Check out ${shopName || user?.firstName || 'my store'} on LaHustle Student Marketplace!\n\nBrowse products and order directly:\n${window.location.origin}/vendor/${userId}\n\n📱 Powered by LaHustle`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20"
@@ -323,7 +323,7 @@ export default function VendorDashboard() {
             </section>
 
             <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
-                <p>© 2026 OMNI Student Marketplace • All Rights Reserved</p>
+                <p>© 2026 LaHustle Student Marketplace • All Rights Reserved</p>
             </div>
         </div>
     );

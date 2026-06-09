@@ -18,7 +18,7 @@ export default async function CheckoutPage({
 
     if (userId) {
         const clerkUser = await currentUser();
-        const rawEmail = clerkUser?.emailAddresses?.[0]?.emailAddress || `${clerkUser?.username || clerkUser?.id || 'guest'}@omni-marketplace.com`;
+        const rawEmail = clerkUser?.emailAddresses?.[0]?.emailAddress || `${clerkUser?.username || clerkUser?.id || 'guest'}@LaHustle-marketplace.com`;
         studentEmail = rawEmail.trim().toLowerCase();
         isGuest = false;
     }
@@ -47,7 +47,7 @@ export default async function CheckoutPage({
 
     return (
         <div className="min-h-screen bg-background pt-24 pb-12 relative overflow-hidden transition-colors duration-300">
-            {/* OMNI Background Elements */}
+            {/* LaHustle Background Elements */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
             {/* Paystack Script */}

@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 
 /**
  * Robust security check for Admin access.
- * Checks both the Clerk role and the OMNI_BOSS_TOKEN cookie.
+ * Checks both the Clerk role and the LH_BOSS_TOKEN cookie.
  * 
  * @returns true if authorized, false otherwise.
  */

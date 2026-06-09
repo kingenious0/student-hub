@@ -60,7 +60,7 @@ export async function ensureUserExists() {
             return null;
         }
 
-        const rawEmail = clerkUser.emailAddresses?.[0]?.emailAddress || `${clerkUser.username || clerkUser.id}@omni-marketplace.com`;
+        const rawEmail = clerkUser.emailAddresses?.[0]?.emailAddress || `${clerkUser.username || clerkUser.id}@LaHustle-marketplace.com`;
         const email = rawEmail.trim().toLowerCase();
 
         const clerkPhone = clerkUser.phoneNumbers?.[0]?.phoneNumber || null;

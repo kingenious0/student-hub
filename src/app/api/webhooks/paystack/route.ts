@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
                         if (order.student && order.student.phoneNumber) {
                             const studentName = order.student.name || 'Student';
                             const shop = order.vendor?.shopName || order.vendor?.name || 'Vendor';
-                            const studentMsg = `OMNI PAY: Hello ${studentName}, payment of ₵${order.amount.toFixed(2)} is confirmed! 🛡️\nRelease Key for ${shop}: ${releaseKey}\nShare this key with the vendor ONLY when you receive your items.`;
+                            const studentMsg = `LaHustle PAY: Hello ${studentName}, payment of ₵${order.amount.toFixed(2)} is confirmed! 🛡️\nRelease Key for ${shop}: ${releaseKey}\nShare this key with the vendor ONLY when you receive your items.`;
                             sendSMS(order.student.phoneNumber, studentMsg).then(res => {
                                 console.log('[SMS-NOTIFY-WEBHOOK] Student SMS Sent:', res);
                             });
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
                         if (order.vendor && order.vendor.phoneNumber) {
                             const vendorName = order.vendor.shopName || order.vendor.name || 'Vendor';
                             const itemsSummary = order.items.map(i => `${i.quantity}x ${i.productSnapshot && (i.productSnapshot as any).title || i.product?.title || 'Item'}`).join(', ');
-                            const vendorMsg = `OMNI ORDER: Hello ${vendorName}, you have a new order! 🔔\nItems: ${itemsSummary}\nTotal: ₵${order.amount.toFixed(2)}\nFulfillment: ${order.fulfillmentType}\nOpen the OMNI Dashboard to manage and fulfill.`;
+                            const vendorMsg = `LaHustle ORDER: Hello ${vendorName}, you have a new order! 🔔\nItems: ${itemsSummary}\nTotal: ₵${order.amount.toFixed(2)}\nFulfillment: ${order.fulfillmentType}\nOpen the LaHustle Dashboard to manage and fulfill.`;
                             sendSMS(order.vendor.phoneNumber, vendorMsg).then(res => {
                                 console.log('[SMS-NOTIFY-WEBHOOK] Vendor SMS Sent:', res);
                             });
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
                                     return `- ${shop}: ${key}`;
                                 }).join('\n');
 
-                                const studentMsg = `OMNI PAY: Hello ${studentName}, payment of ₵${totalAmount} is confirmed! 🛡️\nRelease Keys:\n${keyLines}\nShare this key with the vendor ONLY when you receive your items.`;
+                                const studentMsg = `LaHustle PAY: Hello ${studentName}, payment of ₵${totalAmount} is confirmed! 🛡️\nRelease Keys:\n${keyLines}\nShare this key with the vendor ONLY when you receive your items.`;
 
                                 sendSMS(orderGroup.student.phoneNumber, studentMsg).then(res => {
                                     console.log('[SMS-NOTIFY-WEBHOOK] Group Student SMS Sent:', res);
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
                                     const itemsSummary = o.items.map(i => `${i.quantity}x ${i.productSnapshot && (i.productSnapshot as any).title || i.product?.title || 'Item'}`).join(', ');
                                     const amountStr = o.amount.toFixed(2);
 
-                                    const vendorMsg = `OMNI ORDER: Hello ${vendorName}, you have a new order! 🔔\nItems: ${itemsSummary}\nTotal: ₵${amountStr}\nFulfillment: ${o.fulfillmentType}\nOpen the OMNI Dashboard to manage and fulfill.`;
+                                    const vendorMsg = `LaHustle ORDER: Hello ${vendorName}, you have a new order! 🔔\nItems: ${itemsSummary}\nTotal: ₵${amountStr}\nFulfillment: ${o.fulfillmentType}\nOpen the LaHustle Dashboard to manage and fulfill.`;
 
                                     sendSMS(vendorPhone, vendorMsg).then(res => {
                                         console.log(`[SMS-NOTIFY-WEBHOOK] Group Vendor (${vendorName}) SMS Sent:`, res);

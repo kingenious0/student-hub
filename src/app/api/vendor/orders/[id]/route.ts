@@ -88,10 +88,10 @@ export async function PATCH(
                 const isPickup = order.fulfillmentType === 'PICKUP';
 
                 const msg = targetStatus === 'COMPLETED'
-                    ? `OMNI: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready and completed! Enjoy your meal.`
+                    ? `LaHustle: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready and completed! Enjoy your meal.`
                     : isPickup
-                        ? `OMNI: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready for pickup! Please go to the vendor's location to collect it.`
-                        : `OMNI: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready! Someone will bring it to you.`;
+                        ? `LaHustle: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready for pickup! Please go to the vendor's location to collect it.`
+                        : `LaHustle: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready! Someone will bring it to you.`;
                 await sendSMS(order.student.phoneNumber, msg);
             }
         }

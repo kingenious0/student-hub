@@ -50,7 +50,7 @@ export default function VendorUnlockPage() {
                     {status === 'IDLE' && (
                         <div className="text-center py-8">
                             <div className="text-7xl mb-6">🛡️</div>
-                            <h2 className="text-2xl font-black mb-2 uppercase tracking-tight text-foreground">OMNI Secure-Key</h2>
+                            <h2 className="text-2xl font-black mb-2 uppercase tracking-tight text-foreground">LaHustle Secure-Key</h2>
                             <p className="text-foreground/40 mb-8 max-w-sm mx-auto font-black uppercase tracking-widest text-[10px]">
                                 Ask the student for their 6-digit Release Key to unlock your payment.
                             </p>
@@ -75,7 +75,7 @@ export default function VendorUnlockPage() {
                                 <button
                                     type="submit"
                                     disabled={releaseKey.length < 6}
-                                    className="w-full py-5 bg-primary text-primary-foreground rounded-2xl font-black text-xl shadow-lg omni-glow hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:hover:scale-100 transition-all uppercase tracking-widest"
+                                    className="w-full py-5 bg-primary text-primary-foreground rounded-2xl font-black text-xl shadow-lg lh-glow hover:scale-[1.02] active:scale-95 disabled:opacity-30 disabled:hover:scale-100 transition-all uppercase tracking-widest"
                                 >
                                     VERIFY & RELEASE 🔓
                                 </button>
@@ -89,7 +89,7 @@ export default function VendorUnlockPage() {
                                 <>
                                     <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-8"></div>
                                     <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">Unlocking Shield...</h2>
-                                    <p className="text-foreground/40 mt-2 font-black uppercase tracking-widest text-[10px]">Checking with OMNI Central</p>
+                                    <p className="text-foreground/40 mt-2 font-black uppercase tracking-widest text-[10px]">Checking with LaHustle Central</p>
                                 </>
                             )}
 

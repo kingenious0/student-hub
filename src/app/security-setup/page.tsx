@@ -187,7 +187,7 @@ export default function SecuritySetupPage() {
   // Complete setup
   const completeSetup = async () => {
     try {
-      // Call API to set the OMNI_IDENTITY_VERIFIED cookie
+      // Call API to set the LH_IDENTITY_VERIFIED cookie
       await fetch('/api/security/complete', { method: 'POST' });
       
       // Force a hard navigation to ensure middleware picks up the new cookie
@@ -212,7 +212,7 @@ export default function SecuritySetupPage() {
               <Shield className="w-10 h-10 text-primary" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold mb-2">Omni Vault Protection</h2>
+              <h2 className="text-3xl font-bold mb-2">LaHustle Vault Protection</h2>
               <p className="text-foreground/60 font-bold">
                 Replace passwords with secure device biometrics
               </p>
@@ -594,7 +594,7 @@ export default function SecuritySetupPage() {
 
         <div className="mt-8 text-center">
             <p className="text-[9px] font-black text-foreground/20 uppercase tracking-[0.5em]">
-              🔒 Encrypted with End-to-End OMNI Security Protocol
+              🔒 Encrypted with End-to-End LaHustle Security Protocol
             </p>
         </div>
       </div>
@@ -607,7 +607,7 @@ function StepIndicator({ current, done, num, label }: { current: boolean; done: 
     <div className="flex items-center gap-3 bg-surface/50 px-4 py-2 rounded-2xl border border-surface-border">
       <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black transition-all ${
         done ? "bg-[#39FF14] text-black" : 
-        current ? "bg-primary text-primary-foreground omni-glow" : 
+        current ? "bg-primary text-primary-foreground lh-glow" : 
         "bg-surface-hover text-foreground/20"
       }`}>
         {done ? "✓" : num}

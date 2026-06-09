@@ -48,8 +48,8 @@ export default function PushNotificationProvider() {
       await subscribeUserToPush();
     };
 
-    const pushEnabled = localStorage.getItem('omni-push-enabled') === 'true';
-    const pushDeclined = localStorage.getItem('omni-push-declined') === 'true';
+    const pushEnabled = localStorage.getItem('LaHustle-push-enabled') === 'true';
+    const pushDeclined = localStorage.getItem('LaHustle-push-declined') === 'true';
 
     if (pushEnabled) {
       init();
@@ -64,13 +64,13 @@ export default function PushNotificationProvider() {
     setShowPrompt(false);
     const ok = await subscribeUserToPush();
     if (ok) {
-      localStorage.setItem('omni-push-enabled', 'true');
+      localStorage.setItem('LaHustle-push-enabled', 'true');
     }
   };
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('omni-push-declined', 'true');
+    localStorage.setItem('LaHustle-push-declined', 'true');
   };
 
   return showPrompt ? (

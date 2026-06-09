@@ -184,7 +184,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
                                 )}
                                 <button
                                     onClick={handleConfirm}
-                                    className={`flex-1 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[0.25em] transition-all omni-glow active:scale-95 ${config.variant === 'error'
+                                    className={`flex-1 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-[0.25em] transition-all lh-glow active:scale-95 ${config.variant === 'error'
                                             ? 'bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)]'
                                             : 'bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-glow))]'
                                         }`}

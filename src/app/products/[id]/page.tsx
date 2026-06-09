@@ -40,7 +40,7 @@ export default function ProductDetailsPage() {
     const viewTrackedRef = useRef(false);
 
     // Initial Auth Check
-    const isGhostAdmin = typeof window !== 'undefined' && localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
+    const isGhostAdmin = typeof window !== 'undefined' && localStorage.getItem('LH_GOD_MODE_UNLOCKED') === 'true';
 
     // Track product view
     useEffect(() => {
@@ -500,7 +500,7 @@ export default function ProductDetailsPage() {
                                                 return;
                                             }
                                             const modifiers = getSelectedModifiersList();
-                                            sessionStorage.setItem('omni_checkout_modifiers', JSON.stringify({
+                                            sessionStorage.setItem('LaHustle_checkout_modifiers', JSON.stringify({
                                                 productId: product.id,
                                                 quantity,
                                                 selectedModifiers: modifiers,
@@ -523,7 +523,7 @@ export default function ProductDetailsPage() {
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-black uppercase tracking-widest opacity-50">Guarantee</span>
-                                            <span className="text-xs font-bold">Omni Secure™</span>
+                                            <span className="text-xs font-bold">LaHustle Secure™</span>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">

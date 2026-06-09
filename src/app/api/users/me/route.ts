@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
             if (role === 'GOD_MODE' || role === 'ADMIN') isAdmin = true;
 
             // Check Boss Token
-            if (cookieStore.get('OMNI_BOSS_TOKEN')?.value === 'AUTHORIZED_ADMIN') isAdmin = true;
+            if (cookieStore.get('LH_BOSS_TOKEN')?.value === 'AUTHORIZED_ADMIN') isAdmin = true;
 
             // Fallback: Check DB if claims missing (e.g. Hybrid Mode)
             if (!isAdmin && userId) {

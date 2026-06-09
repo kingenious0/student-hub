@@ -239,7 +239,7 @@ export default function Home() {
               <Link href="/become-vendor" className="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-emerald-600 to-teal-700 text-primary-foreground p-8 md:p-12 transition-all hover:scale-[1.02] active:scale-95 block shadow-xl border border-primary/20">
                 <div className="relative z-10 flex flex-col items-center text-center">
                   <div className="text-5xl mb-4 animate-bounce" style={{ animationDuration: '3s' }}>🏪</div>
-                  <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tight mb-2">Sell on Omni</h3>
+                  <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tight mb-2">Sell on LaHustle</h3>
                   <p className="text-primary-foreground/80 text-xs md:text-lg font-medium mb-6 max-w-lg leading-relaxed">
                     Open your shop, reach over 10,000+ campus students daily, and receive secure escrow payouts directly to your MoMo wallet instantly.
                   </p>
@@ -253,7 +253,7 @@ export default function Home() {
 
           {/* Footer Links */}
           <div className="text-center text-foreground/40 text-sm">
-            <p className="font-medium">© 2026 Omni Student Marketplace • Built for Students, by Students</p>
+            <p className="font-medium">© 2026 LaHustle Student Marketplace • Built for Students, by Students</p>
           </div>
         </div>
       </footer>

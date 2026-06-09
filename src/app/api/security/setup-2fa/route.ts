@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
     
     // Generate secret for TOTP
     const secret = speakeasy.generateSecret({
-      name: `OMNI (${user.email})`,
-      issuer: "OMNI Student Hub"
+      name: `LaHustle (${user.email})`,
+      issuer: "LaHustle Student Hub"
     })
     
     // Generate backup codes

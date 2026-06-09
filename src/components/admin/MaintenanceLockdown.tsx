@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface MaintenanceLockdownProps {
     title?: string;
@@ -11,7 +11,7 @@ interface MaintenanceLockdownProps {
 
 export default function MaintenanceLockdown({
     title = "SECTOR LOCKDOWN",
-    message = "The OMNI ecosystem is currently offline for critical core upgrades and infrastructure recalibration.",
+    message = "The LaHustle ecosystem is currently offline for critical core upgrades and infrastructure recalibration.",
     feature
 }: MaintenanceLockdownProps) {
     const [currentTime, setCurrentTime] = useState<string>('');
@@ -189,7 +189,7 @@ export default function MaintenanceLockdown({
                 {/* Footer Metadata */}
                 <div className="pt-6">
                     <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.4em] font-mono">
-                        OMNI SECURE ECOSYSTEM • NODE SHIELD v3.2.0
+                        LaHustle SECURE ECOSYSTEM • NODE SHIELD v3.2.0
                     </p>
                 </div>
             </div>

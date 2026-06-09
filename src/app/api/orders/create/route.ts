@@ -27,8 +27,8 @@ async function getAuthenticatedStudent(): Promise<any | null> {
     try {
         const { cookies } = await import('next/headers');
         const cookieStore = await cookies();
-        const isVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
-        const hybridClerkId = cookieStore.get('OMNI_HYBRID_SYNCED')?.value;
+        const isVerified = cookieStore.get('LH_IDENTITY_VERIFIED')?.value === 'TRUE';
+        const hybridClerkId = cookieStore.get('LH_HYBRID_SYNCED')?.value;
 
         if (isVerified && hybridClerkId) {
             return await prisma.user.findUnique({
@@ -212,7 +212,7 @@ async function executeOrderCreationTransaction(
 
 async function getOrCreateGuestUser(guestInfo: { name: string; phone: string }): Promise<{ user: any; email: string }> {
     const guestId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    const email = `${guestId}@omni-marketplace.com`;
+    const email = `${guestId}@LaHustle-marketplace.com`;
 
     const user = await prisma.user.create({
         data: {
@@ -303,7 +303,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const paystackRef = `OMNI-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const paystackRef = `LaHustle-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
         let grandTotal = 0;
 
         await prisma.$transaction(async (tx) => {
@@ -366,7 +366,7 @@ export async function POST(request: NextRequest) {
 
                 // SMS
                 if (vendor.phoneNumber) {
-                    const msg = `OMNI: Hello ${vendorName}, a new order is pending payment!\nItems: ${itemsSummary}\nOpen your OMNI app to check and prepare.`;
+                    const msg = `LaHustle: Hello ${vendorName}, a new order is pending payment!\nItems: ${itemsSummary}\nOpen your LaHustle app to check and prepare.`;
                     sendSMS(vendor.phoneNumber, msg).then(res => {
                         console.log(`[SMS-ORDER-CREATE] Vendor (${vendorName}) SMS:`, res);
                     });

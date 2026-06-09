@@ -40,14 +40,14 @@ export default function CheckoutForm({
     // Restore modifiers from sessionStorage (set by Instant Checkout on product page)
     useEffect(() => {
         try {
-            const stored = sessionStorage.getItem('omni_checkout_modifiers');
+            const stored = sessionStorage.getItem('LaHustle_checkout_modifiers');
             if (stored) {
                 const data = JSON.parse(stored);
                 if (data.productId === productId) {
                     setSelectedModifiers(data.selectedModifiers || []);
                     setQuantity(data.quantity || 1);
                 }
-                sessionStorage.removeItem('omni_checkout_modifiers');
+                sessionStorage.removeItem('LaHustle_checkout_modifiers');
             }
         } catch {}
     }, [productId]);
@@ -334,7 +334,7 @@ export default function CheckoutForm({
             <button
                 type="submit"
                 disabled={isCreatingOrder}
-                className="w-full py-6 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 omni-glow mb-6 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                className="w-full py-6 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 lh-glow mb-6 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
             >
                 {isCreatingOrder ? (
                     'TRANSMITTING PROTOCOL...'
@@ -345,7 +345,7 @@ export default function CheckoutForm({
 
             <div className="text-center p-4 bg-foreground/5 rounded-2xl border border-surface-border">
                 <p className="text-[9px] font-black text-foreground/40 uppercase tracking-[0.3em]">
-                    🔒 Protected by OMNI Escrow Shield
+                    🔒 Protected by LaHustle Escrow Shield
                 </p>
             </div>
         </form>

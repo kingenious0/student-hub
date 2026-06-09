@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function OmniGate() {
+export default function LaHustleGate() {
     const router = useRouter();
 
     useEffect(() => {

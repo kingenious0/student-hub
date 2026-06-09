@@ -16,14 +16,14 @@ const MEMBER_STEPS = [
     },
     {
         id: 'profile',
-        target: 'omni-nav-profile',
+        target: 'LaHustle-nav-profile',
         title: 'IDENTITY NODE',
         content: 'Manage your account, view wallet balance, and update settings here.',
         position: 'bottom-right'
     },
     {
         id: 'marketplace',
-        target: 'omni-nav-marketplace',
+        target: 'LaHustle-nav-marketplace',
         title: 'ACQUIRE ASSETS',
         content: 'Browse the feed to find products from students near you. Use the Search to find specific halls.',
         position: 'bottom-left'
@@ -36,19 +36,19 @@ const MOBILE_MEMBER_STEPS = [
         id: 'welcome_mobile',
         target: null,
         title: 'OPERATIVE WELCOME',
-        content: 'Welcome to OMNI Mobile. Let us sync your navigation.',
+        content: 'Welcome to LaHustle Mobile. Let us sync your navigation.',
         position: 'center'
     },
     {
         id: 'mobile_menu',
-        target: 'omni-mobile-menu',
+        target: 'LaHustle-mobile-menu',
         title: 'ACCESS PORT',
         content: 'TAP THIS BUTTON to open your main command menu. Do it now, then click "Next".',
         position: 'bottom-right'
     },
     {
         id: 'mobile_marketplace',
-        target: 'omni-mobile-marketplace',
+        target: 'LaHustle-mobile-marketplace',
         title: 'MARKETPLACE',
         content: 'This is your feed. Buy, sell, and trade with students on campus.',
         position: 'bottom'
@@ -60,7 +60,7 @@ const GUEST_STEPS = [
     {
         id: 'welcome_guest',
         target: null,
-        title: 'OMNI NETWORK',
+        title: 'LaHustle NETWORK',
         content: 'The centralized marketplace for university students. Food, tech, services - all in one terminal.',
         position: 'center'
     },
@@ -73,7 +73,7 @@ const GUEST_STEPS = [
     },
     {
         id: 'signin_guest',
-        target: 'omni-nav-signin',
+        target: 'LaHustle-nav-signin',
         title: 'INITIALIZE IDENTITY',
         content: 'Sign in to access the network. Students and Vendors verify here.',
         position: 'bottom-right'
@@ -86,19 +86,19 @@ const ONBOARDING_STEPS = [
         id: 'onboard_welcome',
         target: null,
         title: 'PROFILE CONFIGURATION',
-        content: 'You must select your operating role within the OMNI Network.',
+        content: 'You must select your operating role within the LaHustle Network.',
         position: 'center'
     },
     {
         id: 'onboard_student_select',
-        target: 'omni-onboard-student',
+        target: 'LaHustle-onboard-student',
         title: 'STUDENT ACCESS',
         content: 'Select this if you want to buy items or browse the feed.',
         position: 'right'
     },
     {
         id: 'onboard_vendor_select',
-        target: 'omni-onboard-vendor',
+        target: 'LaHustle-onboard-vendor',
         title: 'VENDOR TERMINAL',
         content: 'Select this if you have a shop or service (e.g., Food, Haircut, Graphics) and want to sell.',
         position: 'left'
@@ -106,11 +106,11 @@ const ONBOARDING_STEPS = [
 ];
 
 const CONTAINER_MAP: Record<string, string> = {
-    'omni-mobile-menu': 'omni-navbar',
-    'omni-mobile-marketplace': 'omni-drawer'
+    'LaHustle-mobile-menu': 'LaHustle-navbar',
+    'LaHustle-mobile-marketplace': 'LaHustle-drawer'
 };
 
-export default function OmniGuide() {
+export default function LaHustleGuide() {
     const { isSignedIn, isLoaded } = useUser();
     const pathname = usePathname();
     const [activeStep, setActiveStep] = useState<number | null>(null);
@@ -130,11 +130,11 @@ export default function OmniGuide() {
         ? (isMobile ? MOBILE_MEMBER_STEPS : MEMBER_STEPS)
         : GUEST_STEPS;
 
-    let STORAGE_KEY = isSignedIn ? 'omni_tour_member_v1' : 'omni_tour_guest_v1';
+    let STORAGE_KEY = isSignedIn ? 'LaHustle_tour_member_v1' : 'LaHustle_tour_guest_v1';
 
     if (pathname?.startsWith('/onboarding')) {
         STEPS = ONBOARDING_STEPS;
-        STORAGE_KEY = 'omni_tour_onboarding_v1';
+        STORAGE_KEY = 'LaHustle_tour_onboarding_v1';
     }
 
     useEffect(() => {
@@ -161,7 +161,7 @@ export default function OmniGuide() {
         // Poll for conditions
         const checkStart = setInterval(() => {
             const tutorialDone = localStorage.getItem(STORAGE_KEY);
-            const alphaWelcomeDone = localStorage.getItem('OMNI_ALPHA_WELCOME_V1_KCS');
+            const alphaWelcomeDone = localStorage.getItem('LH_ALPHA_WELCOME_V1_KCS');
 
             if (tutorialDone) {
                 clearInterval(checkStart);

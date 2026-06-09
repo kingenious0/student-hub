@@ -74,10 +74,10 @@ export default function AdminDashboard() {
                 {/* Header */}
                 <div className="flex justify-between items-end">
                     <div>
-                        <h1 className="text-5xl font-black text-foreground uppercase tracking-tighter">OMNI COMMAND</h1>
+                        <h1 className="text-5xl font-black text-foreground uppercase tracking-tighter">LaHustle COMMAND</h1>
                         <p className="text-primary text-[10px] font-black uppercase tracking-[0.5em] mt-2">System Analytics & Oversight</p>
                     </div>
-                    <div className="px-6 py-2 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg omni-glow">
+                    <div className="px-6 py-2 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg lh-glow">
                         Level: The Boss
                     </div>
                 </div>
@@ -193,9 +193,9 @@ export default function AdminDashboard() {
                     <div className="p-10 bg-surface border border-surface-border rounded-[2.5rem] group cursor-pointer hover:border-primary/30 transition-all">
                         <div className="text-5xl mb-6">🛠️</div>
                         <h3 className="text-2xl font-black text-foreground mb-2 uppercase tracking-tighter">Partner Vetting</h3>
-                        <p className="text-foreground/40 mb-6 max-w-sm font-black uppercase tracking-widest text-[9px]">Review, verify, and activate campus vendors to the OMNI Network.</p>
+                        <p className="text-foreground/40 mb-6 max-w-sm font-black uppercase tracking-widest text-[9px]">Review, verify, and activate campus vendors to the LaHustle Network.</p>
                         <Link href="/dashboard/admin/vetting">
-                            <button className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all omni-glow active:scale-95">Enter Protocol</button>
+                            <button className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all lh-glow active:scale-95">Enter Protocol</button>
                         </Link>
                     </div>
 

@@ -5,9 +5,9 @@ import { auth } from '@clerk/nextjs/server';
 import { sendSMS } from '@/lib/sms/wigal';
 
 const RECOVERY_MESSAGES = [
-    'Hey! You left some items in your cart on Omni. Complete your order now before someone else grabs them! 🛒',
-    'Still thinking about it? Your cart is still waiting on Omni. Check out now and enjoy quick campus delivery! ⚡',
-    'Last chance! Your Omni cart items are still available. Don\'t miss out — complete your order today! 🎯',
+    'Hey! You left some items in your cart on LaHustle. Complete your order now before someone else grabs them! 🛒',
+    'Still thinking about it? Your cart is still waiting on LaHustle. Check out now and enjoy quick campus delivery! ⚡',
+    'Last chance! Your LaHustle cart items are still available. Don\'t miss out — complete your order today! 🎯',
 ];
 
 export async function POST(request: NextRequest) {

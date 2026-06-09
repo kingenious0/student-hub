@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
                 const orderId = event.trip?.externalId;
                 const eta = event.trip?.eta?.duration; // mins usually
                 if (orderId) {
-                    console.log(`[OMNI SIGNAL] Runner approaching Vendor for Order #${orderId}. ETA: ${eta} min`);
+                    console.log(`[LaHustle SIGNAL] Runner approaching Vendor for Order #${orderId}. ETA: ${eta} min`);
                     // Trigger Vendor Flash/Notification Logic here
                 }
             }
@@ -33,12 +33,12 @@ export async function POST(req: NextRequest) {
                 const geofenceDescription = event.geofence?.description;
 
                 if (geofenceTag === 'vendor') {
-                    console.log(`[OMNI SIGNAL] Runner ${userId} entered VENDOR ZONE: ${geofenceDescription}`);
+                    console.log(`[LaHustle SIGNAL] Runner ${userId} entered VENDOR ZONE: ${geofenceDescription}`);
                     // Notify Vendor: "Runner is here!"
                 }
 
                 if (geofenceTag === 'halls' || geofenceTag === 'student_home') {
-                    console.log(`[OMNI SIGNAL] Runner ${userId} entered STUDENT ZONE: ${geofenceDescription}`);
+                    console.log(`[LaHustle SIGNAL] Runner ${userId} entered STUDENT ZONE: ${geofenceDescription}`);
                     // Notify Student: "Come out! Runner is here."
                 }
             }
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
             if (type === 'user.started_dwell') {
                 // If dwelling at vendor -> Status = "Picking Up"?
                 // If dwelling at hall -> Status = "Delivering"?
-                console.log(`[OMNI SIGNAL] User ${event.user?.userId} is dwelling at ${event.geofence?.description}`);
+                console.log(`[LaHustle SIGNAL] User ${event.user?.userId} is dwelling at ${event.geofence?.description}`);
             }
         }
 

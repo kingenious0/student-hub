@@ -3,7 +3,7 @@
 
 import { motion } from 'framer-motion';
 
-export default function OMNILoader() {
+export default function LaHustleLoader() {
     return (
         <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center transition-colors duration-300">
             <div className="relative">
@@ -33,7 +33,7 @@ export default function OMNILoader() {
                         transition={{ delay: 0.5 }}
                         className="text-primary font-black text-xs uppercase tracking-[1em] pl-[1em]"
                     >
-                        OMNI LOADING
+                        LaHustle LOADING
                     </motion.div>
                 </motion.div>
 

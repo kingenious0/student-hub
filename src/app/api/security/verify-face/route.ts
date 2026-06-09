@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
             });
 
             // Set the Identity Cookie
-            response.cookies.set('OMNI_IDENTITY_VERIFIED', 'TRUE', {
+            response.cookies.set('LH_IDENTITY_VERIFIED', 'TRUE', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',

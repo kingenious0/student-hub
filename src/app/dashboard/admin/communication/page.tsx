@@ -281,7 +281,7 @@ export default function CommunicationPage() {
                                 disabled={sending || (!useManual && selectedPhones.size === 0) || !message}
                                 className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${sending || (!useManual && selectedPhones.size === 0) || !message
                                     ? 'bg-foreground/10 cursor-not-allowed opacity-50'
-                                    : 'bg-primary text-primary-foreground hover:scale-[1.02] shadow-xl omni-glow'
+                                    : 'bg-primary text-primary-foreground hover:scale-[1.02] shadow-xl lh-glow'
                                     }`}
                             >
                                 {sending ? 'TRANSMITTING...' : 'SEND MESSAGE'}

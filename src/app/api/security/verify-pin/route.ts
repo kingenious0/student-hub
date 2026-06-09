@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     if (hashedPin === dbUser.securityPin) {
       // Set verification cookie
       const response = NextResponse.json({ verified: true });
-      response.cookies.set("OMNI_IDENTITY_VERIFIED", "TRUE", {
+      response.cookies.set("LH_IDENTITY_VERIFIED", "TRUE", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",

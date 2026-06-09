@@ -1,11 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@custom-variant dark (&:where([data-theme="omni"], [data-theme="omni"] *));
+@custom-variant dark (&:where([data-theme="lahustle"], [data-theme="lahustle"] *));
 
 /* ========================================
-   🎨 OMNI DESIGN SYSTEM v2.0
+   🎨 LaHustle DESIGN SYSTEM v2.0
    World-Class Glassmorphism & Bento Grid
-   Inspired by Linear.app & Raycast.com
    ======================================== */
 
 :root {
@@ -16,7 +15,8 @@
   --primary-foreground: #ffffff;
   --accent: #10B981;
   --primary-glow: rgba(5, 150, 105, 0.15);
-  --omni-green: #10B981;
+  --brand: #39FF14;
+  --brand-gradient: linear-gradient(135deg, #000000 0%, #1a3a00 50%, #39FF14 100%);
 
   /* Glassmorphism Variables */
   --glass-bg: rgba(255, 255, 255, 0.7);
@@ -58,16 +58,18 @@
   --foreground: oklch(0.145 0 0);
 }
 
-[data-theme="omni"] {
-  /* Dark Mode Palette (OMNI Theme - Electric Emerald) */
+[data-theme="lahustle"] {
+  /* Dark Mode Palette (LaHustle - Black & Green Electric) */
   --background: #050505;
   --foreground: #ffffff;
   --surface: #0d1117;
   --surface-border: rgba(255, 255, 255, 0.05);
-  --primary: #10B981;
+  --primary: #39FF14;
   --primary-foreground: #000000;
   --accent: #10B981;
-  --primary-glow: rgba(16, 185, 129, 0.35);
+  --primary-glow: rgba(57, 255, 20, 0.35);
+  --brand: #39FF14;
+  --brand-gradient: linear-gradient(135deg, #000000 0%, #1a3a00 50%, #39FF14 100%);
 
   /* Dark Glassmorphism */
   --glass-bg: rgba(13, 17, 23, 0.7);
@@ -75,14 +77,14 @@
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   --blur-amount: 20px;
 
-  /* UI Components Variables for OMNI Dark Mode */
+  /* UI Components Variables for LaHustle Dark Mode */
   --card: #0d1117;
   --card-foreground: #ffffff;
   --popover: #0d1117;
   --popover-foreground: #ffffff;
   --border: rgba(255, 255, 255, 0.08);
   --input: rgba(255, 255, 255, 0.08);
-  --ring: #10B981;
+  --ring: #39FF14;
   --muted: rgba(255, 255, 255, 0.06);
   --muted-foreground: rgba(255, 255, 255, 0.6);
   --secondary: rgba(255, 255, 255, 0.08);
@@ -98,7 +100,8 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
-  --color-omni-green: var(--omni-green);
+  --color-brand: var(--brand);
+  --color-brand-gradient: var(--brand-gradient);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -328,18 +331,18 @@ body {
 }
 
 /* ========================================
-   🌟 GLOW EFFECTS
+   🪄 LaHustle GLOW EFFECTS
    ======================================== */
 
-.omni-glow {
+.lh-glow {
   box-shadow: 0 0 20px var(--primary-glow);
 }
 
-.omni-glow-hover:hover {
+.lh-glow-hover:hover {
   box-shadow: 0 0 30px var(--primary-glow);
 }
 
-.omni-glow-strong {
+.lh-glow-strong {
   box-shadow: 0 0 40px var(--primary-glow), 0 0 80px var(--primary-glow);
 }
 
@@ -593,7 +596,7 @@ body.drawer-open {
   background: rgba(156, 163, 175, 0.5);
   border-radius: 10px;
 }
-[data-theme="omni"] ::-webkit-scrollbar-thumb {
+[data-theme="lahustle"] ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
 }
 ::-webkit-scrollbar-thumb:hover {

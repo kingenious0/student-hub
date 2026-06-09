@@ -2,7 +2,7 @@
 const API_KEY = process.env.WIGAL_API_KEY;
 const USERNAME = process.env.WIGAL_USERNAME;
 const BASE_URL = process.env.FROG_SMS_API_URL || 'https://frogapi.wigal.com.gh';
-const SENDER_ID = process.env.FROG_SMS_SENDER_ID || 'Omni';
+const SENDER_ID = process.env.FROG_SMS_SENDER_ID || 'LaHustle';
 
 /**
  * Send SMS via Wigal Frog API (V3)
@@ -23,7 +23,7 @@ export async function sendSMS(to: string, message: string) {
         destinations: [
             {
                 destination: phone,
-                msgid: `OMNI-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+                msgid: `LaHustle-${Date.now()}-${Math.floor(Math.random() * 1000)}`
             }
         ],
         message: message,
@@ -79,7 +79,7 @@ export async function sendBulkSMS(recipients: string[], message: string) {
 
     const destinations = validRecipients.map(phone => ({
         destination: phone,
-        msgid: `OMNI-BULK-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
+        msgid: `LaHustle-BULK-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`
     }));
 
     // Wigal might limit destinations per request. Assuming reasonable limit or chunking needed.

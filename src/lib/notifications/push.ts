@@ -26,7 +26,8 @@ export async function sendPushNotification(
     await webpush.sendNotification(subscription, JSON.stringify(payload));
     return { sent: true };
   } catch (err) {
-    const isGone = err?.statusCode === 410 || err?.statusCode === 404;
+    const webpushErr = err as { statusCode?: number };
+    const isGone = webpushErr?.statusCode === 410 || webpushErr?.statusCode === 404;
     return { sent: false, expired: isGone, endpoint: subscription.endpoint };
   }
 }

@@ -136,7 +136,7 @@ function SearchResults() {
                             <div className="mt-16 flex justify-center">
                                 <button
                                     onClick={() => setVisibleCount(prev => prev + 12)}
-                                    className="px-12 py-5 bg-surface border border-surface-border rounded-2xl font-black text-xs uppercase tracking-widest hover:border-primary hover:text-primary transition-all omni-glow active:scale-95 shadow-xl"
+                                    className="px-12 py-5 bg-surface border border-surface-border rounded-2xl font-black text-xs uppercase tracking-widest hover:border-primary hover:text-primary transition-all lh-glow active:scale-95 shadow-xl"
                                 >
                                     Load More Results
                                 </button>

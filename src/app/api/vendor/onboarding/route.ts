@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         let targetVendorStatus = 'PENDING';
 
         // Detailed Risk Analysis
-        const prohibitedKeywords = ['admin', 'omni', 'support', 'official', 'staff', 'manager', 'scam', 'test', 'system'];
+        const prohibitedKeywords = ['admin', 'LaHustle', 'support', 'official', 'staff', 'manager', 'scam', 'test', 'system'];
         const textToScan = `${shopName} ${shopLandmark}`.toLowerCase();
         const hasRiskKeywords = prohibitedKeywords.some(word => textToScan.includes(word));
 
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         });
 
         const statusMessage = targetVendorStatus === 'ACTIVE'
-            ? 'Access Granted. Welcome to Omni.'
+            ? 'Access Granted. Welcome to LaHustle.'
             : 'Access Pending. Awaiting admin review.';
 
         return NextResponse.json({ success: true, message: statusMessage, status: targetVendorStatus });

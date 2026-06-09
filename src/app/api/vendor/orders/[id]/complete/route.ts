@@ -83,7 +83,7 @@ export async function POST(
 
             await sendSMS(
                 order.student.phoneNumber,
-                `OMNI: Order Completed. Delivery confirmed for ${displayTitle}. Thank you for trading.`
+                `LaHustle: Order Completed. Delivery confirmed for ${displayTitle}. Thank you for trading.`
             );
         }
 

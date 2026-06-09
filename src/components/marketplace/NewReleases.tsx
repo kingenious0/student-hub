@@ -79,7 +79,7 @@ export default function NewReleases() {
 
             {loading ? (
                 <div className="text-center py-12">
-                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent omni-glow"></div>
+                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent lh-glow"></div>
                     <p className="mt-4 text-primary font-black uppercase tracking-[0.4em] text-[10px]">Loading Fresh Drops...</p>
                 </div>
             ) : (
@@ -192,7 +192,7 @@ export default function NewReleases() {
                                                                     const res = await fetch(`/api/admin/products/${product.id}`, {
                                                                         method: 'DELETE',
                                                                         headers: {
-                                                                            'x-admin-key': 'omniadmin.com'
+                                                                            'x-admin-key': 'LaHustleadmin.com'
                                                                         }
                                                                     });
                                                                     if (res.ok) {

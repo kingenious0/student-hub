@@ -102,14 +102,12 @@ function MarketplaceContent() {
 
   useEffect(() => {
     setPage(1);
-    setPageState(1);
     fetchProducts(1, true);
   }, [fetchProducts]);
 
   const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    setPageState(nextPage);
     fetchProducts(nextPage, false);
   };
 
@@ -125,7 +123,7 @@ function MarketplaceContent() {
     setSelectedCategory('all');
     setSortBy('newest');
     setSearchQuery('');
-    setPage('1');
+    setPage(1);
   }, [setSelectedCategory, setSortBy, setSearchQuery, setPage]);
 
   const categoryThemeColor = useMemo(() => {
@@ -388,7 +386,7 @@ export default function MarketplacePage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin omni-glow" />
+        <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin lh-glow" />
       </div>
     }>
       <MarketplaceContent />

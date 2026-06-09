@@ -320,7 +320,7 @@ export default function SecurityVerificationModal({
                     disabled={loading || !isFaceDetected}
                     className={`w-full px-6 py-3 rounded-xl font-black uppercase tracking-widest transition-all ${
                       isFaceDetected 
-                        ? "bg-primary text-primary-foreground omni-glow scale-100" 
+                        ? "bg-primary text-primary-foreground lh-glow scale-100" 
                         : "bg-gray-100 text-gray-400 scale-95"
                     }`}
                   >

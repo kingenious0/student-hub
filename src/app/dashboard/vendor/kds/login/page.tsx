@@ -161,7 +161,7 @@ export default function KDSLoginPage() {
             Clear
           </button>
           <button
-            onClick={handleDigit}
+            onClick={() => handleDigit('0')}
             disabled={pin.length >= 6 || loading}
             className="flex-1 aspect-square bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 disabled:opacity-30 rounded-2xl text-3xl font-bold text-white transition-all"
           >

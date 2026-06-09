@@ -26,8 +26,8 @@ export async function POST(
             try {
                 const { cookies } = await import('next/headers');
                 const cookieStore = await cookies();
-                const isVerified = cookieStore.get('OMNI_IDENTITY_VERIFIED')?.value === 'TRUE';
-                const hybridClerkId = cookieStore.get('OMNI_HYBRID_SYNCED')?.value;
+                const isVerified = cookieStore.get('LH_IDENTITY_VERIFIED')?.value === 'TRUE';
+                const hybridClerkId = cookieStore.get('LH_HYBRID_SYNCED')?.value;
 
                 if (isVerified && hybridClerkId) {
                     user = await prisma.user.findUnique({

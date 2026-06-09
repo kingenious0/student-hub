@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
         // If user is already onboarded, set the identity cookie to prevent onboarding loop
         if (user.onboarded) {
-            response.cookies.set('OMNI_IDENTITY_VERIFIED', 'TRUE', {
+            response.cookies.set('LH_IDENTITY_VERIFIED', 'TRUE', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',

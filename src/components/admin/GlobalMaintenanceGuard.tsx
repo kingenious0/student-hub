@@ -8,7 +8,7 @@ import MaintenanceLockdown from './MaintenanceLockdown';
 /**
  * GlobalMaintenanceGuard
  * 
- * Enforces a total OMNI Sector Lockdown.
+ * Enforces a total LaHustle Sector Lockdown.
  * When active, only users with Admin/Ghost clearance can bypass the barrier.
  */
 export default function GlobalMaintenanceGuard({ children }: { children: ReactNode }) {
@@ -38,7 +38,7 @@ export default function GlobalMaintenanceGuard({ children }: { children: ReactNo
         return (
             <MaintenanceLockdown 
                 title="SECTOR LOCKDOWN" 
-                message="The OMNI ecosystem is currently offline for critical core upgrades and infrastructure recalibration. Systems will be back online shortly."
+                message="The LaHustle ecosystem is currently offline for critical core upgrades and infrastructure recalibration. Systems will be back online shortly."
             />
         );
     }

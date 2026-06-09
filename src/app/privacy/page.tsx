@@ -4,7 +4,7 @@ export default function PrivacyPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-12 border-b border-surface-border pb-12">
           <h1 className="text-6xl font-black uppercase tracking-tighter text-primary mb-4">Privacy Protocol</h1>
-          <p className="text-xl text-foreground/60">How we safeguard your digital presence within the OMNI ecosystem.</p>
+          <p className="text-xl text-foreground/60">How we safeguard your digital presence within the LaHustle ecosystem.</p>
           <div className="mt-8 flex gap-4">
             <span className="bg-surface border border-surface-border px-4 py-2 rounded-full text-xs font-bold uppercase">Version 2.0</span>
             <span className="bg-surface border border-surface-border px-4 py-2 rounded-full text-xs font-bold uppercase">Last Updated: Jan 2026</span>
@@ -22,14 +22,14 @@ export default function PrivacyPage() {
           <section className="bg-surface/30 border border-surface-border p-8 rounded-3xl">
             <h2 className="text-2xl font-black uppercase tracking-tight text-primary mt-0">2. Geo-Fencing & Ghosting</h2>
             <p className="text-lg leading-relaxed text-foreground/80">
-              OMNI utilizes "Hotspot" technology. We do not track your continuous GPS coordinates. Location data is only activated when you explicitly place an order or check in at a Campus Hub. When inactive, your digital footprint is essentially "ghosted" from our servers.
+              LaHustle utilizes "Hotspot" technology. We do not track your continuous GPS coordinates. Location data is only activated when you explicitly place an order or check in at a Campus Hub. When inactive, your digital footprint is essentially "ghosted" from our servers.
             </p>
           </section>
 
           <section className="bg-surface/30 border border-surface-border p-8 rounded-3xl">
             <h2 className="text-2xl font-black uppercase tracking-tight text-primary mt-0">3. Ironclad Payments</h2>
             <p className="text-lg leading-relaxed text-foreground/80">
-              Financial flows are handled via Paystack. OMNI never stores Mobile Money PINs or full CCV codes. Our escrow system ensures that even transaction metadata is encrypted at rest.
+              Financial flows are handled via Paystack. LaHustle never stores Mobile Money PINs or full CCV codes. Our escrow system ensures that even transaction metadata is encrypted at rest.
             </p>
           </section>
 
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
 
           <footer className="mt-12 pt-12 border-t border-surface-border text-center">
             <p className="text-foreground/40 text-sm">
-              Questions regarding our encryption standards? Contact <span className="text-primary font-bold">privacy@omni-hub.com</span>
+              Questions regarding our encryption standards? Contact <span className="text-primary font-bold">privacy@LaHustle-hub.com</span>
             </p>
           </footer>
         </div>

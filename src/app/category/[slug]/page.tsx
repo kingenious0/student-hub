@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use, useCallback, Suspense } from 'react';
+import { useState, useEffect, use, useCallback, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal } from 'lucide-react';
@@ -199,7 +199,7 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
       title: product.title,
       price: product.price,
       imageUrl: product.imageUrl,
-      vendor: product.vendor,
+      vendor: product.vendor ? { ...product.vendor, name: product.vendor.name || '' } : undefined,
     });
   }, [addToCart]);
 
@@ -256,7 +256,7 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
 
   if (loading) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin omni-glow"></div>
+      <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin lh-glow"></div>
     </div>
   );
 
@@ -391,7 +391,7 @@ function CategoryHubPage({ params }: { params: Promise<{ slug: string }> }) {
               <div className="mt-12 flex justify-center">
                 <button
                   onClick={() => setVisibleCount(prev => prev + 12)}
-                  className="px-8 py-4 bg-surface border border-surface-border rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all omni-glow active:scale-95"
+                  className="px-8 py-4 bg-surface border border-surface-border rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all lh-glow active:scale-95"
                 >
                   Load More Discoveries
                 </button>
@@ -436,7 +436,7 @@ export default function CategoryHubPageWrapper({ params }: { params: Promise<{ s
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin omni-glow" />
+        <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin lh-glow" />
       </div>
     }>
       <CategoryHubPage params={params} />

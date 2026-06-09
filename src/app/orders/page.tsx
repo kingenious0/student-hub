@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useAdmin } from '@/context/AdminContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import OmniDialog from '@/components/ui/OmniDialog';
+import LaHustleDialog from '@/components/ui/LaHustleDialog';
 import { toast } from 'sonner';
 import GoBack from '@/components/navigation/GoBack';
 import { useModal } from '@/context/ModalContext';
@@ -278,7 +278,7 @@ const EvidenceVault = ({ order, onClose }: { order: Order, onClose: () => void }
 
     const handleDownloadTxt = () => {
         const receiptContent = `
-OMNI MARKETPLACE - DIGITAL RECEIPT
+LaHustle MARKETPLACE - DIGITAL RECEIPT
 ----------------------------------
 Order ID:      ${order.id}
 Date:          ${new Date(order.createdAt).toLocaleString()}
@@ -294,11 +294,11 @@ ${order.paidAt ? `- Paid:        ${new Date(order.paidAt).toLocaleString()}` : '
 ${order.pickedUpAt ? `- Picked Up:   ${new Date(order.pickedUpAt).toLocaleString()}` : ''}
 ${order.deliveredAt ? `- Delivered:   ${new Date(order.deliveredAt).toLocaleString()}` : ''}
 ----------------------------------
-Thank you for using Omni.
+Thank you for using LaHustle.
 Live. Learn. Earn.
         `.trim();
 
-        const filename = `OMNI-Receipt-${order.id.slice(0, 8)}.txt`;
+        const filename = `LaHustle-Receipt-${order.id.slice(0, 8)}.txt`;
 
         if (window.ReactNativeWebView) {
             // Encode text to Base64 for native saving
@@ -332,7 +332,7 @@ Live. Learn. Earn.
             try {
                 // skipFonts: true avoids CORS SecurityError when reading external stylesheets
                 const dataUrl = await toPng(receiptRef.current, { cacheBust: true, pixelRatio: 3, skipFonts: true });
-                const filename = `OMNI-Receipt-${order.id.slice(0, 8)}.png`;
+                const filename = `LaHustle-Receipt-${order.id.slice(0, 8)}.png`;
 
                 if (window.ReactNativeWebView) {
                     // alert('Saving Image to Device...'); // Debug feedback
@@ -447,7 +447,7 @@ Live. Learn. Earn.
                         {/* Header */}
                         <div className="relative z-10 flex justify-between items-start mb-12 border-b border-white/10 pb-8">
                             <div>
-                                <h1 className="text-4xl font-black uppercase tracking-tighter mb-2">Omni Market</h1>
+                                <h1 className="text-4xl font-black uppercase tracking-tighter mb-2">LaHustle Market</h1>
                                 <p className="text-sm font-mono text-foreground/40">OFFICIAL DIGITAL RECEIPT</p>
                             </div>
                             <div className="text-right">
@@ -487,7 +487,7 @@ Live. Learn. Earn.
 
                         {/* Footer */}
                         <div className="relative z-10 pt-8 border-t border-white/10 text-center">
-                            <p className="text-foreground/30 text-[10px] uppercase tracking-[0.3em] font-bold">Verified by Omni Secure Protocol</p>
+                            <p className="text-foreground/30 text-[10px] uppercase tracking-[0.3em] font-bold">Verified by LaHustle Secure Protocol</p>
                         </div>
                     </div>
                 </div>
@@ -715,7 +715,7 @@ export default function OrdersPage() {
                 />
             )}
 
-            <OmniDialog
+            <LaHustleDialog
                 isOpen={cancelDialogState.isOpen}
                 onClose={() => setCancelDialogState({ ...cancelDialogState, isOpen: false })}
                 onConfirm={executeCancellation}

@@ -19,8 +19,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const rpName = "Omni Student Marketplace";
-    const rpID = req.nextUrl.hostname; // e.g., "localhost" or "omni.ac"
+    const rpName = "LaHustle Student Marketplace";
+    const rpID = req.nextUrl.hostname; // e.g., "localhost" or "LaHustle.ac"
     const origin = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
 
     const options = await generateRegistrationOptions({

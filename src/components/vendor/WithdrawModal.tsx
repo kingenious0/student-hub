@@ -244,7 +244,7 @@ export default function WithdrawModal({ isOpen, onClose, maxAmount, onSuccess }:
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-4.5 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 shadow-lg omni-glow flex items-center justify-center gap-2"
+                        className="w-full py-4.5 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all hover:scale-[1.02] active:scale-95 shadow-lg lh-glow flex items-center justify-center gap-2"
                     >
                         {loading ? (
                             'TRANSMITTING REQUEST...'

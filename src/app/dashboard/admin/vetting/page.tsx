@@ -112,7 +112,7 @@ export default function PartnerVettingPage() {
                                         <button
                                             disabled={!!actionLoading}
                                             onClick={() => handleAction(vendor.id, 'APPROVE')}
-                                            className="px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] omni-glow hover:scale-105 active:scale-95 transition-all disabled:opacity-30"
+                                            className="px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] lh-glow hover:scale-105 active:scale-95 transition-all disabled:opacity-30"
                                         >
                                             {actionLoading === vendor.id ? 'PENDING...' : 'Authorize Partner'}
                                         </button>

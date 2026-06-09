@@ -213,7 +213,7 @@ export default function CommandCenterPage() {
 
     const handleUnlock = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (password === 'omniadmin.com') {
+        if (password === 'LaHustleadmin.com') {
             try {
                 // Set the cookie via API
                 const res = await fetch('/api/admin/unlock-command-center', {
@@ -224,7 +224,7 @@ export default function CommandCenterPage() {
 
                 if (res.ok) {
                     setIsUnlocked(true);
-                    localStorage.setItem('OMNI_GOD_MODE_UNLOCKED', 'true');
+                    localStorage.setItem('LH_GOD_MODE_UNLOCKED', 'true');
                     fetchSettings(); // Safe to call now
                 } else {
                     setShake(true);
@@ -373,13 +373,13 @@ export default function CommandCenterPage() {
     useEffect(() => {
         // Check local storage for previous session
         const autoUnlock = async () => {
-            if (localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true') {
+            if (localStorage.getItem('LH_GOD_MODE_UNLOCKED') === 'true') {
                 try {
                     // Ensure cookie is set by calling the API
                     const res = await fetch('/api/admin/unlock-command-center', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ password: 'omniadmin.com' })
+                        body: JSON.stringify({ password: 'LaHustleadmin.com' })
                     });
 
                     if (res.ok) {
@@ -387,11 +387,11 @@ export default function CommandCenterPage() {
                         fetchSettings();
                     } else {
                         // Cookie invalid, clear localStorage
-                        localStorage.removeItem('OMNI_GOD_MODE_UNLOCKED');
+                        localStorage.removeItem('LH_GOD_MODE_UNLOCKED');
                     }
                 } catch (error) {
                     console.error('Auto-unlock error:', error);
-                    localStorage.removeItem('OMNI_GOD_MODE_UNLOCKED');
+                    localStorage.removeItem('LH_GOD_MODE_UNLOCKED');
                 }
             }
             setLoading(false);
@@ -428,7 +428,7 @@ export default function CommandCenterPage() {
         return (
             <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 font-mono text-center">
                 <div className="mb-8 opacity-20 hover:opacity-100 transition-opacity duration-1000">
-                    <img src="/OMNI-LOGO.ico" className="w-16 h-16 invert" />
+                    <img src="/lahustle-icon.svg" className="w-16 h-16 invert" />
                 </div>
 
                 <h1 className="text-4xl text-gray-800 font-black mb-2 uppercase tracking-tighter">System Error 404</h1>
@@ -493,9 +493,9 @@ export default function CommandCenterPage() {
                     <button
                         onClick={toggleTheme}
                         className="p-2 text-foreground/60 hover:text-foreground transition-colors"
-                        title={`Switch to ${theme === 'omni' ? 'Light' : 'Dark'} Mode`}
+                        title={`Switch to ${theme === 'lahustle' ? 'Light' : 'Dark'} Mode`}
                     >
-                        {theme === 'omni' ? '☀️' : '🌑'}
+                        {theme === 'lahustle' ? '☀️' : '🌑'}
                     </button>
 
                     <div className="hidden md:flex flex-col items-end">
@@ -504,7 +504,7 @@ export default function CommandCenterPage() {
                     </div>
 
                     <button onClick={() => {
-                        localStorage.removeItem('OMNI_GOD_MODE_UNLOCKED');
+                        localStorage.removeItem('LH_GOD_MODE_UNLOCKED');
                         window.location.reload();
                     }} className="text-xs bg-red-500/10 text-red-500 px-3 py-1 rounded hover:bg-red-500 hover:text-white transition-all uppercase font-bold tracking-wider">
                         Exit
