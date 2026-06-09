@@ -1,10 +1,11 @@
-const CACHE_NAME = 'omni-cache-v1';
+const CACHE_NAME = 'lahustle-cache-v2';
 
 const PRECACHE_ASSETS = [
   '/',
   '/offline',
-  '/omni-icon.svg',
+  '/lahustle-icon.svg',
   '/icon-192x192.png',
+  '/icon-512x512.png',
 ];
 
 self.addEventListener('install', function(event) {

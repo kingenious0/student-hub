@@ -98,7 +98,7 @@ export default function PWAInstallPrompt() {
     <>
       <div className="fixed bottom-0 left-0 right-0 z-[999] bg-surface border-t border-surface-border px-4 py-3 flex items-center justify-between gap-3 shadow-2xl">
         <div className="flex items-center gap-3 min-w-0">
-          <img src="/LaHustle-icon.svg" alt="" className="w-9 h-9 shrink-0" />
+          <img src="/lahustle-icon.svg" alt="" className="w-9 h-9 shrink-0" />
           <div className="min-w-0">
             <p className="text-xs font-bold text-foreground truncate">Install LaHustle for easy access</p>
             <p className="text-[9px] text-foreground/40 font-bold uppercase tracking-widest truncate">
@@ -144,7 +144,7 @@ export default function PWAInstallPrompt() {
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
-            <img src="/LaHustle-icon.svg" alt="" className="w-12 h-12 mb-4" />
+            <img src="/lahustle-icon.svg" alt="" className="w-12 h-12 mb-4" />
             <h3 className="text-base font-black uppercase tracking-tight text-foreground mb-4">
               Install LaHustle{isIOSPlatform ? ' on iPhone' : ''}
             </h3>
