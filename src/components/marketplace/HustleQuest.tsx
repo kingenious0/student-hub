@@ -35,13 +35,10 @@ export default function HustleQuest() {
     const completedCount = tasks.filter(t => t.completed).length;
     const progressPercent = Math.round((completedCount / tasks.length) * 100);
 
-    // Auto-collapse / open logic: Open on mount if not 100% complete
+    // Auto-collapse / open logic: Removed to prevent blocking the UI
     useEffect(() => {
-        if (progressPercent < 100) {
-            const timer = setTimeout(() => setIsOpen(true), 2500);
-            return () => clearTimeout(timer);
-        }
-    }, [progressPercent]);
+        // We no longer auto-open the modal. Users must click the launcher.
+    }, []);
 
     if (!isVisible) return null;
 
