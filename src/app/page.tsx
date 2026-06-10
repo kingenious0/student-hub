@@ -191,15 +191,15 @@ export default function Home() {
         className="sticky top-[72px] z-30 bg-background/60 backdrop-blur-3xl border-b border-surface-border"
       >
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex items-center gap-6 overflow-x-auto pb-4 hide-scrollbar scroll-smooth snap-x">
-             <CategoryPill href="/category/food" icon="🍔" label="Cravings" active />
-             <CategoryPill href="/category/tech" icon="🔋" label="Gear" />
-             <CategoryPill href="/category/fashion" icon="💎" label="Drip" />
-             <CategoryPill href="/category/books" icon="🧠" label="Grind" />
-             <CategoryPill href="/category/services" icon="🛠️" label="Deeds" />
-             <CategoryPill href="/category/beauty" icon="✨" label="Glow" />
-             <CategoryPill href="/category/lifestyle" icon="🌊" label="Vibe" />
-             <CategoryPill href="/category/more" icon="+" label="Exploration" />
+          <div className="flex items-center gap-2 md:gap-6 overflow-x-auto pb-4 hide-scrollbar scroll-smooth snap-x">
+             <CategoryPill href="/category/food" icon="🍔" label="Food" active />
+             <CategoryPill href="/category/tech" icon="🔋" label="Tech" />
+             <CategoryPill href="/category/fashion" icon="💎" label="Fashion" />
+             <CategoryPill href="/category/study" icon="🧠" label="Study" />
+             <CategoryPill href="/category/services" icon="🛠️" label="Services" />
+             <CategoryPill href="/category/beauty" icon="✨" label="Beauty" />
+             <CategoryPill href="/category/lifestyle" icon="🌊" label="Lifestyle" />
+             <CategoryPill href="/category/more" icon="+" label="More" />
           </div>
         </div>
       </motion.div>
@@ -261,23 +261,7 @@ export default function Home() {
   );
 }
 
-// Quick Category Pill (New)
-function CategoryPill({ href, icon, label, active = false }: { href: string; icon: string; label: string; active?: boolean }) {
-  return (
-    <Link
-      href={href}
-      className={`flex-shrink-0 flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all snap-start
-        ${active 
-          ? 'bg-primary border-primary text-black shadow-[0_0_20px_var(--primary-glow)] font-black' 
-          : 'bg-surface border-surface-border text-foreground/40 hover:border-primary/30 hover:bg-white hover:text-foreground'
-        }
-      `}
-    >
-      <span className="text-xl">{icon}</span>
-      <span className="text-[10px] font-bold uppercase tracking-widest">{label}</span>
-    </Link>
-  )
-}
+
 
 
 // Floating Icon Component for Hero with Scroll Parallax (Bypassed entirely on mobile)
@@ -302,6 +286,18 @@ function QuickCategoryCard({ href, icon, label }: { href: string; icon: string; 
       </Link>
     </motion.div>
   )
+}
+
+// Quick Category Pill (New)
+function CategoryPill({ href, icon, label, active = false }: { href: string; icon: string; label: string; active?: boolean }) {
+  return (
+    <Link href={href} className="snap-center shrink-0 first:pl-4 last:pr-4 md:first:pl-0 md:last:pr-0">
+      <div className={`flex items-center gap-2 md:gap-3 px-4 md:px-6 py-3 md:py-4 rounded-full border transition-all hover:scale-105 active:scale-95 ${active ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20' : 'bg-surface hover:bg-white border-surface-border hover:shadow-xl hover:shadow-primary/5'}`}>
+        <span className="text-lg md:text-xl filter drop-shadow-sm">{icon}</span>
+        <span className={`font-black text-[10px] md:text-xs uppercase tracking-widest ${active ? 'text-primary-foreground' : 'text-foreground/70'}`}>{label}</span>
+      </div>
+    </Link>
+  );
 }
 
 function CategoryCard({ href, icon, label, color }: { href: string; icon: string; label: string; color: string }) {
