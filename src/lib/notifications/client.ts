@@ -32,6 +32,19 @@ export async function subscribeUserToPush(): Promise<boolean> {
 
     const existingSubscription = await registration.pushManager.getSubscription();
     if (existingSubscription) {
+      const subJSON = existingSubscription.toJSON();
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: existingSubscription.endpoint,
+          keys: {
+            p256dh: subJSON.keys!.p256dh,
+            auth: subJSON.keys!.auth,
+          },
+          userAgent: navigator.userAgent,
+        }),
+      });
       return true;
     }
 

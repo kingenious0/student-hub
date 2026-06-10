@@ -41,6 +41,7 @@ export default function PushNotificationProvider() {
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    if (!('Notification' in window)) return;
 
     const init = async () => {
       const reg = await registerServiceWorker();
@@ -51,9 +52,9 @@ export default function PushNotificationProvider() {
     const pushEnabled = localStorage.getItem('LaHustle-push-enabled') === 'true';
     const pushDeclined = localStorage.getItem('LaHustle-push-declined') === 'true';
 
-    if (pushEnabled) {
+    if (pushEnabled || Notification.permission === 'granted') {
       init();
-    } else if (!pushDeclined) {
+    } else if (!pushDeclined && Notification.permission !== 'denied') {
       // Show prompt after a short delay on first visit
       const timer = setTimeout(() => setShowPrompt(true), 5000);
       return () => clearTimeout(timer);
@@ -65,6 +66,8 @@ export default function PushNotificationProvider() {
     const ok = await subscribeUserToPush();
     if (ok) {
       localStorage.setItem('LaHustle-push-enabled', 'true');
+    } else {
+      localStorage.setItem('LaHustle-push-declined', 'true');
     }
   };
 

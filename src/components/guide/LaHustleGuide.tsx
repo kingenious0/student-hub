@@ -287,7 +287,8 @@ export default function LaHustleGuide() {
         setActiveStep(null);
     };
 
-    if (!isVisible || activeStep === null) return null;
+    // Tour globally disabled per user request
+    return null;
 
     const current = STEPS[activeStep];
     const isCenter = !current.target || !coords;
