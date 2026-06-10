@@ -39,7 +39,7 @@ interface DiscoveryFeedData {
 }
 
 export default function SmartFeed() {
-    const { user } = useUser();
+    const { user, isLoaded } = useUser();
     const [feed, setFeed] = useState<DiscoveryFeedData | null>(null);
     const [loading, setLoading] = useState(true);
     const [isOffline, setIsOffline] = useState(false);
@@ -96,8 +96,8 @@ export default function SmartFeed() {
         };
     }, []);
 
-    // Skeleton loader while fetching
-    if (loading) {
+    // Skeleton loader while fetching or while Clerk auth state is loading
+    if (loading || !isLoaded) {
         return (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-24">
                 {Array.from({ length: 8 }).map((_, i) => (

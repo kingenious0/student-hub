@@ -142,12 +142,8 @@ export default function ProductDetailsPage() {
     };
 
     const handleAddToCart = () => {
-        if (!user) {
-            router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
-            return;
-        }
-
         const modifiers = getSelectedModifiersList();
+
 
         addToCart({
             id: product.id,
@@ -495,11 +491,8 @@ export default function ProductDetailsPage() {
                                     {/* Instant Checkout */}
                                     <button
                                         onClick={() => {
-                                            if (!user) {
-                                                router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
-                                                return;
-                                            }
                                             const modifiers = getSelectedModifiersList();
+
                                             sessionStorage.setItem('LaHustle_checkout_modifiers', JSON.stringify({
                                                 productId: product.id,
                                                 quantity,

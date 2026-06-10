@@ -1,0 +1,134 @@
+<USER_REQUEST>
+GOOD....
+I NOTICED WE DONT HAVE A LIEV RDER TTRACKING FOR THE BUYER YET RIGHT?? ITS JUSTACTIBE AQUISITIONS AND ACQUSITUION ACHIVE...WHICH WE CAN RENAME LIKE ACTIVE ORDER AND ORDER HISTORY
+
+BUT WWE DDONT HAVE A LIVE TRACKING ORDER MODAL LIKE HOW THE REAL GIANTS DO IT
+
+You are given a task to integrate an existing React component in the codebase
+
+The codebase should support:
+- shadcn project structure  
+- Tailwind CSS
+- Typescript
+
+If it doesn't, provide instructions on how to setup project via shadcn CLI, install Tailwind or Typescript.
+
+Determine the default path for components and styles. 
+If default path for components is not /components/ui, provide instructions on why it's important to create this folder
+Copy-paste this component to /components/ui folder:
+```tsx
+order-tracking.tsx
+"use client"
+
+import * as React from "react"
+import { CheckCircle2, Circle } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+export interface OrderTrackingProps
+  extends React.HTMLAttributes<HTMLDivElement> {
+  steps: {
+    name: string
+    timestamp: string
+    isCompleted: boolean
+  }[]
+}
+
+const OrderTracking = React.forwardRef<HTMLDivElement, OrderTrackingProps>(
+  ({ steps = [], className, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn("w-full max-w-md", className)} {...props}>
+        {steps.length > 0 ? (
+          <div>
+            {steps.map((step, index) => (
+              <div key={index} className="flex">
+                <div className="flex flex-col items-center">
+                  {step.isCompleted ? (
+                    <CheckCircle2 className="h-6 w-6 shrink-0 text-primary/70" />
+                  ) : (
+                    <Circle className="h-6 w-6 shrink-0 text-muted-foreground" />
+                  )}
+                  {index < steps.length - 1 && (
+                    <div
+                      className={cn("w-[1.5px] grow", {
+                        "bg-primary/70": steps[index + 1].isCompleted,
+                        "bg-muted-foreground": !steps[index + 1].isComple
+<truncated 645 bytes>
+king }
+
+demo.tsx
+import { OrderTracking } from "@/components/ui/order-tracking"
+
+const demoSteps = [
+  {
+    name: "Order Placed",
+    timestamp: "2024-03-20 14:23",
+    isCompleted: true,
+  },
+  {
+    name: "Order Confirmed",
+    timestamp: "2024-03-20 14:30",
+    isCompleted: true,
+  },
+  {
+    name: "Order Shipped",
+    timestamp: "2024-03-21 09:45",
+    isCompleted: true,
+  },
+  {
+    name: "Out for Delivery",
+    timestamp: "2024-03-22 08:15",
+    isCompleted: false,
+  },
+  {
+    name: "Delivered",
+    timestamp: "Pending",
+    isCompleted: false,
+  },
+]
+
+function OrderTrackingDemo() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <OrderTracking steps={demoSteps} />
+      </div>
+    </div>
+  )
+}
+
+export { OrderTrackingDemo }
+```
+
+Install NPM dependencies:
+```bash
+lucide-react
+```
+
+Implementation Guidelines
+ 1. Analyze the component structure and identify all required dependencies
+ 2. Review the component's argumens and state
+ 3. Identify any required context providers or hooks and install them
+ 4. Questions to Ask
+ - What data/props will be passed to this component?
+ - Are there any specific state management requirements?
+ - Are there any required assets (images, icons, etc.)?
+ - What is the expected responsive behavior?
+ - What is the best place to use this component in the app?
+
+Steps to integrate
+ 0. Copy paste all the code above in the correct directories
+ 1. Install external dependencies
+ 2. Fill image assets with Unsplash stock images you know exist
+ 3. Use lucide-react icons for svgs or logos if component requires them
+
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-06-10T05:19:19Z.
+
+The user's current state is as follows:
+Active Document: c:\Users\kinge\StudentMarketplace\student-hub\.git\COMMIT_EDITMSG (LANGUAGE_UNSPECIFIED)
+Cursor is on line: 2
+Other open documents:
+- c:\Users\kinge\StudentMarketplace\student-hub\.git\COMMIT_EDITMSG (LANGUAGE_UNSPECIFIED)
+- c:\Users\kinge\StudentMarketplace\student-hub\src\app\globals.css (LANGUAGE_CSS)
+</ADDITIONAL_METADATA>

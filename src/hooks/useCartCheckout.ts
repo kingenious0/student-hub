@@ -20,6 +20,12 @@ export function useCartCheckout() {
   const [isHybridAuth, setIsHybridAuth] = useState(false)
   const [hybridClerkId, setHybridClerkId] = useState<string | null>(null)
 
+  // Guest Checkout States
+  const [showGuestModal, setShowGuestModal] = useState(false)
+  const [guestName, setGuestName] = useState("")
+  const [guestPhone, setGuestPhone] = useState("")
+
+
   // Coupon Engine States
   const [couponCodeInput, setCouponCodeInput] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState<{ id: string; code: string; discountAmount: number } | null>(null)
@@ -97,12 +103,18 @@ export function useCartCheckout() {
     setCouponError(null)
   }
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (guestData?: { name: string; phone: string }) => {
     if (items.length === 0) return
 
+    let isGuest = false
+    let checkoutGuestInfo = guestData
+
     if (!user && !isHybridAuth) {
-      modal.alert("Please sign in to checkout.", "Sign In Required", "warning")
-      return
+      if (!checkoutGuestInfo) {
+        setShowGuestModal(true)
+        return
+      }
+      isGuest = true
     }
 
     let userEmail = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || manualEmail
@@ -120,7 +132,7 @@ export function useCartCheckout() {
       }
     }
 
-    if (!userEmail) {
+    if (!userEmail && !isGuest) {
       setShowEmailModal(true)
       return
     }
@@ -148,7 +160,8 @@ export function useCartCheckout() {
         body: JSON.stringify({
           items: items.map(i => ({ id: i.id, quantity: i.quantity, selectedModifiers: i.selectedModifiers || [] })),
           fulfillmentType: fulfillmentMethod === "delivery" ? "DELIVERY" : "PICKUP",
-          couponCode: appliedCoupon?.code || null
+          couponCode: appliedCoupon?.code || null,
+          ...(isGuest ? { guestInfo: checkoutGuestInfo } : {})
         })
       })
 
@@ -157,7 +170,7 @@ export function useCartCheckout() {
       if (data.success) {
         const handler = PaystackPop.setup({
           key: paystackPublicKey,
-          email: userEmail,
+          email: data.email || userEmail || "guest@LaHustle-marketplace.com",
           amount: Math.ceil(total * 100),
           currency: "GHS",
           ref: data.paystackRef,
@@ -177,7 +190,11 @@ export function useCartCheckout() {
                 const vData = await vRes.json()
                 if (vData.success) {
                   clearCart()
-                  window.location.href = "/orders?success=true"
+                  if (isGuest && checkoutGuestInfo) {
+                    window.location.href = `/order-success?ref=${response.reference}&phone=${encodeURIComponent(checkoutGuestInfo.phone)}`
+                  } else {
+                    window.location.href = "/orders?success=true"
+                  }
                 } else {
                   modal.alert(`Verification failed: ${vData.error || "Unknown error"}`, "Payment Error", "error")
                   setIsCreatingOrder(false)
@@ -206,6 +223,7 @@ export function useCartCheckout() {
       setIsCreatingOrder(false)
     }
   }
+
 
   return {
     items,
@@ -239,6 +257,13 @@ export function useCartCheckout() {
     couponError,
     isValidatingCoupon,
     handleApplyCoupon,
-    handleRemoveCoupon
+    handleRemoveCoupon,
+    showGuestModal,
+    setShowGuestModal,
+    guestName,
+    setGuestName,
+    guestPhone,
+    setGuestPhone
   }
 }
+

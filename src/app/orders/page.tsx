@@ -9,9 +9,11 @@ import LaHustleDialog from '@/components/ui/LaHustleDialog';
 import { toast } from 'sonner';
 import GoBack from '@/components/navigation/GoBack';
 import { useModal } from '@/context/ModalContext';
+import { OrderTracking } from '@/components/ui/order-tracking';
 
 // --- Interfaces ---
 interface Order {
+
     id: string;
     status: string;
     escrowStatus: string;
@@ -77,6 +79,51 @@ const getStatusLabel = (status: string, fulfillment: string) => {
 
 // 1. Expanded Priority Card (The "Theater Mode" for Top Orders)
 // Styles updated for Light/Dark Mode compatibility
+const getTrackingSteps = (order: Order) => {
+    const formatTime = (isoString?: string) => {
+        if (!isoString) return '';
+        try {
+            return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch {
+            return '';
+        }
+    };
+
+    const isPaid = ['PAID', 'PREPARING', 'READY', 'PICKED_UP', 'COMPLETED'].includes(order.status);
+    const isPreparing = ['PREPARING', 'READY', 'PICKED_UP', 'COMPLETED'].includes(order.status);
+    const isReady = ['READY', 'PICKED_UP', 'COMPLETED'].includes(order.status);
+    const isTransit = ['PICKED_UP', 'COMPLETED'].includes(order.status);
+    const isCompleted = order.status === 'COMPLETED';
+
+    return [
+        {
+            name: "Order Placed & Escrow Secured",
+            timestamp: formatTime(order.paidAt || order.createdAt),
+            isCompleted: isPaid
+        },
+        {
+            name: "Processing & Preparing",
+            timestamp: isPreparing ? formatTime(order.updatedAt) : '',
+            isCompleted: isPreparing
+        },
+        {
+            name: order.fulfillmentType === 'DELIVERY' ? "Runner Dispatched" : "Ready for Pickup",
+            timestamp: isReady ? formatTime(order.updatedAt) : '',
+            isCompleted: isReady
+        },
+        {
+            name: order.fulfillmentType === 'DELIVERY' ? "In Transit" : "Handover Active",
+            timestamp: order.pickedUpAt ? formatTime(order.pickedUpAt) : (isTransit ? formatTime(order.updatedAt) : ''),
+            isCompleted: isTransit
+        },
+        {
+            name: "Mission Completed",
+            timestamp: order.deliveredAt ? formatTime(order.deliveredAt) : (isCompleted ? formatTime(order.updatedAt) : ''),
+            isCompleted: isCompleted
+        }
+    ];
+};
+
 const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCancel: (id: string) => void }) => {
     const isTransit = order.status === 'PICKED_UP';
     const { displayTitle, imageUrl } = getOrderDisplay(order);
@@ -132,6 +179,12 @@ const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCan
                     </div>
                 </div>
 
+                {/* Live Order Tracking Stepper */}
+                <div className="bg-foreground/5 rounded-2xl p-5 border border-surface-border mb-6">
+                    <p className="text-[9px] text-primary font-black uppercase tracking-[0.2em] mb-4">Tactical Status Track</p>
+                    <OrderTracking steps={getTrackingSteps(order)} />
+                </div>
+
                 {/* Secure Key Module */}
                 {order.releaseKey && (
                     <div className="bg-surface/50 rounded-2xl p-1 border border-surface-border mb-6">
@@ -175,6 +228,7 @@ const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCan
         </motion.div>
     );
 };
+
 
 // 2. Condensed Status Strip (For Queue Items)
 const CondensedOrderStrip = ({ order, onClick }: { order: Order, onClick: () => void }) => {
@@ -369,11 +423,12 @@ Live. Learn. Earn.
                 {/* Header */}
                 <div className="bg-surface/50 p-6 flex justify-between items-start border-b border-surface-border">
                     <div>
-                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Acquisition Archive</h2>
+                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Order History</h2>
                         <p className="text-xs text-foreground/40 font-mono mt-1">ID: #{order.id.toUpperCase()}</p>
                     </div>
                     <button onClick={onClose} aria-label="Close modal" className="w-11 h-11 rounded-full bg-foreground/10 text-foreground/40 flex items-center justify-center hover:bg-foreground/20 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">✕</button>
                 </div>
+
 
                 {/* Evidence Body */}
                 <div className="p-6">
@@ -615,15 +670,16 @@ export default function OrdersPage() {
                         onClick={() => setActiveTab('ACTIVE')}
                         className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${activeTab === 'ACTIVE' ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'text-foreground/40 hover:text-foreground'}`}
                     >
-                        Active Acquisitions
+                        Active Orders
                     </button>
                     <button
                         onClick={() => setActiveTab('ARCHIVE')}
                         className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${activeTab === 'ARCHIVE' ? 'bg-foreground/5 text-foreground shadow-sm' : 'text-foreground/40 hover:text-foreground'}`}
                     >
-                        Acquisition Archive
+                        Order History
                     </button>
                 </div>
+
             </div>
 
             <div className="max-w-md mx-auto">

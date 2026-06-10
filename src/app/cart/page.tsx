@@ -27,8 +27,15 @@ export default function CartPage() {
         deliveryFee,
         platformFee,
         total,
-        handleCheckout
+        handleCheckout,
+        showGuestModal,
+        setShowGuestModal,
+        guestName,
+        setGuestName,
+        guestPhone,
+        setGuestPhone
     } = useCartCheckout();
+
 
     const modal = useModal();
 
@@ -260,7 +267,7 @@ export default function CartPage() {
                                     </div>
 
                                     <button
-                                        onClick={handleCheckout}
+                                        onClick={() => handleCheckout()}
                                         disabled={isCreatingOrder}
                                         className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-black text-sm uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20 mb-6 disabled:opacity-50 disabled:grayscale focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
@@ -329,7 +336,80 @@ export default function CartPage() {
                         </div>
                     )}
                 </AnimatePresence>
+                {/* Guest Details Modal */}
+                <AnimatePresence>
+                    {showGuestModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-surface border border-surface-border p-8 rounded-3xl w-full max-w-sm shadow-2xl relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full pointer-events-none"></div>
+                                <h3 className="text-xl font-black uppercase mb-2 text-foreground">Guest Details</h3>
+                                <p className="text-xs text-foreground/50 font-bold mb-6">
+                                    Enter your details to proceed to secure Paystack checkout. No password required!
+                                </p>
+                                
+                                <div className="space-y-4 mb-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 block">
+                                            Your Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. John Doe"
+                                            value={guestName}
+                                            onChange={(e) => setGuestName(e.target.value)}
+                                            className="w-full p-4 rounded-xl bg-background border border-surface-border text-base font-bold outline-none ring-2 ring-transparent focus:ring-primary transition-all text-foreground"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 block">
+                                            Phone Number
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            placeholder="e.g. 054 XXX XXXX"
+                                            value={guestPhone}
+                                            onChange={(e) => setGuestPhone(e.target.value)}
+                                            className="w-full p-4 rounded-xl bg-background border border-surface-border text-base font-bold outline-none ring-2 ring-transparent focus:ring-primary transition-all text-foreground"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setShowGuestModal(false)}
+                                        className="flex-1 py-4 rounded-xl bg-foreground/5 font-black text-xs uppercase hover:bg-foreground/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            if (!guestName.trim()) {
+                                                modal.alert("Please enter your name.", "Input Required", "warning");
+                                                return;
+                                            }
+                                            if (!guestPhone.trim()) {
+                                                modal.alert("Please enter your phone number.", "Input Required", "warning");
+                                                return;
+                                            }
+                                            setShowGuestModal(false);
+                                            handleCheckout({ name: guestName.trim(), phone: guestPhone.trim() });
+                                        }}
+                                        className="flex-1 py-4 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase hover:brightness-110 transition-colors shadow-lg shadow-primary/20 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                    >
+                                        Proceed
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
             </div>
         </ProtocolGuard>
     );
 }
+
