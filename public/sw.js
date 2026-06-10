@@ -83,7 +83,15 @@ self.addEventListener('fetch', function(event) {
 });
 
 self.addEventListener('push', function(event) {
-  const data = event.data.json();
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    data = {
+      title: 'LaHustle Update',
+      body: event.data ? event.data.text() : ''
+    };
+  }
   const options = {
     body: data.body || '',
     icon: '/icon-192x192.png',
