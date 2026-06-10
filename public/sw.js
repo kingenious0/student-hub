@@ -2,7 +2,6 @@ const CACHE_NAME = 'lahustle-cache-v2';
 
 const PRECACHE_ASSETS = [
   '/',
-  '/offline',
   '/lahustle-icon.svg',
   '/icon-192x192.png',
   '/icon-512x512.png',
@@ -33,22 +32,47 @@ self.addEventListener('fetch', function(event) {
 
   const url = new URL(event.request.url);
 
-  // API calls: Network only (with catch)
-  if (url.pathname.startsWith('/api/')) {
+  // 1. Specific API feeds for offline browsing: Network first, then Cache fallback
+  if (
+    url.pathname.startsWith('/api/marketplace/discovery') ||
+    url.pathname.startsWith('/api/products') ||
+    url.pathname.startsWith('/api/services')
+  ) {
+    event.respondWith(
+      fetch(event.request).then(function(networkResponse) {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      }).catch(function() {
+        return caches.match(event.request);
+      })
+    );
+  }
+  // 2. Generic API calls: Network only (with catch fallback)
+  else if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request).catch(function() {
         return caches.match(event.request);
       })
     );
   } 
-  // Static assets: Cache First, then Network
-  else if (url.pathname.startsWith('/_next/static/') || url.pathname.match(/\.(png|jpg|jpeg|svg|css|js)$/)) {
+  // 3. Static assets & Images (local and external like Cloudinary): Cache First, then Network
+  else if (
+    url.pathname.startsWith('/_next/static/') ||
+    event.request.destination === 'image' ||
+    url.pathname.match(/\.(png|jpg|jpeg|svg|css|js|webp|ico)$/) ||
+    event.request.url.includes('cloudinary.com') ||
+    event.request.url.includes('res.cloudinary.com')
+  ) {
     event.respondWith(
       caches.match(event.request).then(function(cachedResponse) {
         if (cachedResponse) return cachedResponse;
         return fetch(event.request).then(function(networkResponse) {
-          // Only cache successful responses
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          if (!networkResponse || networkResponse.status !== 200) {
             return networkResponse;
           }
           const responseToCache = networkResponse.clone();
@@ -60,7 +84,7 @@ self.addEventListener('fetch', function(event) {
       })
     );
   } 
-  // Pages/HTML: Network First, then Cache
+  // 4. Pages/HTML: Network First, then Cache
   else {
     event.respondWith(
       fetch(event.request).then(function(networkResponse) {
@@ -72,8 +96,7 @@ self.addEventListener('fetch', function(event) {
       }).catch(function() {
         return caches.match(event.request).then(function(cachedResponse) {
           if (cachedResponse) return cachedResponse;
-          // Fallback to '/' if it's an HTML request
-          if (event.request.headers.get('accept').includes('text/html')) {
+          if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
             return caches.match('/');
           }
         });

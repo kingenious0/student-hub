@@ -1,8 +1,8 @@
 
-const API_KEY = process.env.WIGAL_API_KEY;
-const USERNAME = process.env.WIGAL_USERNAME;
-const BASE_URL = process.env.FROG_SMS_API_URL || 'https://frogapi.wigal.com.gh';
-const SENDER_ID = process.env.FROG_SMS_SENDER_ID || 'LaHustle';
+const API_KEY = (process.env.WIGAL_API_KEY || '').replace(/['"]/g, '');
+const USERNAME = (process.env.WIGAL_USERNAME || '').replace(/['"]/g, '');
+const BASE_URL = (process.env.FROG_SMS_API_URL || 'https://frogapi.wigal.com.gh').replace(/['"]/g, '');
+const SENDER_ID = (process.env.FROG_SMS_SENDER_ID || 'LaHustle').replace(/['"]/g, '');
 
 /**
  * Send SMS via Wigal Frog API (V3)

@@ -20,7 +20,6 @@ interface FeedProduct {
     category: {
         name: string;
     };
-    // New Fields for Enhanced UI
     averageRating?: number;
     totalReviews?: number;
     isInStock?: boolean;
@@ -49,8 +48,6 @@ export default function SmartFeed() {
         // Detect initial offline state
         if (typeof window !== 'undefined' && !navigator.onLine) {
             setIsOffline(true);
-            setLoading(false);
-            return;
         }
 
         const controller = new AbortController();
@@ -62,10 +59,8 @@ export default function SmartFeed() {
                 if (data.success) {
                     setFeed(data.feed);
                 }
-                // If not success, feed stays null → GhostFeed renders
             })
             .catch(() => {
-                // Network error or offline → show GhostFeed
                 setIsOffline(!navigator.onLine);
             })
             .finally(() => {
@@ -77,7 +72,6 @@ export default function SmartFeed() {
         const handleOffline = () => setIsOffline(true);
         const handleOnline = () => {
             setIsOffline(false);
-            // Re-fetch when connection restored
             setLoading(true);
             fetch('/api/marketplace/discovery')
                 .then(res => res.json())
@@ -96,7 +90,6 @@ export default function SmartFeed() {
         };
     }, []);
 
-    // Skeleton loader while fetching or while Clerk auth state is loading
     if (loading || !isLoaded) {
         return (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-24">
@@ -113,16 +106,23 @@ export default function SmartFeed() {
         );
     }
 
-    // Empty DB → show the Coming Soon illusion feed
     const isEmpty = !feed || (feed.newArrivals.length === 0 && feed.trending.length === 0 && feed.recommended.length === 0);
 
-    if (isEmpty || isOffline) {
+    if (isEmpty) {
         const isSignedIn = !!user;
         return <GhostFeed isSignedIn={isSignedIn} isOffline={isOffline} />;
     }
 
     return (
         <div className="space-y-12 pb-24">
+            {isOffline && (
+                <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-4 flex items-center justify-between gap-4">
+                    <p className="text-xs font-bold text-amber-500 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                        You are offline. Browsing cached campus catalog.
+                    </p>
+                </div>
+            )}
 
             {/* Section 1: Recommended For You (Horizontal) */}
             {feed.recommended.length > 0 && (

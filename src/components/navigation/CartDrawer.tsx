@@ -300,7 +300,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                                 <div className="flex flex-col gap-2">
                                     <button
-                                        onClick={handleCheckout}
+                                        onClick={() => handleCheckout()}
                                         disabled={isCreatingOrder}
                                         className="w-full py-4 bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 hover:brightness-110 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >

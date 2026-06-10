@@ -10,7 +10,7 @@ export function useCartCheckout() {
   const { items, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCartStore()
   const modal = useModal()
   const [fulfillmentMethod, setFulfillmentMethod] = useState<"delivery" | "pickup">("delivery")
-  const { user } = useUser()
+  const { user, isLoaded } = useUser()
   const { getToken } = useAuth()
   const router = useRouter()
   const [isCreatingOrder, setIsCreatingOrder] = useState(false)
@@ -105,6 +105,11 @@ export function useCartCheckout() {
 
   const handleCheckout = async (guestData?: { name: string; phone: string }) => {
     if (items.length === 0) return
+
+    if (!isLoaded) {
+      modal.alert("Checking authorization session...", "Please Wait");
+      return;
+    }
 
     let isGuest = false
     let checkoutGuestInfo = guestData

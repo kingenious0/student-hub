@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Shield, User, Bell, Palette, Lock, Key, Smartphone, Save, ArrowLeft, Mail, Megaphone, Eye, ChevronRight, Fingerprint, RefreshCcw } from 'lucide-react';
+import { User, Bell, Palette, Lock, Smartphone, Save, ChevronRight, Fingerprint, RefreshCcw, CameraIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import GoBack from '@/components/navigation/GoBack';
@@ -91,8 +90,6 @@ export default function SettingsPage() {
 
       if (response.ok) {
         toast.success('Settings synchronized with LaHustle Cloud');
-        // No need to fetch immediately if we want to avoid flicker/reset
-        // But updating cached data is good
         const data = await response.json();
         if (data.user) setUserData(data.user);
       } else {
@@ -108,11 +105,10 @@ export default function SettingsPage() {
 
   const handleColorChange = (color: string) => {
     document.documentElement.style.setProperty('--primary', color);
-    // Generate a glow color (approximate)
     const glow = color.replace('rgb', 'rgba').replace(')', ', 0.4)');
     document.documentElement.style.setProperty('--primary-glow', glow);
     localStorage.setItem('LaHustle-theme-color', color);
-    toast.success(`Visual Matrix Updated to ${color}`);
+    toast.success(`Theme color updated to ${color}`);
   };
 
   useEffect(() => {
@@ -144,7 +140,7 @@ export default function SettingsPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] ml-2">Operator Name</label>
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] ml-2">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary opacity-50" />
                   <input 
@@ -157,7 +153,7 @@ export default function SettingsPage() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] ml-2">Secure Phone Link</label>
+                <label className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] ml-2">Phone Number</label>
                 <div className="relative">
                   <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary opacity-50" />
                   <input 
@@ -168,8 +164,6 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
-
-
             </div>
           </div>
         );
@@ -177,14 +171,14 @@ export default function SettingsPage() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-2">Security Protocols</h2>
-              <p className="text-sm text-foreground/40 font-bold uppercase tracking-widest">Hardening your account access</p>
+              <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-2">Security Settings</h2>
+              <p className="text-sm text-foreground/40 font-bold uppercase tracking-widest">Manage your account protection</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
               <SecurityCard 
                 icon={<Fingerprint className="w-6 h-6" />}
-                title="Biometric Matrix"
+                title="Biometric Login"
                 desc="Fast authentication using Face ID or system biometrics"
                 status={securityStatus?.biometricEnabled ? 'ACTIVE' : 'NOT LINKED'}
                 active={securityStatus?.biometricEnabled}
@@ -192,8 +186,8 @@ export default function SettingsPage() {
               />
               <SecurityCard 
                 icon={<Lock className="w-6 h-6" />}
-                title="Two-Factor Link"
-                desc="Time-based OTP verification for high-risk operations"
+                title="Two-Factor Authentication"
+                desc="Verify high-risk operations via secondary code authorization"
                 status={securityStatus?.twoFactorEnabled ? 'ACTIVE' : 'NOT LINKED'}
                 active={securityStatus?.twoFactorEnabled}
                 onClick={() => router.push('/security-setup')}
@@ -205,19 +199,19 @@ export default function SettingsPage() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-2">Communication Grid</h2>
-              <p className="text-sm text-foreground/40 font-bold uppercase tracking-widest">Configure signal reception</p>
+              <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-2">Notification Settings</h2>
+              <p className="text-sm text-foreground/40 font-bold uppercase tracking-widest">Configure how you receive updates and alerts</p>
             </div>
 
             <div className="space-y-4">
                <GridToggle 
-                  title="Mission Updates"
+                  title="Order & Delivery Updates"
                   desc="Real-time alerts for active orders and delivery status"
                   active={formData.notifications.orderUpdates}
-                   onChange={(v: boolean) => setFormData({...formData, notifications: {...formData.notifications, orderUpdates: v}})}
+                  onChange={(v: boolean) => setFormData({...formData, notifications: {...formData.notifications, orderUpdates: v}})}
                />
                <GridToggle 
-                   title="Marketplace Incursions"
+                   title="New Releases & Deals"
                    desc="Notifications for new products and flash sales"
                    active={formData.notifications.newReleases}
                    onChange={(v: boolean) => setFormData({...formData, notifications: {...formData.notifications, newReleases: v}})}
@@ -243,10 +237,10 @@ export default function SettingsPage() {
                    }}
                 />
                <GridToggle 
-                  title="Security Hardening"
+                  title="Security & Access Alerts"
                   desc="Alerts for new logins or biometric resets"
                   active={formData.notifications.securityAlerts}
-                   onChange={(v: boolean) => setFormData({...formData, notifications: {...formData.notifications, securityAlerts: v}})}
+                  onChange={(v: boolean) => setFormData({...formData, notifications: {...formData.notifications, securityAlerts: v}})}
                />
             </div>
           </div>
@@ -254,8 +248,8 @@ export default function SettingsPage() {
       case 'appearance':
         return (
           <div className="space-y-8">
-             <div>
-              <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-2">Visual Core</h2>
+            <div>
+              <h2 className="text-2xl font-black text-foreground uppercase tracking-tight mb-2">Theme customization</h2>
               <p className="text-sm text-foreground/40 font-bold uppercase tracking-widest">Theming and accent overrides</p>
             </div>
             
@@ -453,11 +447,5 @@ function GridToggle({ title, desc, active, onChange }: any) {
                 />
             </button>
         </div>
-    );
-}
-
-function CameraIcon({ className }: { className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
     );
 }
