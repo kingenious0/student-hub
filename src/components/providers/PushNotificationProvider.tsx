@@ -35,48 +35,5 @@ function PushPrompt({ onAccept, onDismiss }: { onAccept: () => void; onDismiss: 
 }
 
 export default function PushNotificationProvider() {
-  const { isSignedIn, isLoaded } = useUser();
-  const [showPrompt, setShowPrompt] = useState(false);
-
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-    if (!('Notification' in window)) return;
-
-    const init = async () => {
-      const reg = await registerServiceWorker();
-      if (!reg) return;
-      await subscribeUserToPush();
-    };
-
-    const pushEnabled = localStorage.getItem('LaHustle-push-enabled') === 'true';
-    const pushDeclined = localStorage.getItem('LaHustle-push-declined') === 'true';
-
-    if (pushEnabled || Notification.permission === 'granted') {
-      init();
-    } else if (!pushDeclined && Notification.permission !== 'denied') {
-      // Show prompt after a short delay on first visit
-      const timer = setTimeout(() => setShowPrompt(true), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoaded, isSignedIn]);
-
-  const handleAccept = async () => {
-    setShowPrompt(false);
-    const ok = await subscribeUserToPush();
-    if (ok) {
-      localStorage.setItem('LaHustle-push-enabled', 'true');
-    } else {
-      localStorage.setItem('LaHustle-push-declined', 'true');
-    }
-  };
-
-  const handleDismiss = () => {
-    setShowPrompt(false);
-    localStorage.setItem('LaHustle-push-declined', 'true');
-  };
-
-  return showPrompt ? (
-    <PushPrompt onAccept={handleAccept} onDismiss={handleDismiss} />
-  ) : null;
+  return null;
 }
