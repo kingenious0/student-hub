@@ -29,16 +29,54 @@ self.addEventListener('activate', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
-  if (event.request.url.includes('/api/')) {
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+
+  // API calls: Network only (with catch)
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request).catch(function() {
         return caches.match(event.request);
       })
     );
-  } else {
+  } 
+  // Static assets: Cache First, then Network
+  else if (url.pathname.startsWith('/_next/static/') || url.pathname.match(/\.(png|jpg|jpeg|svg|css|js)$/)) {
     event.respondWith(
       caches.match(event.request).then(function(cachedResponse) {
-        return cachedResponse || fetch(event.request);
+        if (cachedResponse) return cachedResponse;
+        return fetch(event.request).then(function(networkResponse) {
+          // Only cache successful responses
+          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+            return networkResponse;
+          }
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, responseToCache);
+          });
+          return networkResponse;
+        });
+      })
+    );
+  } 
+  // Pages/HTML: Network First, then Cache
+  else {
+    event.respondWith(
+      fetch(event.request).then(function(networkResponse) {
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then(function(cache) {
+          cache.put(event.request, responseToCache);
+        });
+        return networkResponse;
+      }).catch(function() {
+        return caches.match(event.request).then(function(cachedResponse) {
+          if (cachedResponse) return cachedResponse;
+          // Fallback to '/' if it's an HTML request
+          if (event.request.headers.get('accept').includes('text/html')) {
+            return caches.match('/');
+          }
+        });
       })
     );
   }

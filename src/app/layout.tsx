@@ -24,6 +24,9 @@ import PushNotificationProvider from "@/components/providers/PushNotificationPro
 import PWARegistration from "@/components/providers/PWARegistration";
 import PWAInstallPrompt from "@/components/providers/PWAInstallPrompt";
 import CartRecoveryTrigger from "@/components/cart/CartRecoveryTrigger";
+import HciManager from "@/components/providers/HciManager";
+import GooglePixelTracker from "@/components/tracking/GooglePixelTracker";
+import HustleQuest from "@/components/marketplace/HustleQuest";
 
 
 const geistSans = Geist({
@@ -85,6 +88,8 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased transition-colors duration-300`}
         >
           <ThemeProvider>
+            <HciManager />
+            <GooglePixelTracker />
             <AdminProvider>
               <LocationProvider>
                 <QueryProvider>
@@ -100,6 +105,7 @@ export default function RootLayout({
                             {children}
                           </CampusGuard>
                           <Footer />
+                          <HustleQuest />
                           <GhostEditToggle />
 
                           <PWARegistration />

@@ -11,90 +11,45 @@ interface LaHustleLogoProps {
     priority?: boolean;
 }
 
-const sizes = {
-    sm: { icon: 'h-5', wordmark: 'text-[10px]', tagline: 'text-[7px]' },
-    md: { icon: 'h-7', wordmark: 'text-sm', tagline: 'text-[9px]' },
-    lg: { icon: 'h-10', wordmark: 'text-lg', tagline: 'text-xs' },
-    xl: { icon: 'h-14', wordmark: 'text-2xl', tagline: 'text-sm' },
+// height in px → width is auto (image aspect ratio ~4:1)
+const sizeMap = {
+    sm: 'h-6',   // ~24px
+    md: 'h-8',   // ~32px  – navbar default
+    lg: 'h-12',  // ~48px  – drawer header
+    xl: 'h-16',  // ~64px  – splash / hero
 };
 
-export function LaHustleLogo({ className, showTagline = true, size = 'md', onClick, priority }: LaHustleLogoProps) {
+export function LaHustleLogo({ className, showTagline = true, size = 'md', onClick }: LaHustleLogoProps) {
     const { theme } = useTheme();
     const isDark = theme === 'lahustle';
-    const wordmarkColor = isDark ? '#ffffff' : '#0a0a0a';
-    const taglineColor = isDark ? '#39FF14' : '#059669';
 
-    const s = sizes[size];
+    const heightClass = sizeMap[size];
 
     return (
         <div
             onClick={onClick}
-            className={cn('flex items-center gap-2 select-none shrink-0', onClick && 'cursor-pointer', className)}
+            className={cn(
+                'flex items-center select-none shrink-0',
+                onClick && 'cursor-pointer',
+                className
+            )}
         >
-            <svg
-                viewBox="0 0 512 512"
-                className={cn(s.icon, 'w-auto')}
-                aria-hidden="true"
-                role="img"
-            >
-                <defs>
-                    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#39FF14" />
-                        <stop offset="100%" stopColor="#000000" />
-                    </linearGradient>
-                    <linearGradient id="g2" x1="1" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#39FF14" />
-                        <stop offset="100%" stopColor="#1a3a00" />
-                    </linearGradient>
-                </defs>
-                <g transform="translate(256, 130)">
-                    <circle cx="-38" cy="0" r="54" fill="none" stroke="url(#g1)" strokeWidth="13" />
-                    <circle cx="38" cy="0" r="54" fill="none" stroke="url(#g2)" strokeWidth="13" />
-                </g>
-                <text
-                    x="256"
-                    y="340"
-                    fontFamily="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
-                    fontSize="136"
-                    fontWeight="800"
-                    fill={wordmarkColor}
-                    textAnchor="middle"
-                    letterSpacing="8"
-                >
-                    LaHustle
-                </text>
-                {showTagline && (
-                    <text
-                        x="256"
-                        y="386"
-                        fontFamily="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
-                        fontSize="22"
-                        fontWeight="600"
-                        fill={taglineColor}
-                        textAnchor="middle"
-                        letterSpacing="14"
-                    >
-                        STUDENT MARKETPLACE
-                    </text>
+            {/*
+             * The real brand PNG: dark-green on white.
+             * In dark mode we give it a tiny white pill so it reads clearly
+             * against the dark background.
+             */}
+            <img
+                src="/LaHustle-Original.png"
+                alt="LaHustle – Skills. Gigs. Growth."
+                className={cn(
+                    heightClass,
+                    'w-auto object-contain transition-all duration-200',
+                    isDark && 'rounded-lg px-1.5 py-0.5'
                 )}
-            </svg>
-
-            <div className="flex flex-col leading-none">
-                <span
-                    className={cn(
-                        'font-black tracking-tight uppercase italic',
-                        s.wordmark,
-                        isDark ? 'text-white' : 'text-black'
-                    )}
-                >
-                    MARKETPLACE
-                </span>
-                {showTagline && (
-                    <span className={cn('font-semibold uppercase tracking-[0.3em] text-[var(--brand)]', s.tagline)}>
-                        Student Marketplace
-                    </span>
-                )}
-            </div>
+                style={isDark ? { backgroundColor: 'rgba(255,255,255,0.95)' } : undefined}
+                draggable={false}
+            />
         </div>
     );
 }

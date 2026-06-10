@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUser } from '@clerk/nextjs';
+import GhostFeed from './GhostFeed';
 
 interface FeedProduct {
     id: string;
@@ -38,71 +39,86 @@ interface DiscoveryFeedData {
 }
 
 export default function SmartFeed() {
-    const { user } = useUser(); // Hook added
+    const { user } = useUser();
     const [feed, setFeed] = useState<DiscoveryFeedData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isOffline, setIsOffline] = useState(false);
 
-    // Fetch Feed Data
+    // Fetch Feed Data — gracefully degrades to GhostFeed on any error/offline state
     useEffect(() => {
-        fetch('/api/marketplace/discovery')
+        // Detect initial offline state
+        if (typeof window !== 'undefined' && !navigator.onLine) {
+            setIsOffline(true);
+            setLoading(false);
+            return;
+        }
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
+        fetch('/api/marketplace/discovery', { signal: controller.signal })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
                     setFeed(data.feed);
-                } else {
-                    console.error('Failed to load feed:', data.error);
                 }
+                // If not success, feed stays null → GhostFeed renders
             })
-            .catch(err => console.error('Feed fetch error:', err))
-            .finally(() => setLoading(false));
+            .catch(() => {
+                // Network error or offline → show GhostFeed
+                setIsOffline(!navigator.onLine);
+            })
+            .finally(() => {
+                clearTimeout(timeout);
+                setLoading(false);
+            });
+
+        // Listen for online/offline events
+        const handleOffline = () => setIsOffline(true);
+        const handleOnline = () => {
+            setIsOffline(false);
+            // Re-fetch when connection restored
+            setLoading(true);
+            fetch('/api/marketplace/discovery')
+                .then(res => res.json())
+                .then(data => { if (data.success) setFeed(data.feed); })
+                .catch(() => {})
+                .finally(() => setLoading(false));
+        };
+
+        window.addEventListener('offline', handleOffline);
+        window.addEventListener('online', handleOnline);
+
+        return () => {
+            clearTimeout(timeout);
+            window.removeEventListener('offline', handleOffline);
+            window.removeEventListener('online', handleOnline);
+        };
     }, []);
 
-    // NEW: Premium Empty State
-    const isEmpty = !feed || (feed.newArrivals.length === 0 && feed.trending.length === 0 && feed.recommended.length === 0);
-
-    if (isEmpty) {
-        const isVendor = user?.publicMetadata?.role === 'VENDOR';
-
+    // Skeleton loader while fetching
+    if (loading) {
         return (
-
-            <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 animate-in fade-in zoom-in duration-500">
-                <div className="relative">
-                    <div className="absolute -inset-4 bg-orange-500/20 rounded-full blur-xl animate-pulse"></div>
-                    <div className="relative bg-surface border border-surface-border p-8 rounded-full shadow-2xl">
-                        <span className="text-4xl">🔥</span>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-24">
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="bg-surface border border-surface-border rounded-2xl overflow-hidden">
+                        <div className="h-40 md:h-52 bg-foreground/5 animate-pulse" />
+                        <div className="p-3 space-y-2">
+                            <div className="h-3 bg-foreground/5 rounded animate-pulse w-3/4" />
+                            <div className="h-2 bg-foreground/5 rounded animate-pulse w-1/2" />
+                        </div>
                     </div>
-                </div>
-                <div className="space-y-4 max-w-md px-4">
-                    <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">
-                        USTED's Biggest Hustle is About to Begin
-                    </h2>
-                    <p className="text-sm text-foreground/60 font-medium leading-relaxed">
-                        The marketplace is fresh, and the opportunity is huge. <br />
-                        Be the first to list your products and earn the exclusive <span className="text-primary font-bold">"Founding Vendor"</span> badge!
-                    </p>
-                </div>
-                <div className="flex flex-col gap-3 w-full max-w-xs">
-                    {isVendor ? (
-                        <Link
-                            href="/dashboard/vendor"
-                            className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
-                        >
-                            <span>📦</span> Manage Shop
-                        </Link>
-                    ) : (
-                        <Link
-                            href="/become-vendor"
-                            className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
-                        >
-                            <span>🚀</span> Register as a Seller
-                        </Link>
-                    )}
-                    <p className="text-[10px] uppercase font-bold text-foreground/30">
-                        Limited Spots for Alpha Launch
-                    </p>
-                </div>
+                ))}
             </div>
         );
+    }
+
+    // Empty DB → show the Coming Soon illusion feed
+    const isEmpty = !feed || (feed.newArrivals.length === 0 && feed.trending.length === 0 && feed.recommended.length === 0);
+
+    if (isEmpty || isOffline) {
+        const isSignedIn = !!user;
+        return <GhostFeed isSignedIn={isSignedIn} isOffline={isOffline} />;
     }
 
     return (
