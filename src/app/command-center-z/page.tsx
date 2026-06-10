@@ -424,7 +424,7 @@ export default function CommandCenterPage() {
     useEffect(() => {
         if (isUnlocked) {
             if (activeTab === 'ESCROW') fetchEscrows();
-            if (activeTab === 'USERS') fetchUsers();
+            if (activeTab === 'USERS' || activeTab === 'TESTING') fetchUsers();
             if (activeTab === 'VENDORS') fetchVendors();
             if (activeTab === 'SIGNALS') fetchSignals();
             if (activeTab === 'APPLICATIONS') fetchApplications();
@@ -1115,14 +1115,26 @@ export default function CommandCenterPage() {
 
                             <div className="space-y-3 pt-2">
                                 <div>
-                                    <label className="text-[9px] font-black text-foreground/40 uppercase tracking-wider block mb-1">Target User (ID, Clerk ID, or Email)</label>
-                                    <input
-                                        type="text"
+                                    <label className="text-[9px] font-black text-foreground/40 uppercase tracking-wider block mb-1">Select Target User</label>
+                                    <select
                                         value={testPushUser}
-                                        onChange={(e) => setTestPushUser(e.target.value)}
-                                        placeholder="e.g. user_abc123 or student@domain.com"
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setTestPushUser(val);
+                                            const found = users.find(u => u.id === val);
+                                            if (found?.phoneNumber) {
+                                                setTestSmsPhone(found.phoneNumber);
+                                            }
+                                        }}
                                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
-                                    />
+                                    >
+                                        <option value="" className="bg-background text-foreground/40">-- SELECT TARGET USER --</option>
+                                        {users.map((u) => (
+                                            <option key={u.id} value={u.id} className="bg-background text-foreground">
+                                                {u.name || 'Unnamed'} ({u.email}) {u.phoneNumber ? `· ${u.phoneNumber}` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
