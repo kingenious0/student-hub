@@ -325,52 +325,24 @@ export async function POST(request: NextRequest) {
                 select: { id: true, phoneNumber: true, shopName: true, name: true }
             });
 
-            // Push notifications
-            const vendorPushSubs = await prisma.pushSubscription.findMany({
-                where: { userId: { in: vendorIds } }
-            });
-            if (vendorPushSubs.length > 0) {
-                const firstItem = cartItems[0];
-                const firstProduct = products.find(p => p.id === firstItem?.id);
-                const itemTitle = firstProduct?.title || 'New Order';
-                const displayTitle = cartItems.length > 1 ? `${itemTitle} +${cartItems.length - 1} more` : itemTitle;
-                const results = await Promise.all(
-                    vendorPushSubs.map(sub =>
-                        sendPushNotification(
-                            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-                            { title: '🛒 New Order!', body: `You have a new order: ${displayTitle}`, url: '/dashboard/vendor' }
-                        )
-                    )
-                );
-                const expired = results.filter(r => r.expired).map(r => r.endpoint).filter(Boolean) as string[];
-                if (expired.length > 0) {
-                    await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: expired } } });
-                }
-            }
+            // Push notifications — only sent after payment via verify.ts
+            // (removed premature push here to avoid confusing vendors)
 
-            // SMS + In-App Notifications for vendors
+            // In-App Notification only (no SMS at this stage — payment not yet confirmed).
+            // The full SMS + push notification is dispatched by lib/payments/verify.ts
+            // after Paystack confirms the payment successfully.
             for (const vendor of vendors) {
-                const vendorName = vendor.shopName || vendor.name || 'Vendor';
                 const vendorItems = vendorGroups[vendor.id] || [];
                 const itemsSummary = vendorItems.map(i => `${i.quantity}x ${i.title}`).join(', ');
 
-                // In-app notification
                 const { createNotification } = await import('@/lib/notifications/badge');
                 await createNotification({
                     userId: vendor.id,
                     type: 'ORDER_CREATED',
-                    title: '🛒 New Order Pending Payment',
-                    body: `${itemsSummary}`,
+                    title: '🕐 New Order Initiated',
+                    body: `${itemsSummary} — awaiting payment`,
                     link: '/dashboard/vendor',
                 });
-
-                // SMS
-                if (vendor.phoneNumber) {
-                    const msg = `LaHustle: Hello ${vendorName}, a new order is pending payment!\nItems: ${itemsSummary}\nOpen your LaHustle app to check and prepare.`;
-                    sendSMS(vendor.phoneNumber, msg).then(res => {
-                        console.log(`[SMS-ORDER-CREATE] Vendor (${vendorName}) SMS:`, res);
-                    });
-                }
             }
         }
 

@@ -97,7 +97,7 @@ export async function confirmOrderGroupPayment(reference: string) {
                     return `- ${shop}: ${key}`;
                 }).join('\n');
 
-                const studentMsg = `LaHustle PAY: Hello ${studentName}, payment of ₵${totalAmount} is confirmed! 🛡️\nRelease Keys:\n${keyLines}\nShare this key with the vendor ONLY when you receive your items.`;
+                const studentMsg = `LaHustle PAY\nHello ${studentName}, your payment of ₵${totalAmount} is confirmed! 🛡️\nRelease Keys:\n${keyLines}\nShare this key with the vendor ONLY when you receive your items.`;
 
                 const studentSmsRes = await sendSMS(orderGroup.student.phoneNumber, studentMsg);
                 if (!studentSmsRes.success) {
@@ -145,7 +145,7 @@ export async function confirmOrderGroupPayment(reference: string) {
                     const itemsSummary = o.items.map(i => `${i.quantity}x ${(i.productSnapshot as any)?.title || i.product?.title || 'Item'}`).join(', ');
                     const amountStr = o.amount.toFixed(2);
 
-                    const vendorMsg = `LaHustle ORDER: Hello ${vendorName}, you have a new order! 🔔\nItems: ${itemsSummary}\nTotal: ₵${amountStr}\nFulfillment: ${o.fulfillmentType}\nOpen the LaHustle app to manage and fulfill.`;
+                    const vendorMsg = `LaHustle ORDER\nHello ${vendorName}, you have a new order! 🔔\nItems: ${itemsSummary}\nTotal: ₵${amountStr}\nFulfillment: ${o.fulfillmentType}\nOpen the app to manage and fulfill.`;
 
                     const vendorSmsRes = await sendSMS(vendorPhone, vendorMsg);
                     if (!vendorSmsRes.success) {
