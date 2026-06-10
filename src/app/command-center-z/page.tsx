@@ -26,7 +26,7 @@ export default function CommandCenterPage() {
     const modal = useModal();
     const [settings, setSettings] = useState<SystemSettings | null>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ESCROW' | 'USERS' | 'VENDORS' | 'SIGNALS' | 'APPLICATIONS'>('OVERVIEW');
+    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ESCROW' | 'USERS' | 'VENDORS' | 'SIGNALS' | 'APPLICATIONS' | 'TESTING'>('OVERVIEW');
     const [escrows, setEscrows] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [vendors, setVendors] = useState<any[]>([]);
@@ -42,6 +42,16 @@ export default function CommandCenterPage() {
     const [shake, setShake] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [broadcastColor, setBroadcastColor] = useState('#39FF14');
+
+    // Testing Panel State
+    const [testSmsPhone, setTestSmsPhone] = useState('');
+    const [testSmsMessage, setTestSmsMessage] = useState('LaHustle SMS Test Confirmation!');
+    const [testPushUser, setTestPushUser] = useState('');
+    const [testPushTitle, setTestPushTitle] = useState('LaHustle PWA Test');
+    const [testPushBody, setTestPushBody] = useState('This is a real-time system test notification! 🔔');
+    const [testPushUrl, setTestPushUrl] = useState('/marketplace');
+    const [testSmsLoading, setTestSmsLoading] = useState(false);
+    const [testPushLoading, setTestPushLoading] = useState(false);
 
     // --- DEFINITIONS BEFORE USE ---
 
@@ -477,7 +487,7 @@ export default function CommandCenterPage() {
                 </div>
 
                 <div className="hidden md:flex bg-surface rounded-lg p-1">
-                    {['OVERVIEW', 'ESCROW', 'USERS', 'VENDORS', 'SIGNALS', 'APPLICATIONS'].map(tab => (
+                    {['OVERVIEW', 'ESCROW', 'USERS', 'VENDORS', 'SIGNALS', 'APPLICATIONS', 'TESTING'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
@@ -516,7 +526,7 @@ export default function CommandCenterPage() {
             {mobileMenuOpen && (
                 <div className="md:hidden bg-surface border-b border-surface-border p-4">
                     <div className="flex flex-col gap-2">
-                        {['OVERVIEW', 'ESCROW', 'USERS', 'VENDORS', 'SIGNALS', 'APPLICATIONS'].map(tab => (
+                        {['OVERVIEW', 'ESCROW', 'USERS', 'VENDORS', 'SIGNALS', 'APPLICATIONS', 'TESTING'].map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => {
@@ -1082,6 +1092,180 @@ export default function CommandCenterPage() {
                                 </div>
                             ))
                         )}
+                    </div>
+                )}
+
+                {activeTab === 'TESTING' && (
+                    <div className="space-y-8">
+                        <div>
+                            <h2 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-2">Notification & SMS Test Grid</h2>
+                            <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest font-mono">Verify PWA alerts, Web Push Subscriptions, and Wigal SMS Gateways</p>
+                        </div>
+
+                        {/* Push Notification Panel */}
+                        <div className="bg-white/5 border border-white/10 p-6 rounded-3xl space-y-4">
+                            <div className="flex items-center gap-3">
+                                <span className="text-lg">🔔</span>
+                                <h3 className="font-black text-xs uppercase tracking-widest text-primary">Web Push Notification</h3>
+                            </div>
+                            <p className="text-[10px] text-foreground/50 font-medium leading-relaxed font-sans">
+                                Sends a real-time Web Push notification to all active devices of the targeted user. 
+                                Make sure you have installed the PWA on your phone, logged in, and clicked "Enable Notifications" to test.
+                            </p>
+
+                            <div className="space-y-3 pt-2">
+                                <div>
+                                    <label className="text-[9px] font-black text-foreground/40 uppercase tracking-wider block mb-1">Target User (ID, Clerk ID, or Email)</label>
+                                    <input
+                                        type="text"
+                                        value={testPushUser}
+                                        onChange={(e) => setTestPushUser(e.target.value)}
+                                        placeholder="e.g. user_abc123 or student@domain.com"
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-[9px] font-black text-foreground/40 uppercase tracking-wider block mb-1">Title</label>
+                                        <input
+                                            type="text"
+                                            value={testPushTitle}
+                                            onChange={(e) => setTestPushTitle(e.target.value)}
+                                            placeholder="Notification Title"
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[9px] font-black text-foreground/40 uppercase tracking-wider block mb-1">Target Link (URL)</label>
+                                        <input
+                                            type="text"
+                                            value={testPushUrl}
+                                            onChange={(e) => setTestPushUrl(e.target.value)}
+                                            placeholder="e.g. /orders"
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-white focus:outline-none focus:border-primary/50"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[9px] font-black text-foreground/40 uppercase tracking-wider block mb-1">Message Body</label>
+                                    <textarea
+                                        value={testPushBody}
+                                        onChange={(e) => setTestPushBody(e.target.value)}
+                                        rows={2}
+                                        placeholder="Enter notification message..."
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-white focus:outline-none focus:border-primary/50 resize-none"
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={async () => {
+                                        if (!testPushUser || !testPushBody) {
+                                            toast.error('Recipient and message body are required');
+                                            return;
+                                        }
+                                        setTestPushLoading(true);
+                                        try {
+                                            const res = await fetch('/api/admin/communicate', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    channel: 'PUSH',
+                                                    mode: 'SINGLE',
+                                                    recipient: testPushUser,
+                                                    message: testPushBody,
+                                                    title: testPushTitle,
+                                                    url: testPushUrl
+                                                })
+                                            });
+                                            const data = await res.json();
+                                            if (res.ok && data.success) {
+                                                toast.success(`Success: Sent to ${data.sentCount} / ${data.totalSubCount} registered devices!`);
+                                            } else {
+                                                toast.error(`Failed: ${data.error || 'Unknown error'}`);
+                                            }
+                                        } catch (e) {
+                                            toast.error('Failed to communicate with system uplink');
+                                        } finally {
+                                            setTestPushLoading(false);
+                                        }
+                                    }}
+                                    disabled={testPushLoading}
+                                    className="w-full py-3 bg-primary text-black font-black text-xs uppercase tracking-widest rounded-xl hover:brightness-110 active:scale-98 transition-all disabled:opacity-50"
+                                >
+                                    {testPushLoading ? 'TRANSMITTING...' : 'SEND WEB PUSH'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* SMS Testing Panel */}
+                        <div className="bg-white/5 border border-white/10 p-6 rounded-3xl space-y-4">
+                            <div className="flex items-center gap-3">
+                                <span className="text-lg">💬</span>
+                                <h3 className="font-black text-xs uppercase tracking-widest text-yellow-500">Wigal SMS Transmission</h3>
+                            </div>
+                            <p className="text-[10px] text-foreground/50 font-medium leading-relaxed font-sans">
+                                Sends a test SMS broadcast via the Wigal Frog API Gateway. Sender ID is hardcoded to "LaHustle".
+                            </p>
+
+                            <div className="space-y-3 pt-2">
+                                <div>
+                                    <label className="text-[9px] font-black text-foreground/40 uppercase tracking-wider block mb-1">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        value={testSmsPhone}
+                                        onChange={(e) => setTestSmsPhone(e.target.value)}
+                                        placeholder="e.g. 054XXXXXXX or 233XXXXXXXXX"
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-white focus:outline-none focus:border-yellow-500/50"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[9px] font-black text-foreground/40 uppercase tracking-wider block mb-1">SMS Content</label>
+                                    <textarea
+                                        value={testSmsMessage}
+                                        onChange={(e) => setTestSmsMessage(e.target.value)}
+                                        rows={2}
+                                        placeholder="Type SMS text..."
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs font-mono text-white focus:outline-none focus:border-yellow-500/50 resize-none"
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={async () => {
+                                        if (!testSmsPhone || !testSmsMessage) {
+                                            toast.error('Recipient phone and message content are required');
+                                            return;
+                                        }
+                                        setTestSmsLoading(true);
+                                        try {
+                                            const res = await fetch('/api/admin/communicate', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    channel: 'SMS',
+                                                    mode: 'SINGLE',
+                                                    recipient: testSmsPhone,
+                                                    message: testSmsMessage
+                                                })
+                                            });
+                                            const data = await res.json();
+                                            if (res.ok && data.success !== false) {
+                                                toast.success('SMS successfully dispatched to gateway!');
+                                            } else {
+                                                toast.error(`Failed: ${data.error || 'Gateway response failed'}`);
+                                            }
+                                        } catch (e) {
+                                            toast.error('Failed to communicate with SMS system');
+                                        } finally {
+                                            setTestSmsLoading(false);
+                                        }
+                                    }}
+                                    disabled={testSmsLoading}
+                                    className="w-full py-3 bg-yellow-500 text-black font-black text-xs uppercase tracking-widest rounded-xl hover:brightness-110 active:scale-98 transition-all disabled:opacity-50"
+                                >
+                                    {testSmsLoading ? 'TRANSMITTING...' : 'DISPATCH SMS'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
 

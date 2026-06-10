@@ -26,7 +26,6 @@ import PWAInstallPrompt from "@/components/providers/PWAInstallPrompt";
 import CartRecoveryTrigger from "@/components/cart/CartRecoveryTrigger";
 import HciManager from "@/components/providers/HciManager";
 import GooglePixelTracker from "@/components/tracking/GooglePixelTracker";
-import HustleQuest from "@/components/marketplace/HustleQuest";
 
 
 const geistSans = Geist({
@@ -105,7 +104,6 @@ export default function RootLayout({
                             {children}
                           </CampusGuard>
                           <Footer />
-                          <HustleQuest />
                           <GhostEditToggle />
 
                           <PWARegistration />
