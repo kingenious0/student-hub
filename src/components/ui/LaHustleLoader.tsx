@@ -58,10 +58,15 @@ export default function LaHustleLoader() {
             {/* 2. OVERLAY GLASSMORPHISM AND SPLASH ANIMATION */}
             <div className="absolute inset-0 bg-background/70 backdrop-blur-md flex flex-col items-center justify-center">
                 <div className="relative flex flex-col items-center">
-                    {/* Glowing Logo Circle */}
+                    {/* Glowing Logo Circle with Official Brand Mark */}
                     <div className="relative mb-8 w-24 h-24 rounded-full bg-gradient-to-tr from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20 shadow-[0_0_50px_rgba(57,255,20,0.15)]">
-                        <div className="absolute inset-1 rounded-full bg-background/80 flex items-center justify-center">
-                            <span className="text-5xl animate-bounce" style={{ animationDuration: '2s' }}>🛒</span>
+                        <div className="absolute inset-1 rounded-full bg-background/80 flex items-center justify-center p-2 overflow-hidden">
+                            <img 
+                                src="/LaHustle-Official_logo.svg" 
+                                className="w-16 h-16 object-contain animate-bounce" 
+                                style={{ animationDuration: '2s' }} 
+                                alt="LaHustle Logo"
+                            />
                         </div>
                         {/* Orbiting element */}
                         <div className="absolute -top-1 -right-1 text-2xl animate-spin" style={{ animationDuration: '10s' }}>⚡</div>
