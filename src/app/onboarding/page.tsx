@@ -73,17 +73,17 @@ export default function OnboardingPage() {
             }
 
             if (data.onboarded) {
-                // Already onboarded - Proceed to Security Check
-                window.location.href = '/security-setup';
+                // Already onboarded - Proceed to Home
+                window.location.href = '/';
             }
         } catch (error) {
             console.error('Status check failed');
         }
     };
-
+ 
     const handleComplete = async () => {
         if (!name) return;
-
+ 
         setLoading(true);
         try {
             const res = await fetch('/api/auth/onboard', {
@@ -91,9 +91,9 @@ export default function OnboardingPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, phoneNumber }),
             });
-
+ 
             if (res.ok) {
-                window.location.href = '/security-setup';
+                window.location.href = '/';
             } else {
                 modal.alert('The onboarding protocol failed to initialize. Please verify your data and try again.', 'Handshake Failure', 'error');
             }
