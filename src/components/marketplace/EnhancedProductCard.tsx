@@ -109,39 +109,39 @@ export default function EnhancedProductCard({
 
         {/* Out of Stock Overlay */}
         {isOutOfStock && (
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20">
-            <span className="bg-gray-500 text-white px-4 py-2 rounded-full text-sm font-black uppercase">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center z-20">
+            <span className="bg-slate-700/90 text-white px-3.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-md">
               Out of Stock
             </span>
           </div>
         )}
-
-        {/* Quick-Add Button */}
-        {!isOutOfStock && (
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onAddToCart?.(e);
-            }}
-            className="absolute bottom-2 right-2 w-9 h-9 md:w-11 md:h-11 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl active:scale-90 transition-all z-30 md:translate-y-12 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 duration-300"
-            style={{
-              backgroundColor: themeColor,
-              color: '#000',
-              boxShadow: `0 4px 14px ${themeColor}66`,
-            }}
-            title="Quick Add to Cart"
-          >
-            <span className="text-xl md:text-2xl font-black leading-none pb-0.5">+</span>
-          </button>
-        )}
       </div>
 
+      {/* Quick-Add Button (Outside image container to prevent clipping) */}
+      {!isOutOfStock && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onAddToCart?.(e);
+          }}
+          className="absolute right-4 top-[calc(100%/1.88)] md:top-[calc(100%/1.84)] -translate-y-1/2 w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all z-30"
+          style={{
+            backgroundColor: themeColor,
+            color: '#000',
+            boxShadow: `0 4px 14px ${themeColor}66`,
+          }}
+          title="Quick Add to Cart"
+        >
+          <span className="text-xl md:text-2xl font-black leading-none pb-0.5">+</span>
+        </button>
+      )}
+
       {/* Product Info */}
-      <div className="p-3 md:p-4 flex flex-col flex-1 gap-1.5 relative z-10">
+      <div className="p-3.5 md:p-4.5 flex flex-col flex-1 gap-1.5 relative z-10">
         {/* Category */}
         {category && (
-          <div className="text-[9px] md:text-[10px] font-black text-foreground/40 uppercase tracking-wider">
+          <div className="text-[9px] md:text-[10px] font-black text-foreground/40 uppercase tracking-widest">
             {category}
           </div>
         )}
@@ -153,14 +153,14 @@ export default function EnhancedProductCard({
 
         {/* Vendor Trust */}
         {vendorName && (
-          <div className="text-[9px] md:text-[10px] text-foreground/40 font-bold uppercase tracking-wider truncate">
+          <div className="text-[9px] md:text-[10px] text-foreground/45 font-bold uppercase tracking-wider truncate">
             ✓ {vendorName}
           </div>
         )}
 
         {/* Rating */}
-        {averageRating && totalReviews && totalReviews > 0 && (
-          <div className="flex items-center gap-2">
+        {averageRating && totalReviews && totalReviews > 0 ? (
+          <div className="flex items-center gap-1.5">
             <div className="flex items-center">
               {[...Array(5)].map((_, i) => (
                 <span
@@ -178,55 +178,49 @@ export default function EnhancedProductCard({
               ({totalReviews})
             </span>
           </div>
+        ) : (
+          /* Placeholder to maintain height alignment */
+          <div className="h-[20px]" />
         )}
 
         {/* Price Section */}
-        <div className="mt-auto pt-3 flex items-end justify-between">
-          <div className="flex items-end gap-2">
-            <div>
-              <div
-                className="text-[9px] font-black uppercase tracking-wider mb-0.5"
-                style={{ color: themeColor }}
-              >
-                Price
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl md:text-2xl font-black text-foreground leading-none tracking-tighter">
-                  ₵{price.toFixed(2)}
+        <div className="mt-auto pt-3.5 flex items-end justify-between border-t border-dashed border-surface-border/50">
+          <div>
+            <div
+              className="text-[9px] font-black uppercase tracking-widest mb-1"
+              style={{ color: themeColor }}
+            >
+              Price
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-xl md:text-2xl font-black text-foreground leading-none tracking-tighter">
+                ₵{price.toFixed(2)}
+              </span>
+              {originalPrice && originalPrice > price && (
+                <span className="text-xs font-semibold text-foreground/40 line-through">
+                  ₵{originalPrice.toFixed(2)}
                 </span>
-                {originalPrice && originalPrice > price && (
-                  <span className="text-sm font-medium text-foreground/40 line-through">
-                    ₵{originalPrice.toFixed(2)}
-                  </span>
-                )}
-              </div>
+              )}
             </div>
           </div>
-          {/* Shield Badge */}
+          
+          {/* Shield Badge (Custom light-green circle shield from screenshot) */}
           {showShield && (
-            <div className="text-2xl md:text-3xl relative mb-0.5" title="Shield Escrow Protected">
-              <span className="filter drop-shadow-[0_2px_4px_rgba(57,255,20,0.3)]">🛡️</span>
-              <div
-                className="absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse"
-                style={{
-                  backgroundColor: themeColor,
-                  boxShadow: `0 0 8px ${themeColor}99`,
-                }}
-              />
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shadow-[0_2px_8px_rgba(16,185,129,0.15)] shrink-0" title="Shield Escrow Protected">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+              </svg>
             </div>
           )}
         </div>
 
         {/* Stock Status */}
         {!isOutOfStock && !isLowStock && stockQuantity > 5 && (
-          <div className="text-[9px] font-bold flex items-center gap-1" style={{ color: themeColor }}>
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: themeColor }}></span>
+          <div className="text-[9px] font-bold flex items-center gap-1.5 mt-2" style={{ color: themeColor }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: themeColor }}></span>
             In Stock
           </div>
         )}
-
-        {/* Delivery Info */}
-
       </div>
     </Link>
   );
