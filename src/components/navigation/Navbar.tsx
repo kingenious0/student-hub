@@ -259,7 +259,7 @@ export default function Navbar() {
                                 <LaHustleLogo size="md" showTagline={false} className="transition-transform hover:scale-110" />
                             </div>
                         ) : (
-                            <Link href="/" className="flex-shrink-0">
+                            <Link href={user ? "/marketplace" : "/"} className="flex-shrink-0">
                                 <LaHustleLogo size="md" showTagline={false} className="transition-transform hover:scale-110" />
                             </Link>
                         )}
@@ -275,7 +275,7 @@ export default function Navbar() {
 
                         <SignedIn>
                             <div className="hidden lg:flex items-center gap-4 mr-2">
-                                <Link href="/" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
+                                <Link href="/marketplace" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
                                 <Link href="/services" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Services</Link>
                                 <Link href="/orders" className="relative text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">
                                     Orders
@@ -466,7 +466,7 @@ export default function Navbar() {
                                         <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3 px-2">
                                             Shop & Save
                                         </h3>
-                                        <DrawerLink href="/" icon={<StoreIcon className="w-5 h-5" />} label="Marketplace" setIsOpen={setIsDrawerOpen} active={isActive('/')} />
+                                        <DrawerLink href="/marketplace" icon={<StoreIcon className="w-5 h-5" />} label="Marketplace" setIsOpen={setIsDrawerOpen} active={isActive('/marketplace')} />
                                         <DrawerLink href="/services" icon={<Tag className="w-5 h-5" />} label="Services" setIsOpen={setIsDrawerOpen} active={isActive('/services')} />
                                         <div
                                             onClick={() => {

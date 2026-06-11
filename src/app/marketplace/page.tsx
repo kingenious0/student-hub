@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal, SearchIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
 import EnhancedProductCard from '@/components/marketplace/EnhancedProductCard';
 import MobileFilterSheet from '@/components/marketplace/MobileFilterSheet';
 import FilterPills from '@/components/marketplace/FilterPills';
@@ -50,12 +51,35 @@ const categories = [
 ];
 
 function MarketplaceContent() {
+  const { user, isLoaded: clerkLoaded } = useUser();
+  const [dbUser, setDbUser] = useState<{ role: string; vendorStatus: string } | null>(null);
+  const [showVendorPromo, setShowVendorPromo] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState(0);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
+
+  useEffect(() => {
+    if (clerkLoaded && user) {
+      fetch('/api/users/me')
+        .then(res => res.json())
+        .then(data => {
+          setDbUser(data);
+          const dismissed = sessionStorage.getItem('dismissed_vendor_promo') === 'true';
+          if (data && data.role !== 'VENDOR' && data.vendorStatus !== 'PENDING' && !dismissed) {
+            setShowVendorPromo(true);
+          }
+        })
+        .catch(() => setDbUser(null));
+    }
+  }, [clerkLoaded, user]);
+
+  const handleDismissPromo = () => {
+    setShowVendorPromo(false);
+    sessionStorage.setItem('dismissed_vendor_promo', 'true');
+  };
 
   const [selectedCategory, setSelectedCategory] = useFilterUrlParam('category', 'all');
   const [sortBy, setSortBy] = useFilterUrlParam('sort', 'newest');
@@ -394,6 +418,49 @@ function MarketplaceContent() {
           </button>
         )}
       </MobileFilterSheet>
+
+      {/* Sell on LaHustle Floating Promo Card */}
+      <AnimatePresence>
+        {showVendorPromo && (
+          <motion.div
+            initial={{ opacity: 0, y: 100, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="fixed bottom-6 right-6 z-40 max-w-sm w-[calc(100vw-3rem)] bg-background/80 backdrop-blur-xl border border-primary/20 rounded-[2rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.7)] group overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent pointer-events-none" />
+            <button
+              onClick={handleDismissPromo}
+              className="absolute top-4 right-4 w-6 h-6 flex items-center justify-center rounded-full hover:bg-foreground/10 transition-colors text-foreground/45 hover:text-foreground z-10 font-bold border-0 bg-transparent cursor-pointer"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+            <div className="flex gap-4 items-start relative z-10">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl flex-shrink-0 animate-bounce" style={{ animationDuration: '3s' }}>
+                🏪
+              </div>
+              <div className="space-y-1 pr-6 text-left">
+                <h4 className="font-black text-sm uppercase tracking-tight text-foreground">
+                  Sell on LaHustle
+                </h4>
+                <p className="text-foreground/60 text-[11px] leading-relaxed font-bold uppercase tracking-wider">
+                  Turn your items into cash! Reach 10,000+ campus students instantly with escrow safety.
+                </p>
+                <div className="pt-3">
+                  <Link
+                    href="/become-vendor"
+                    className="inline-block px-5 py-2.5 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-transform shadow-md"
+                  >
+                    Open Shop Now →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 
 import SmartFeed from "@/components/marketplace/SmartFeed";
 import GlobalSearch from "@/components/navigation/GlobalSearch";
@@ -40,8 +41,15 @@ const FlashSalesSection = dynamic(() => import("@/components/marketplace/FlashSa
 
 export default function Home() {
   const { user, isLoaded } = useUser();
+  const router = useRouter();
   const [dbRole, setDbRole] = React.useState<string | null>(null);
   const heroRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (isLoaded && user) {
+      router.push('/marketplace');
+    }
+  }, [isLoaded, user, router]);
 
   React.useEffect(() => {
     if (isLoaded && user) {
@@ -221,6 +229,23 @@ export default function Home() {
             <Suspense fallback={<div className="h-[600px] w-full bg-surface rounded-[3rem] animate-pulse border border-surface-border" />}>
               <SmartFeed />
            </Suspense>
+
+            {isLoaded && !user && (
+              <div className="mt-16 bg-surface/50 border border-surface-border rounded-[2.5rem] p-8 md:p-12 text-center shadow-xl max-w-3xl mx-auto relative overflow-hidden group">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/30 via-transparent to-transparent" />
+                <div className="text-4xl mb-4">🔓</div>
+                <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight text-foreground mb-2">Want to see all products?</h3>
+                <p className="text-foreground/60 text-xs md:text-sm mb-6 max-w-md mx-auto leading-relaxed font-medium">
+                  You are currently viewing a limited selection of campus products. Sign in to view all listings, filter by category, and search the entire catalog.
+                </p>
+                <Link
+                  href="/sign-in"
+                  className="inline-block px-8 py-4 bg-primary text-primary-foreground font-black uppercase text-xs tracking-widest rounded-2xl hover:scale-105 active:scale-95 transition-transform shadow-lg"
+                >
+                  Sign In to Access Marketplace →
+                </Link>
+              </div>
+            )}
         </section>
       </main>
 
