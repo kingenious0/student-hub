@@ -185,7 +185,7 @@ export default function FlashSalesAdminPage() {
                                 stat.shadow
                             )}
                         >
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r          ", stat.gradient)} />
+                            <div className={cn("absolute top-0 left-0 right-0 h-1 bg-gradient-to-r", stat.gradient)} />
                             <div className="flex justify-between items-center">
                                 <div>
                                     <span className="text-[9px] font-black text-foreground/30 uppercase tracking-[0.2em] block">
