@@ -196,6 +196,9 @@ export function useCartCheckout() {
                 if (vData.success) {
                   clearCart()
                   if (isGuest && checkoutGuestInfo) {
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem('lh_has_guest_checkout', 'true');
+                    }
                     window.location.href = `/order-success?ref=${response.reference}&phone=${encodeURIComponent(checkoutGuestInfo.phone)}`
                   } else {
                     window.location.href = "/orders?success=true"

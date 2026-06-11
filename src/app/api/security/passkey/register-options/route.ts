@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     const options = await generateRegistrationOptions({
       rpName,
       rpID,
-      userID: dbUser.id,
+      userID: Buffer.from(dbUser.id),
       userName: dbUser.email,
       attestationType: "none",
       authenticatorSelection: {

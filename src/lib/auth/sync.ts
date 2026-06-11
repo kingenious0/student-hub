@@ -1,6 +1,7 @@
 
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
+import { sendSMS } from '@/lib/sms/wigal';
 
 /**
  * Ensures a user exists in the Prisma database.
@@ -99,6 +100,13 @@ export async function ensureUserExists() {
             const linked = await linkGuestOrdersByPhone(clerkPhone, user.id);
             if (linked > 0) {
                 console.log(`[Sync] Linked ${linked} guest order(s) to user ${user.id}`);
+            }
+            try {
+                const welcomeMessage = `Welcome to LaHustle! ⚡ Your campus marketplace is ready. Discover student deals, request services, and trade safely with secure escrow. Start hustling today!`;
+                await sendSMS(clerkPhone, welcomeMessage);
+                console.log(`[Sync] Welcome SMS sent to ${clerkPhone}`);
+            } catch (smsErr) {
+                console.error('[Sync] Welcome SMS failed to send:', smsErr);
             }
         }
 

@@ -5,6 +5,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 import { createGeofence } from '@/lib/location/radar-server';
 import { linkGuestOrdersByPhone } from '@/lib/orders/link-guest-orders';
+import { sendSMS } from '@/lib/sms/wigal';
 
 export async function POST(request: NextRequest) {
     try {
@@ -69,6 +70,13 @@ export async function POST(request: NextRequest) {
             linkedOrderCount = await linkGuestOrdersByPhone(phoneNumber, newUser.id);
             if (linkedOrderCount > 0) {
                 console.log(`[Onboarding] Linked ${linkedOrderCount} guest order(s) to user ${newUser.id}`);
+            }
+            try {
+                const welcomeMessage = `Welcome to LaHustle! ⚡ Your campus marketplace is ready. Discover student deals, request services, and trade safely with secure escrow. Start hustling today!`;
+                await sendSMS(phoneNumber, welcomeMessage);
+                console.log(`[Onboarding] Welcome SMS sent to ${phoneNumber}`);
+            } catch (smsErr) {
+                console.error('[Onboarding] Welcome SMS failed to send:', smsErr);
             }
         }
 

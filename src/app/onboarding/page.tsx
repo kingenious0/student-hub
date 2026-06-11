@@ -14,8 +14,35 @@ export default function OnboardingPage() {
     const [loading, setLoading] = useState(false);
     const [name, setName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [localGuestFound, setLocalGuestFound] = useState(false);
+    const [dbGuestFound, setDbGuestFound] = useState(false);
 
     const router = useRouter();
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const hasGuest = localStorage.getItem('lh_has_guest_checkout') === 'true';
+            setLocalGuestFound(hasGuest);
+        }
+    }, []);
+
+    useEffect(() => {
+        const cleanPhone = phoneNumber.replace(/\s+/g, '');
+        if (cleanPhone.length >= 9) {
+            const checkGuestDb = async () => {
+                try {
+                    const res = await fetch(`/api/auth/check-guest?phone=${encodeURIComponent(cleanPhone)}`);
+                    const data = await res.json();
+                    setDbGuestFound(data.hasGuestOrder);
+                } catch (e) {
+                    console.error("Check guest orders failed", e);
+                }
+            };
+            checkGuestDb();
+        } else {
+            setDbGuestFound(false);
+        }
+    }, [phoneNumber]);
 
     useEffect(() => {
         if (isLoaded && user) {
@@ -131,9 +158,11 @@ export default function OnboardingPage() {
                                 placeholder="e.g. 055 123 4567"
                                 required
                             />
-                            <p className="text-[10px] text-amber-500 font-bold mt-1.5">
-                                ⚠️ Use the same number you used for guest checkout to recover your orders
-                            </p>
+                            {(localGuestFound || dbGuestFound) && (
+                                <p className="text-[10px] text-amber-500 font-bold mt-1.5">
+                                    ⚠️ Use the same number you used for guest checkout to recover your orders
+                                </p>
+                            )}
                         </div>
 
                         {/* Submit Button */}

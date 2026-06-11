@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         credentialPublicKey: Buffer.from(passkey.credentialPublicKey, "base64url"),
         counter: Number(passkey.counter),
       },
-    });
+    } as any);
 
     if (verification.verified) {
       const { newCounter } = verification.authenticationInfo;

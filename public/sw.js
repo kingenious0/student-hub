@@ -60,6 +60,12 @@ self.addEventListener('fetch', function(event) {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+
+  // Only handle local requests and Cloudinary assets
+  const isSelf = url.origin === self.location.origin;
+  const isCloudinary = url.hostname.includes('cloudinary.com');
+  if (!isSelf && !isCloudinary) return;
 
   // 1. Specific API feeds for offline browsing: Network first, then Cache fallback
   if (

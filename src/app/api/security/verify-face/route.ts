@@ -21,18 +21,19 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { descriptor } = body;
+        const descriptor = body.descriptor || body.faceDescriptor;
 
         if (!descriptor || !Array.isArray(descriptor)) {
             return NextResponse.json({ error: 'Invalid biometric data' }, { status: 400 });
         }
 
         // Fetch user's stored biometrics
-        const biometric = await prisma.biometricData.findUnique({
-            where: { clerkId: userId }
+        const user = await prisma.user.findUnique({
+            where: { clerkId: userId },
+            select: { faceDescriptor: true, clerkId: true }
         });
 
-        if (!biometric || !biometric.faceDescriptor) {
+        if (!user || !user.faceDescriptor) {
             return NextResponse.json({ 
                 verified: false, 
                 error: 'NO_BIOMETRICS_FOUND',
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
         }
 
         // The stored descriptor is typically a JSON array of numbers
-        const storedDescriptor = biometric.faceDescriptor as number[];
+        const storedDescriptor = user.faceDescriptor as number[];
         
         // Calculate distance (Threshold is usually 0.6 for face-api.js)
         const distance = getEuclideanDistance(descriptor, storedDescriptor);
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
             // Verified!
             const response = NextResponse.json({ 
                 verified: true, 
-                username: biometric.clerkId // We'll fetch the real name in the frontend or include it if possible, but simplest is true
+                username: user.clerkId
             });
 
             // Set the Identity Cookie
