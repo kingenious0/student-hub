@@ -23,7 +23,13 @@ export async function sendPushNotification(
 ) {
   ensureInit();
   try {
-    await webpush.sendNotification(subscription, JSON.stringify(payload));
+    const options = {
+      headers: {
+        'Urgency': 'high'
+      },
+      TTL: 24 * 60 * 60 // 1 day Time To Live
+    };
+    await webpush.sendNotification(subscription, JSON.stringify(payload), options);
     return { sent: true };
   } catch (err) {
     const webpushErr = err as { statusCode?: number };
