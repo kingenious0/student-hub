@@ -1,9 +1,10 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Store, User, MapPin, Check, X, ShieldAlert, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 interface VendorItem {
     id: string;
@@ -54,13 +55,40 @@ export default function PartnerVettingPage() {
         }
     };
 
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const cardVariants = {
+        hidden: { opacity: 0, y: 30, scale: 0.98 },
+        visible: { 
+            opacity: 1, 
+            y: 0, 
+            scale: 1,
+            transition: { type: "spring", stiffness: 100, damping: 15 } 
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-background p-8 transition-colors duration-300">
-            <div className="max-w-5xl mx-auto space-y-12 pt-20">
+        <div className="min-h-screen bg-background p-4 md:p-8 transition-colors duration-300">
+            <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="max-w-4xl mx-auto pt-20 space-y-12"
+            >
                 {/* Header */}
                 <div className="flex justify-between items-end">
                     <div>
-                        <Link href="/dashboard/admin" className="text-primary text-[10px] font-black uppercase tracking-[0.5em] mb-4 block hover:opacity-70 transition-all">← Back to Command Center</Link>
+                        <Link href="/dashboard/admin" className="text-primary text-[10px] font-black uppercase tracking-[0.5em] mb-4 block hover:opacity-70 transition-all flex items-center gap-1.5">
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Command Center
+                        </Link>
                         <h1 className="text-5xl font-black text-foreground uppercase tracking-tighter">PARTNER VETTING</h1>
                         <p className="text-foreground/40 text-[10px] font-black uppercase tracking-[0.5em] mt-2">Uplink Security Clearance Loop</p>
                     </div>
@@ -71,58 +99,78 @@ export default function PartnerVettingPage() {
                         <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                     </div>
                 ) : vendors.length === 0 ? (
-                    <div className="bg-surface border border-surface-border rounded-[3rem] p-24 text-center">
-                        <div className="text-6xl mb-6 opacity-20">📡</div>
-                        <p className="text-foreground/20 font-black uppercase tracking-widest">No pending partner requests detected in the sector.</p>
-                    </div>
+                    <motion.div 
+                        variants={cardVariants}
+                        className="bg-surface border border-surface-border rounded-[2.5rem] p-16 sm:p-24 text-center shadow-xl relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary/50 to-primary/10" />
+                        <div className="text-6xl mb-6 opacity-30">📡</div>
+                        <p className="text-foreground/20 font-black uppercase tracking-widest text-xs">No pending partner requests detected in the sector.</p>
+                    </motion.div>
                 ) : (
-                    <div className="grid gap-6">
+                    <div className="grid gap-8">
                         <AnimatePresence>
                             {vendors.map((vendor) => (
                                 <motion.div
                                     key={vendor.id}
                                     layout
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    className="bg-surface border border-surface-border rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8 hover:border-primary/20 transition-all relative overflow-hidden group"
+                                    variants={cardVariants}
+                                    className="bg-surface border border-surface-border rounded-[2.5rem] p-6 sm:p-8 relative overflow-hidden group shadow-2xl"
                                 >
-                                    <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 blur-3xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-                                    <div className="flex items-center gap-6 relative z-10">
-                                        <div className="w-16 h-16 bg-foreground/5 rounded-2xl flex items-center justify-center text-3xl">🏪</div>
-                                        <div>
-                                            <h3 className="text-2xl font-black text-foreground uppercase tracking-tighter">{vendor.shopName}</h3>
-                                            <div className="flex items-center gap-4 mt-1">
-                                                <span className="text-[10px] font-black text-primary uppercase tracking-widest leading-none">📍 {vendor.shopLandmark}</span>
-                                                <span className="h-1 w-1 bg-foreground/20 rounded-full"></span>
-                                                <span className="text-[10px] font-black text-foreground/30 uppercase tracking-widest leading-none">👤 {vendor.name}</span>
+                                    {/* Accent brand top line */}
+                                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-primary to-emerald-500" />
+                                    
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-14 h-14 bg-foreground/[0.04] border border-surface-border rounded-2xl flex items-center justify-center text-2xl shrink-0 mt-0.5">
+                                                🏪
+                                            </div>
+                                            <div className="space-y-1 min-w-0">
+                                                <h3 className="text-2xl font-black text-foreground uppercase tracking-tighter truncate">{vendor.shopName}</h3>
+                                                
+                                                {/* Details wrapper simulating receipt items */}
+                                                <div className="bg-foreground/[0.02] border border-surface-border rounded-2xl p-4 mt-3 space-y-2 text-xs font-bold uppercase tracking-wider text-foreground/60 max-w-md">
+                                                    <div className="flex justify-between border-b border-dashed border-surface-border/60 pb-2">
+                                                        <span className="text-foreground/30 text-[9px] font-black tracking-widest flex items-center gap-1.5">
+                                                            <MapPin className="w-3.5 h-3.5 text-primary" /> Landmark
+                                                        </span>
+                                                        <span className="text-foreground font-black">{vendor.shopLandmark}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-foreground/30 text-[9px] font-black tracking-widest flex items-center gap-1.5">
+                                                            <User className="w-3.5 h-3.5 text-primary" /> Owner Name
+                                                        </span>
+                                                        <span className="text-foreground font-black">{vendor.name}</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div className="flex items-center gap-4 relative z-10">
-                                        <button
-                                            disabled={!!actionLoading}
-                                            onClick={() => handleAction(vendor.id, 'REJECT')}
-                                            className="px-8 py-4 border-2 border-red-500/20 text-red-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all disabled:opacity-30"
-                                        >
-                                            Deny
-                                        </button>
-                                        <button
-                                            disabled={!!actionLoading}
-                                            onClick={() => handleAction(vendor.id, 'APPROVE')}
-                                            className="px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] lh-glow hover:scale-105 active:scale-95 transition-all disabled:opacity-30"
-                                        >
-                                            {actionLoading === vendor.id ? 'PENDING...' : 'Authorize Partner'}
-                                        </button>
+                                        <div className="flex items-center gap-4 shrink-0 self-end md:self-auto">
+                                            <button
+                                                disabled={!!actionLoading}
+                                                onClick={() => handleAction(vendor.id, 'REJECT')}
+                                                className="px-6 py-4 border-2 border-red-500/20 text-red-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all disabled:opacity-30 flex items-center gap-2"
+                                            >
+                                                <X className="w-4 h-4" />
+                                                <span>Deny</span>
+                                            </button>
+                                            <button
+                                                disabled={!!actionLoading}
+                                                onClick={() => handleAction(vendor.id, 'APPROVE')}
+                                                className="px-6 py-4 bg-primary text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all disabled:opacity-30 shadow-lg shadow-primary/10 flex items-center gap-2"
+                                            >
+                                                <Check className="w-4 h-4" />
+                                                <span>{actionLoading === vendor.id ? 'PENDING...' : 'Authorize Partner'}</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </motion.div>
                             ))}
                         </AnimatePresence>
                     </div>
                 )}
-            </div>
+            </motion.div>
         </div>
     );
 }

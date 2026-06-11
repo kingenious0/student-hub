@@ -82,6 +82,13 @@ export default function RootLayout({
           <link rel="apple-touch-startup-image" href="/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" />
           <link rel="apple-touch-startup-image" href="/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />
           <link rel="apple-touch-startup-image" href="/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" />
+          <script dangerouslySetInnerHTML={{ __html: `
+            window.addEventListener('beforeinstallprompt', (e) => {
+              e.preventDefault();
+              window.deferredPrompt = e;
+              window.dispatchEvent(new CustomEvent('captured-beforeinstallprompt', { detail: e }));
+            });
+          ` }} />
         </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased transition-colors duration-300`}

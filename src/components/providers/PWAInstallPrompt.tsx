@@ -61,16 +61,30 @@ export default function PWAInstallPrompt() {
         };
         window.addEventListener('appinstalled', onInstalled);
 
+        // Check if there is already a captured prompt
+        if (typeof window !== 'undefined' && (window as any).deferredPrompt) {
+            setDeferredPrompt((window as any).deferredPrompt);
+        }
+
         const handler = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e);
+            (window as any).deferredPrompt = e;
         };
         window.addEventListener('beforeinstallprompt', handler);
+
+        const onCaptured = (e: any) => {
+            if (e.detail) {
+                setDeferredPrompt(e.detail);
+            }
+        };
+        window.addEventListener('captured-beforeinstallprompt', onCaptured);
 
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
             window.removeEventListener('appinstalled', onInstalled);
             window.removeEventListener('beforeinstallprompt', handler);
+            window.removeEventListener('captured-beforeinstallprompt', onCaptured);
         };
     }, []);
 
@@ -83,10 +97,15 @@ export default function PWAInstallPrompt() {
     }, []);
 
     const handleInstall = async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            await deferredPrompt.userChoice;
+        // Double check global prompt just in case
+        const promptToUse = deferredPrompt || (typeof window !== 'undefined' ? (window as any).deferredPrompt : null);
+        if (promptToUse) {
+            promptToUse.prompt();
+            await promptToUse.userChoice;
             setDeferredPrompt(null);
+            if (typeof window !== 'undefined') {
+                (window as any).deferredPrompt = null;
+            }
             setShow(false);
             try { localStorage.setItem(DISMISSED_KEY, '1'); } catch { }
         } else {

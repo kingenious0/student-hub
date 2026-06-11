@@ -110,21 +110,7 @@ export async function ensureUserExists() {
             }
         }
 
-        // Create a welcome notification for new users
-        try {
-            await prisma.notification.create({
-                data: {
-                    userId: user.id,
-                    type: 'WELCOME',
-                    title: 'Welcome to LaHustle! ⚡',
-                    body: 'Discover campus deals, request quick services, and transact safely with escrow protection. We are glad to have you!',
-                    link: '/',
-                }
-            });
-            console.log(`[Sync] Welcome notification created for user ${user.id}`);
-        } catch (notifErr) {
-            console.error('[Sync] Welcome notification creation failed:', notifErr);
-        }
+        // Welcome notification is disabled to avoid showing it in the notification list (should be sent via SMS instead)
 
         console.log(`✅ Synced new user from Clerk: ${email}`);
     }
