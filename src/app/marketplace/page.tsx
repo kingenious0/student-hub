@@ -9,6 +9,7 @@ import MobileFilterSheet from '@/components/marketplace/MobileFilterSheet';
 import FilterPills from '@/components/marketplace/FilterPills';
 import BackToTop from '@/components/marketplace/BackToTop';
 import { useFilterUrlParam, useFilterUrlBool } from '@/hooks/useFilterUrlState';
+import { cn } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -140,39 +141,46 @@ function MarketplaceContent() {
   }, [selectedCategory]);
 
   return (
-    <div className="min-h-screen bg-background pt-32 pb-20">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-background pt-32 pb-20 relative overflow-hidden">
+      {/* Dynamic Background Glow Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
+        <div className="absolute w-[300px] h-[300px] bg-primary/5 rounded-full blur-[90px] top-[10%] left-[5%]" />
+        <div className="absolute w-[350px] h-[350px] bg-primary/5 rounded-full blur-[100px] bottom-[20%] right-[10%]" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <Link href="/" className="text-foreground/40 hover:text-primary transition-colors font-black text-[10px] uppercase tracking-widest">
-              ← Back Home
+        <div className="mb-10">
+          <div className="flex items-center gap-4 mb-5">
+            <Link href="/" className="text-foreground/40 hover:text-primary transition-colors font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5">
+              <span>←</span> Return to Terminal
             </Link>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
-            Marketplace
+          <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4 italic">
+            Marketplace <span className="text-primary font-black">.</span>
           </h1>
-          <p className="text-foreground/60 text-lg">
+          <p className="text-foreground/45 text-sm uppercase font-bold tracking-widest">
             Browse all products from verified campus vendors
           </p>
         </div>
 
         {/* Search & Filters (Enclosed in a clean card container) */}
-        <div className="bg-surface border border-surface-border/80 rounded-[2rem] p-5 sm:p-7 mb-8 space-y-6 shadow-sm">
+        <div className="bg-surface border border-surface-border/80 rounded-[2.5rem] p-6 sm:p-8 mb-10 space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/30 via-transparent to-transparent" />
           {/* Search Bar */}
-          <div className="relative">
+          <div className="relative font-mono">
             <SearchIcon className="absolute left-4.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-foreground/30" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search products..."
-              className="w-full pl-12 pr-5 py-3.5 bg-background border border-surface-border/80 rounded-full focus:outline-none focus:border-primary/50 transition-all text-sm font-medium"
+              placeholder="SEARCH CAMPUS PRODUCTS..."
+              className="w-full pl-12 pr-5 py-4 bg-background border border-surface-border text-foreground rounded-2xl focus:outline-none focus:border-primary/50 transition-all text-xs font-black uppercase placeholder:text-foreground/20"
             />
           </div>
 
           {/* Category Filters */}
-          <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide snap-x">
             {categories.map((cat) => {
               const isActive = selectedCategory === cat.slug;
               return (
@@ -180,10 +188,10 @@ function MarketplaceContent() {
                   key={cat.slug}
                   onClick={() => setSelectedCategory(cat.slug)}
                   className={cn(
-                    "flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap border cursor-pointer",
+                    "flex items-center gap-2 px-5 py-3 rounded-full font-black text-[10px] uppercase tracking-widest transition-all whitespace-nowrap border cursor-pointer snap-center",
                     isActive
-                      ? "bg-emerald-600 border-transparent text-white shadow-sm"
-                      : "bg-background border-surface-border/80 text-foreground/60 hover:border-foreground/30 hover:text-foreground"
+                      ? "bg-primary border-transparent text-black shadow-md shadow-primary/20"
+                      : "bg-background border-surface-border text-foreground/60 hover:border-foreground/30 hover:text-foreground"
                   )}
                 >
                   <span>{cat.icon}</span>
@@ -194,13 +202,13 @@ function MarketplaceContent() {
           </div>
 
           {/* Sort Controls */}
-          <div className="space-y-3 pt-2 border-t border-dashed border-surface-border/50">
+          <div className="space-y-4 pt-4 border-t border-dashed border-surface-border/60">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-foreground/40">Sort by:</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-foreground/45">Sort by:</span>
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2.5 flex-wrap">
               {[
-                { value: 'newest', label: 'Newest' },
+                { value: 'newest', label: 'Newest Arrivals' },
                 { value: 'price-asc', label: 'Price: Low to High' },
                 { value: 'price-desc', label: 'Price: High to Low' },
                 { value: 'popular', label: 'Most Popular' },
@@ -212,10 +220,10 @@ function MarketplaceContent() {
                     key={option.value}
                     onClick={() => setSortBy(option.value)}
                     className={cn(
-                      "px-4.5 py-2.5 rounded-full font-black text-[10px] uppercase tracking-widest transition-all border cursor-pointer",
+                      "px-4.5 py-2.5 rounded-full font-black text-[9px] uppercase tracking-widest transition-all border cursor-pointer",
                       isActive
-                        ? "bg-emerald-600 border-transparent text-white shadow-sm"
-                        : "bg-background border-surface-border/80 text-foreground/60 hover:border-foreground/30 hover:text-foreground"
+                        ? "bg-primary border-transparent text-black shadow-md shadow-primary/20"
+                        : "bg-background border-surface-border text-foreground/60 hover:border-foreground/30 hover:text-foreground"
                     )}
                   >
                     {option.label}
@@ -228,7 +236,7 @@ function MarketplaceContent() {
 
         {/* Active Filter Pills */}
         {activeFilterPills.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-8">
             <FilterPills
               pills={activeFilterPills}
               onClearAll={clearAllFilters}
@@ -237,9 +245,9 @@ function MarketplaceContent() {
         )}
 
         {/* Results Count */}
-        <div className="flex items-center justify-between mb-6 px-2">
-          <p className="text-sm font-black uppercase tracking-wider text-foreground/60">
-            {loading ? 'Loading...' : `${total} Products Found`}
+        <div className="flex items-center justify-between mb-8 px-2">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-foreground/45 font-mono">
+            {loading ? 'STATUS: LOADING...' : `${total} PRODUCTS DISCOVERED`}
           </p>
 
           {/* Mobile Filter Button */}

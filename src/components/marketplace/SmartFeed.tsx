@@ -183,28 +183,29 @@ export default function SmartFeed() {
 
 function ProductCard({ product, index, compact = false, badge, badgeColor = 'bg-primary' }: { product: FeedProduct, index: number, compact?: boolean, badge?: string, badgeColor?: string }) {
     return (
-        <Link href={`/products/${product.id}`} className={`block group ${compact ? 'min-w-[160px] w-[160px]' : 'w-full'}`}>
+        <Link href={`/products/${product.id}`} className={`block group ${compact ? 'min-w-[170px] w-[170px]' : 'w-full'}`}>
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-surface border border-surface-border rounded-2xl overflow-hidden group-hover:border-primary/50 transition-all shadow-sm h-full flex flex-col"
+                transition={{ delay: index * 0.04 }}
+                className="bg-surface border border-surface-border/80 rounded-2xl overflow-hidden group-hover:border-primary/50 transition-all shadow-md h-full flex flex-col relative"
             >
-                <div className={`${compact ? 'h-32' : 'h-40 md:h-56'} bg-background relative overflow-hidden flex-shrink-0`}>
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                <div className={`${compact ? 'h-36' : 'h-40 md:h-56'} bg-background/50 relative overflow-hidden flex-shrink-0 border-b border-surface-border/50`}>
                     {product.imageUrl ? (
                         <Image 
                             src={product.imageUrl} 
                             alt={product.title} 
                             fill 
                             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw" 
-                            className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
                             loading="lazy" 
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-3xl">📦</div>
+                        <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">📦</div>
                     )}
                     {/* Price Tag */}
-                    <div className="absolute bottom-2 right-2 px-2 py-1 bg-background/80 backdrop-blur-md rounded-lg text-xs font-black text-foreground z-10">
+                    <div className="absolute bottom-2 right-2 px-2.5 py-1.5 bg-black/70 backdrop-blur-md border border-white/5 rounded-xl text-[10px] font-black text-primary font-mono tracking-tight z-10">
                         ₵{product.price.toFixed(2)}
                     </div>
                     {/* Badge */}
@@ -214,9 +215,9 @@ function ProductCard({ product, index, compact = false, badge, badgeColor = 'bg-
                         </div>
                     )}
                 </div>
-                <div className="p-3 flex flex-col flex-1">
-                    <h3 className="text-xs font-black uppercase truncate text-foreground mb-1">{product.title}</h3>
-                    <p className="text-[10px] text-foreground/50 font-bold uppercase truncate">{product.vendor.shopName || product.vendor.name}</p>
+                <div className="p-3.5 flex flex-col flex-1 gap-1">
+                    <h3 className="text-[11px] font-black uppercase tracking-wide truncate text-foreground/90 group-hover:text-primary transition-colors">{product.title}</h3>
+                    <p className="text-[9px] text-foreground/45 font-bold uppercase tracking-wider truncate">✓ {product.vendor.shopName || product.vendor.name}</p>
                 </div>
             </motion.div>
         </Link>
