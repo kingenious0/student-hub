@@ -33,6 +33,7 @@ export default function ProductDetailsPage() {
     const addToCart = useCartStore((state) => state.addToCart);
     const cartItems = useCartStore((state) => state.items);
     const [quantity, setQuantity] = useState(1);
+    const [isDescExpanded, setIsDescExpanded] = useState(false);
     const { isInWishlist, addItem, removeItem } = useWishlistStore();
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [reviewListKey, setReviewListKey] = useState(0);
@@ -571,12 +572,29 @@ export default function ProductDetailsPage() {
 
                                 <AnimatePresence mode="wait">
                                     <TabsContent key="details" value="details" className="mt-8 focus:outline-none">
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="prose prose-lg prose-neutral prose-invert max-w-none leading-relaxed font-light"
-                                            dangerouslySetInnerHTML={{ __html: product.description || '<p class="opacity-50 italic">No description available.</p>' }}
-                                        />
+                                        <div className="relative">
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className={`prose prose-lg prose-neutral prose-invert max-w-none leading-relaxed font-light transition-all duration-300 ${
+                                                    !isDescExpanded ? 'max-h-[220px] overflow-hidden' : ''
+                                                }`}
+                                                dangerouslySetInnerHTML={{ __html: product.description || '<p class="opacity-50 italic">No description available.</p>' }}
+                                            />
+                                            {!isDescExpanded && product.description && product.description.length > 150 && (
+                                                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                                            )}
+                                        </div>
+                                        {product.description && product.description.length > 150 && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setIsDescExpanded(!isDescExpanded)}
+                                                className="mt-4 font-black uppercase tracking-widest text-xs text-primary hover:text-primary/80 p-0 h-auto hover:bg-transparent"
+                                            >
+                                                {isDescExpanded ? 'View Less ▲' : 'View More ▼'}
+                                            </Button>
+                                        )}
                                     </TabsContent>
 
                                     <TabsContent key="specs" value="specs" className="mt-8 focus:outline-none">
