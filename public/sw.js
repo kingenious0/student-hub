@@ -5,13 +5,42 @@ const PRECACHE_ASSETS = [
   '/lahustle-icon.svg',
   '/icon-192x192.png',
   '/icon-512x512.png',
+  '/LaHustle-Official_logo.svg',
+  '/Lahustle Logo Official.png',
+  '/manifest.json',
+  '/services',
+  '/notifications',
+  '/settings',
+  '/cart',
+  '/profile',
+  '/deals',
+  '/wishlist',
+  '/orders',
+  '/become-vendor',
+  '/help',
+  '/about',
+  '/privacy',
+  '/terms',
+  '/category/more',
+  '/category/food-and-snacks',
+  '/category/tech-and-gadgets',
+  '/category/books-and-notes',
+  '/category/fashion',
+  '/category/services',
+  '/category/everything-else'
 ];
 
 self.addEventListener('install', function(event) {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(PRECACHE_ASSETS);
+      return Promise.all(
+        PRECACHE_ASSETS.map(function(url) {
+          return cache.add(url).catch(function(err) {
+            console.warn('LaHustle SW: Optional precache failed for ' + url, err);
+          });
+        })
+      );
     })
   );
 });

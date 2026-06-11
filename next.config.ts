@@ -60,7 +60,7 @@ const nextConfig: NextConfig = {
             value: "default-src 'self'; " +
                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://*.clerk.accounts.dev https://js.paystack.co https://checkout.paystack.com https://*.paystack.com; " +
                    "connect-src 'self' https://*.clerk.accounts.dev wss://*.clerk.accounts.dev https://api.paystack.co https://checkout.paystack.com https://*.paystack.com https://api.cloudinary.com https://api.radar.io https://*.radar.io; " +
-                   "img-src 'self' data: https://res.cloudinary.com https://images.unsplash.com https://img.clerk.com https://api.dicebear.com; " +
+                   "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://img.clerk.com https://api.dicebear.com; " +
                    "style-src 'self' 'unsafe-inline' https://paystack.com https://*.paystack.com https://checkout.paystack.com; " +
                    "frame-src 'self' https://js.paystack.co https://checkout.paystack.com https://*.paystack.com https://*.clerk.accounts.dev; " +
                    "worker-src 'self' blob:; " +

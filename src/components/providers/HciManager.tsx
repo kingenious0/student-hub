@@ -10,9 +10,9 @@ export default function HciManager() {
         // 1. Register Service Worker
         if ('serviceWorker' in navigator) {
             const registerSW = () => {
-                navigator.serviceWorker.register('/lahustle-worker.js')
+                navigator.serviceWorker.register('/sw.js')
                     .then((reg) => {
-                        console.log('LaHustle Service Worker registered successfully scope:', reg.scope);
+                        console.log('LaHustle Main Service Worker registered successfully scope:', reg.scope);
                     })
                     .catch((err) => {
                         console.warn('LaHustle Service Worker registration failed:', err);

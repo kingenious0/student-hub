@@ -207,12 +207,13 @@ export default function NewServicePage() {
                 </div>
               ))}
               {files.length < MAX_IMAGES && (
-                <label className="aspect-square bg-surface border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 transition-colors">
+                <label htmlFor="service-images-input-new" className="aspect-square bg-surface border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/50 transition-colors">
                   <ImagePlus className="w-5 h-5 text-muted-foreground" />
                   <span className="text-[10px] text-muted-foreground font-bold">
                     Add
                   </span>
                   <input
+                    id="service-images-input-new"
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
