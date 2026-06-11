@@ -69,7 +69,7 @@ export default function NotificationsPage() {
         return <Shield className="w-5 h-5 text-red-500" />;
       case 'WELCOME':
       case 'SYSTEM':
-        return <Sparkles className="w-5 h-5 text-yellow-500" />;
+        return <img src="/icon-192x192.png" className="w-6 h-6 object-contain rounded-lg" alt="LaHustle Brand Logo" />;
       case 'CHAT':
       case 'MESSAGE':
         return <MessageSquare className="w-5 h-5 text-blue-500" />;

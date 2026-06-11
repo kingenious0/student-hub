@@ -92,16 +92,31 @@ export default function ProductDetailsPage() {
     const rating = product.averageRating || 0;
     const reviewCount = product.totalReviews || 0;
 
+    const slugify = (text: string) => {
+        return text
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-');
+    };
+
     // Image Gallery Setup
-    // If 'images' array exists, map it. fallback to single imageUrl.
-    const galleryImages = product.images && product.images.length > 0
-        ? product.images.map((url: string) => ({ original: url, thumbnail: url }))
-        : [{ original: product.imageUrl, thumbnail: product.imageUrl }];
+    // Filter out invalid/empty images to prevent gallery crashes
+    const rawImages = (product.images || []).filter((url: any) => typeof url === 'string' && url.trim() !== '');
+    const mainImageUrl = typeof product.imageUrl === 'string' && product.imageUrl.trim() !== '' ? product.imageUrl : null;
+
+    const galleryImages = rawImages.length > 0
+        ? rawImages.map((url: string) => ({ original: url, thumbnail: url }))
+        : (mainImageUrl ? [{ original: mainImageUrl, thumbnail: mainImageUrl }] : []);
 
     // If main image isn't in array (legacy), add it to front
-    if (product.imageUrl && !product.images?.includes(product.imageUrl) && product.images?.length > 0) {
-        galleryImages.unshift({ original: product.imageUrl, thumbnail: product.imageUrl });
+    if (mainImageUrl && !rawImages.includes(mainImageUrl) && rawImages.length > 0) {
+        galleryImages.unshift({ original: mainImageUrl, thumbnail: mainImageUrl });
     }
+
+    const validGalleryImages = galleryImages.filter((img: any) => typeof img.original === 'string' && img.original.trim() !== '');
 
     // Modifier helpers
     const hasModifiers = product.hasModifiers && product.modifierGroups?.length > 0;
@@ -214,19 +229,26 @@ export default function ProductDetailsPage() {
                     {/* LEFT COLUMN: Immersive Gallery */}
                     <div className="relative">
                         <div className="sticky top-32 space-y-8">
-                            <div className="relative rounded-[2rem] overflow-hidden bg-surface shadow-2xl shadow-foreground/5 border border-foreground/5 group" style={{ maxHeight: '70vh' }}>
-                                <ImageGallery
-                                    items={galleryImages}
-                                    showPlayButton={false}
-                                    showFullscreenButton={false}
-                                    showNav={galleryImages.length > 1}
-                                    autoPlay={false}
-                                    infinite={true}
-                                    showThumbnails={galleryImages.length > 1}
-                                    isRTL={false}
-                                    thumbnailPosition="bottom"
-                                    additionalClass="premium-gallery"
-                                />
+                            <div className="relative rounded-[2rem] overflow-hidden bg-surface shadow-2xl shadow-foreground/5 border border-foreground/5 group w-full aspect-square md:aspect-[4/3] lg:aspect-square flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px]" style={{ maxHeight: '70vh' }}>
+                                {validGalleryImages.length > 0 ? (
+                                    <ImageGallery
+                                        items={validGalleryImages}
+                                        showPlayButton={false}
+                                        showFullscreenButton={false}
+                                        showNav={validGalleryImages.length > 1}
+                                        autoPlay={false}
+                                        infinite={true}
+                                        showThumbnails={validGalleryImages.length > 1}
+                                        isRTL={false}
+                                        thumbnailPosition="bottom"
+                                        additionalClass="premium-gallery w-full h-full"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full min-h-[300px] flex flex-col items-center justify-center bg-surface-hover/10 text-foreground/30 p-8">
+                                        <span className="text-7xl mb-4 select-none">{product.category?.icon || '📦'}</span>
+                                        <span className="text-xs font-bold uppercase tracking-widest">No Image Preview Available</span>
+                                    </div>
+                                )}
                                 {isOutOfStock && (
                                     <div className="absolute top-6 right-6 z-20">
                                         <span className="px-4 py-2 bg-red-500 text-white text-xs font-black uppercase tracking-widest rounded-full shadow-lg shadow-red-500/20 backdrop-blur-md">
@@ -278,7 +300,7 @@ export default function ProductDetailsPage() {
                             <div className="flex items-center gap-2 text-sm">
                                 <span className="opacity-60">Sold by</span>
                                 <Link
-                                    href={`/vendor/${product.vendor.id}`}
+                                    href={`/vendor/${product.vendor.shopName ? slugify(product.vendor.shopName) : product.vendor.id}`}
                                     className="font-bold border-b border-primary hover:text-primary transition-colors"
                                 >
                                     {product.vendor.shopName || product.vendor.name}

@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { OrderConfirmationCard } from '@/components/ui/order-confirmation-card';
 
 interface Order {
     id: string;
@@ -104,6 +105,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
 
     const currentStepIndex = STATUS_ORDER.indexOf(order.status);
     const isCancelled = order.status === 'CANCELLED';
+    const showReceipt = order.status === 'COMPLETED' || order.status === 'CANCELLED';
 
     const getStepStatus = (stepId: string) => {
         if (isCancelled) return 'cancelled';
@@ -112,6 +114,16 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
         if (currentStepIndex === stepIndex) return 'current';
         return 'pending';
     };
+
+    const receiptItems = order.items.map(item => ({
+        title: item.product.title,
+        quantity: item.quantity,
+        price: item.product.price
+    }));
+    const itemsTotal = receiptItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const difference = Math.max(0, order.amount - itemsTotal);
+    const serviceFee = difference > 0 ? Math.min(difference, 1.50) : 0;
+    const deliveryFee = Math.max(0, difference - serviceFee);
 
     return (
         <div className="min-h-screen bg-background pb-20">
@@ -134,19 +146,35 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
             </div>
 
             <div className="max-w-3xl mx-auto p-4 space-y-6">
-                {/* Timeline Card */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Order Status</CardTitle>
-                        <CardDescription>Estimated delivery time depends on vendor preparation.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {isCancelled ? (
-                            <div className="text-center py-8 text-destructive">
-                                <p className="font-bold text-lg">Order Cancelled</p>
-                                <p className="text-sm opacity-80">This order has been cancelled.</p>
-                            </div>
-                        ) : (
+                {showReceipt ? (
+                    <div className="flex justify-center py-4">
+                        <OrderConfirmationCard
+                            orderId={order.id}
+                            paymentMethod="MoMo / Card"
+                            dateTime={new Date(order.createdAt).toLocaleString(undefined, {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}
+                            totalAmount={`₵${order.amount.toFixed(2)}`}
+                            onGoToAccount={() => router.push('/orders')}
+                            vendorName={order.vendor.shopName || order.vendor.name}
+                            items={receiptItems}
+                            deliveryFee={deliveryFee}
+                            serviceFee={serviceFee}
+                            status={order.status}
+                        />
+                    </div>
+                ) : (
+                    /* Timeline Card */
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Order Status</CardTitle>
+                            <CardDescription>Estimated delivery time depends on vendor preparation.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
                             <div className="relative space-y-8 pl-2">
                                 {/* Vertical Line */}
                                 <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-border -z-10" />
@@ -173,9 +201,9 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                                     );
                                 })}
                             </div>
-                        )}
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Info Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

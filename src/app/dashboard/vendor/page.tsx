@@ -152,7 +152,17 @@ export default function VendorDashboard() {
                         <div className="flex flex-wrap gap-3">
                             <button
                                 onClick={async () => {
-                                    const url = `${window.location.origin}/vendor/${userId}`;
+                                    const slugify = (text: string) => {
+                                        return text
+                                            .toString()
+                                            .toLowerCase()
+                                            .trim()
+                                            .replace(/\s+/g, '-')
+                                            .replace(/[^\w\-]+/g, '')
+                                            .replace(/\-\-+/g, '-');
+                                    };
+                                    const shopSlug = shopName ? slugify(shopName) : userId;
+                                    const url = `${window.location.origin}/vendor/${shopSlug}`;
                                     try {
                                         await navigator.clipboard.writeText(url);
                                         toast.success('Store link copied!');
@@ -166,7 +176,7 @@ export default function VendorDashboard() {
                                 Copy Link
                             </button>
                             <a
-                                href={`https://wa.me/?text=${encodeURIComponent(`🛒 Check out ${shopName || user?.firstName || 'my store'} on LaHustle Student Marketplace!\n\nBrowse products and order directly:\n${window.location.origin}/vendor/${userId}\n\n📱 Powered by LaHustle`)}`}
+                                href={`https://wa.me/?text=${encodeURIComponent(`🛒 Check out ${shopName || user?.firstName || 'my store'} on LaHustle Student Marketplace!\n\nBrowse products and order directly:\n${window.location.origin}/vendor/${shopName ? shopName.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-') : userId}\n\n📱 Powered by LaHustle`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20"
