@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 
                     // Trigger SMS Notifications asynchronously
                     try {
-                        const { sendSMS } = await import('@/lib/sms/wigal');
+                        const { sendSMS } = await import('@/lib/sms');
                         if (order.student && order.student.phoneNumber) {
                             const studentName = order.student.name || 'Student';
                             const shop = order.vendor?.shopName || order.vendor?.name || 'Vendor';
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
                     // Trigger SMS Notifications only if we actually processed new updates (prevents duplicate SMS)
                     if (newlyConfirmedOrders.length > 0) {
                         try {
-                            const { sendSMS } = await import('@/lib/sms/wigal');
+                            const { sendSMS } = await import('@/lib/sms');
                             const keyMap = new Map(newlyConfirmedOrders.map(o => [o.id, o.releaseKey]));
 
                             // A. Notify Student / Buyer

@@ -1,7 +1,7 @@
 
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
-import { sendSMS } from '@/lib/sms/wigal';
+import { sendSMS } from '@/lib/sms';
 
 /**
  * Ensures a user exists in the Prisma database.

@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
-import { sendSMS } from '@/lib/sms/wigal';
+import { sendSMS } from '@/lib/sms';
 
 const RECOVERY_MESSAGES = [
     'Hey! You left some items in your cart on LaHustle. Complete your order now before someone else grabs them! 🛒',

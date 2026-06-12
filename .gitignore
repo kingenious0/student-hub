@@ -57,3 +57,4 @@ certificates
 autopilot.log
 .autopilot.pid
 .vscode/
+.contact-bulk/

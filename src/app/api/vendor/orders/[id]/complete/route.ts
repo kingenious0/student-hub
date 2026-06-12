@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
-import { sendSMS } from '@/lib/sms/wigal';
+import { sendSMS } from '@/lib/sms';
 import { sendPushNotification } from '@/lib/notifications/push';
 
 export async function POST(

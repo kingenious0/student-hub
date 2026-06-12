@@ -5,7 +5,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 import { createGeofence } from '@/lib/location/radar-server';
 import { linkGuestOrdersByPhone } from '@/lib/orders/link-guest-orders';
-import { sendSMS } from '@/lib/sms/wigal';
+import { sendSMS } from '@/lib/sms';
 
 export async function POST(request: NextRequest) {
     try {

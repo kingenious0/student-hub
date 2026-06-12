@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 import { sendOrderIssueEmail } from '@/lib/email';
-import { sendSMS } from '@/lib/sms/wigal';
+import { sendSMS } from '@/lib/sms';
 
 export async function POST(req: NextRequest) {
     try {

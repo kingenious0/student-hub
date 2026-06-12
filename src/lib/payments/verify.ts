@@ -74,7 +74,7 @@ export async function confirmOrderGroupPayment(reference: string) {
 
     // 3. Automated Real-Time Email & SMS Notifications
     try {
-        const { sendSMS } = await import('@/lib/sms/wigal');
+        const { sendSMS } = await import('@/lib/sms');
         const keyMap = new Map(updatedOrders.map(o => [o.id, o.releaseKey]));
 
         // A. Notify Student / Buyer
