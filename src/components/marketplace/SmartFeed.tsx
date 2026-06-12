@@ -205,7 +205,7 @@ function ProductCard({ product, index, compact = false, badge, badgeColor = 'bg-
                         <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">📦</div>
                     )}
                     {/* Price Tag */}
-                    <div className="absolute bottom-2 right-2 px-2.5 py-1.5 bg-black/70 backdrop-blur-md border border-white/5 rounded-xl text-[10px] font-black text-primary font-mono tracking-tight z-10">
+                    <div className="absolute bottom-2 right-2 px-3 py-1 bg-background/95 backdrop-blur-md border border-primary/30 rounded-full text-xs font-black text-primary font-mono tracking-tight z-10 shadow-[0_4px_12px_rgba(16,185,129,0.2)]">
                         ₵{product.price.toFixed(2)}
                     </div>
                     {/* Badge */}
