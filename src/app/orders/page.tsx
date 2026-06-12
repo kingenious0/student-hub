@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import GoBack from '@/components/navigation/GoBack';
 import { useModal } from '@/context/ModalContext';
 import { OrderTracking } from '@/components/ui/order-tracking';
+import { sanitizeImageUrl } from '@/lib/utils';
 
 // --- Interfaces ---
 interface Order {
@@ -61,7 +62,7 @@ const getOrderDisplay = (order: Order) => {
     const primaryItem = order.items?.[0];
     const itemTitle = primaryItem ? primaryItem.product.title : 'Unknown Item';
     const displayTitle = order.items?.length > 1 ? `${itemTitle} + ${order.items.length - 1} more` : itemTitle;
-    const imageUrl = primaryItem?.product.imageUrl;
+    const imageUrl = sanitizeImageUrl(primaryItem?.product.imageUrl);
     return { displayTitle, imageUrl, primaryItem };
 };
 
@@ -512,7 +513,18 @@ Live. Learn. Earn.
 
                 {/* HIDDEN RECEIPT TEMPLATE FOR IMAGE GEN */}
                 <div className="absolute top-0 left-0 w-full z-[-50] opacity-0 pointer-events-none">
-                    <div ref={receiptRef} className="w-[500px] bg-black text-white p-8 font-sans relative overflow-hidden border-8 border-black">
+                    <div 
+                        ref={receiptRef} 
+                        className="w-[500px] bg-[#0d1117] text-white p-8 font-sans relative overflow-hidden border-8 border-[#0d1117]"
+                        style={{
+                            '--foreground': '#ffffff',
+                            '--surface': '#0d1117',
+                            '--surface-border': 'rgba(255, 255, 255, 0.15)',
+                            '--primary': order.status.toUpperCase() === 'CANCELLED' ? '#ef4444' : '#39FF14',
+                            color: '#ffffff',
+                            backgroundColor: '#0d1117',
+                        } as React.CSSProperties}
+                    >
                         <OrderConfirmationCard
                             orderId={order.id}
                             paymentMethod="Escrow Secured"
@@ -526,7 +538,7 @@ Live. Learn. Earn.
                                 quantity: item.quantity,
                                 price: item.price
                             }))}
-                            className="bg-black border-0 p-0 shadow-none text-white max-w-none rounded-none"
+                            className="bg-[#0d1117] border-0 p-0 shadow-none text-white max-w-none rounded-none"
                         />
                     </div>
                 </div>

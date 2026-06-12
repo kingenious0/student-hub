@@ -43,7 +43,7 @@ export default function Footer() {
 
                 {/* Minimal Links */}
                 <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
-                    <FooterLink href="/" label="Market" />
+                    <FooterLink href="/marketplace" label="Market" />
                     <FooterLink href="/become-vendor" label="Vendor" />
                     <FooterLink href="/orders" label="Missions" />
                     <FooterLink href="/help" label="Support" />

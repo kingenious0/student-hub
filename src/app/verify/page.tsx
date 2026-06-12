@@ -50,6 +50,12 @@ export default function VerifyIdentityPage() {
 
         if (data.error) throw new Error(data.error)
 
+        if (!data.onboarded) {
+          console.warn('[SECURITY] User is not onboarded yet. Redirecting to onboarding.')
+          router.push('/onboarding')
+          return
+        }
+
         setHasPasskey(data.hasPasskey)
         setHasPin(!!data.securityPin)
 

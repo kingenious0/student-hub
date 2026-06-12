@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { OrderConfirmationCard } from '@/components/ui/order-confirmation-card';
+import { sanitizeImageUrl } from '@/lib/utils';
 
 interface Order {
     id: string;
@@ -306,7 +307,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-lg bg-surface overflow-hidden flex-shrink-0">
                                                 {item.product.imageUrl ? (
-                                                    <img src={item.product.imageUrl} alt={item.product.title} className="w-full h-full object-cover" />
+                                                    <img src={sanitizeImageUrl(item.product.imageUrl)} alt={item.product.title} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-foreground/20 text-xs font-black">?</div>
                                                 )}

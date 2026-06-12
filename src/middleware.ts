@@ -9,6 +9,11 @@ export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();
   const { pathname } = req.nextUrl;
 
+  // Redirect authenticated users trying to access the landing page to the marketplace
+  if (userId && pathname === '/') {
+    return NextResponse.redirect(new URL('/marketplace', req.url));
+  }
+
   // 🚨 GOD MODE BYPASS: The Ultimate Override 🚨
   // If user has GOD_MODE role, they bypass ALL restrictions (Admin tokens, Maintenance, Onboarding)
   const role = (sessionClaims?.metadata as any)?.role;

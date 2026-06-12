@@ -64,7 +64,7 @@ const nextConfig: NextConfig = {
                    "style-src 'self' 'unsafe-inline' https://paystack.com https://*.paystack.com https://checkout.paystack.com; " +
                    "frame-src 'self' https://js.paystack.co https://checkout.paystack.com https://*.paystack.com https://*.clerk.accounts.dev; " +
                    "worker-src 'self' blob:; " +
-                   "media-src 'self' blob: https://res.cloudinary.com;",
+                   "media-src 'self' blob: data: https://res.cloudinary.com;",
           },
         ],
       },

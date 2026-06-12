@@ -7,6 +7,7 @@ import { useModal } from '@/context/ModalContext';
 import { X, Trash2, Plus, Minus, ShoppingBag, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { CartItem } from '@/lib/store/cart';
+import { sanitizeImageUrl } from '@/lib/utils';
 
 interface CartDrawerProps {
     isOpen: boolean;
@@ -195,7 +196,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                                     {/* Product Image */}
                                                                     {item.imageUrl ? (
                                                                         <img 
-                                                                            src={item.imageUrl} 
+                                                                            src={sanitizeImageUrl(item.imageUrl)} 
                                                                             alt={item.title} 
                                                                             className="w-16 h-16 rounded-xl object-cover flex-shrink-0 border border-surface-border"
                                                                         />

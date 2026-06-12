@@ -87,7 +87,8 @@ export default function Navbar() {
 
             if (finalCount === 1) {
                 // If only one tap was recorded, navigate home normally
-                if (pathname !== '/') router.push('/');
+                const destination = user ? '/marketplace' : '/';
+                if (pathname !== destination) router.push(destination);
             }
         }, 500);
     };

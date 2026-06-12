@@ -40,14 +40,12 @@ interface Product {
 
 const categories = [
   { slug: 'all', name: 'All Products', icon: '🎯' },
-  { slug: 'food', name: 'Food & Snacks', icon: '🍕' },
-  { slug: 'tech', name: 'Tech & Gadgets', icon: '💻' },
+  { slug: 'food-and-snacks', name: 'Food & Snacks', icon: '🍕' },
+  { slug: 'tech-and-gadgets', name: 'Tech & Gadgets', icon: '💻' },
   { slug: 'fashion', name: 'Fashion', icon: '👕' },
-  { slug: 'books', name: 'Books & Notes', icon: '📚' },
+  { slug: 'books-and-notes', name: 'Books & Notes', icon: '📚' },
   { slug: 'services', name: 'Services', icon: '⚡' },
-  { slug: 'beauty', name: 'Beauty & Health', icon: '💄' },
-  { slug: 'sports', name: 'Sports & Fitness', icon: '⚽' },
-  { slug: 'other', name: 'Everything Else', icon: '🎁' }
+  { slug: 'everything-else', name: 'Everything Else', icon: '🎯' }
 ];
 
 function MarketplaceContent() {
@@ -170,13 +168,12 @@ function MarketplaceContent() {
 
   const categoryThemeColor = useMemo(() => {
     const map: Record<string, string> = {
-      food: '#FF4D00',
-      tech: '#0070FF',
-      fashion: '#A333FF',
-      books: '#2ECC71',
-      services: '#FFD700',
-      beauty: '#EC4899',
-      sports: '#10B981',
+      'food-and-snacks': '#FF4D00',
+      'tech-and-gadgets': '#0070FF',
+      'fashion': '#A333FF',
+      'books-and-notes': '#2ECC71',
+      'services': '#FFD700',
+      'everything-else': '#10B981',
     };
     return map[selectedCategory] || '#10B981';
   }, [selectedCategory]);
@@ -192,11 +189,6 @@ function MarketplaceContent() {
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="mb-10">
-          <div className="flex items-center gap-4 mb-5">
-            <Link href="/" className="text-foreground/40 hover:text-primary transition-colors font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5">
-              <span>←</span> Return to Terminal
-            </Link>
-          </div>
           <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4 italic">
             Marketplace <span className="text-primary font-black">.</span>
           </h1>

@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { sanitizeImageUrl } from '@/lib/utils';
+
 
 // Custom Star Icon
 const StarIcon = ({ className, fill }: { className?: string, fill?: boolean }) => (
@@ -99,7 +101,7 @@ export default function ProductCard({
             id: product.id,
             title: product.title,
             price: finalPrice,
-            imageUrl: product.imageUrl || '',
+            imageUrl: sanitizeImageUrl(product.imageUrl) || '',
             vendorName: product.vendor.name || '',
             flashSaleId: product.flashSale?.isActive ? 'active' : undefined
         });
@@ -129,7 +131,7 @@ export default function ProductCard({
             <div className="aspect-square relative flex items-center justify-center bg-muted overflow-hidden">
                 {product.imageUrl ? (
                     <Image
-                        src={product.imageUrl}
+                        src={sanitizeImageUrl(product.imageUrl)}
                         alt={product.title}
                         fill
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"

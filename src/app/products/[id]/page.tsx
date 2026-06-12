@@ -17,6 +17,8 @@ import ReviewList from '@/components/reviews/ReviewList';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import ProductRecommendations from '@/components/marketplace/ProductRecommendations';
 import Link from 'next/link';
+import { sanitizeImageUrl } from '@/lib/utils';
+
 
 // Custom Star Icon
 const StarIcon = ({ className, fill }: { className?: string, fill?: boolean }) => (
@@ -105,8 +107,10 @@ export default function ProductDetailsPage() {
 
     // Image Gallery Setup
     // Filter out invalid/empty images to prevent gallery crashes
-    const rawImages = (product.images || []).filter((url: any) => typeof url === 'string' && url.trim() !== '');
-    const mainImageUrl = typeof product.imageUrl === 'string' && product.imageUrl.trim() !== '' ? product.imageUrl : null;
+    const rawImages = (product.images || [])
+        .filter((url: any) => typeof url === 'string' && url.trim() !== '')
+        .map((url: string) => sanitizeImageUrl(url));
+    const mainImageUrl = typeof product.imageUrl === 'string' && product.imageUrl.trim() !== '' ? sanitizeImageUrl(product.imageUrl) : null;
 
     const galleryImages = rawImages.length > 0
         ? rawImages.map((url: string) => ({ original: url, thumbnail: url }))
@@ -118,6 +122,7 @@ export default function ProductDetailsPage() {
     }
 
     const validGalleryImages = galleryImages.filter((img: any) => typeof img.original === 'string' && img.original.trim() !== '');
+
 
     // Modifier helpers
     const hasModifiers = product.hasModifiers && product.modifierGroups?.length > 0;
@@ -165,12 +170,13 @@ export default function ProductDetailsPage() {
             id: product.id,
             title: product.title,
             price: currentPrice,
-            imageUrl: product.imageUrl || '',
+            imageUrl: sanitizeImageUrl(product.imageUrl) || '',
             vendorId: product.vendorId,
             vendorName: product.vendor.shopName || product.vendor.name,
             flashSaleId: product.flashSale?.isActive ? 'active' : undefined,
             selectedModifiers: modifiers,
         }, quantity);
+
 
         toast.success(`${product.title} added to cart`, {
             description: modifiers.length > 0

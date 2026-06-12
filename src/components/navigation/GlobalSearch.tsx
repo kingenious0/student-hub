@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { SearchIcon, XIcon, StoreIcon, PackageIcon, ChevronRightIcon, TrendingUpIcon } from 'lucide-react';
+import { sanitizeImageUrl } from '@/lib/utils';
 
 // Manual debounce if hook missing
 function useDebounceValue<T>(value: T, delay: number): T {
@@ -220,7 +221,7 @@ export default function GlobalSearch({ className = "", variant = "navbar", dropd
                                         >
                                             <div className="w-10 h-10 bg-gray-100 dark:bg-background rounded-lg overflow-hidden flex-shrink-0 border border-transparent group-hover:border-orange-500/20 transition-colors">
                                                 {product.imageUrl ? (
-                                                    <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" />
+                                                    <img src={sanitizeImageUrl(product.imageUrl)} alt={product.title} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-xs">📦</div>
                                                 )}
