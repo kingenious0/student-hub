@@ -123,7 +123,7 @@ export default function ProductCard({
             layout
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={`group relative bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all ${isDeleting ? 'opacity-50 grayscale' : ''} ${compact ? 'min-w-[160px] w-[160px]' : ''}`}
+            className={`group relative glass border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all hover:border-primary hover:shadow-[0_0_25px_var(--primary-glow)] ${isDeleting ? 'opacity-50 grayscale' : ''} ${compact ? 'min-w-[160px] w-[160px]' : ''}`}
         >
             {/* Image Container - Aspect Square */}
             <div className="aspect-square relative flex items-center justify-center bg-muted overflow-hidden">

@@ -53,7 +53,7 @@ export default function EnhancedProductCard({
   return (
     <Link
       href={`/products/${id}`}
-      className="group relative bg-surface border border-surface-border/60 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-95 flex flex-col"
+      className="group relative glass border border-surface-border/60 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-95 flex flex-col hover:border-primary hover:shadow-[0_0_25px_var(--primary-glow)]"
       style={{
         ['--card-theme' as string]: themeColor,
       }}

@@ -389,7 +389,7 @@ export default function Navbar() {
                             exit={{ x: '-100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                             id="LaHustle-drawer"
-                            className="fixed top-0 left-0 h-full w-[85%] max-w-[320px] bg-background border-r border-surface-border z-[70] overflow-y-auto lg:hidden shadow-2xl"
+                            className="fixed top-0 left-0 h-full w-[85%] max-w-[320px] bg-background/90 backdrop-blur-2xl border-r border-surface-border z-[70] overflow-y-auto lg:hidden shadow-2xl"
                         >
                             {/* Drawer Content */}
                             <div className="p-6 bg-gradient-to-br from-primary/20 to-surface border-b border-surface-border">

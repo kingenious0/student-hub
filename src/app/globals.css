@@ -184,13 +184,16 @@ body {
 }
 
 .bento-card {
-  background: var(--surface);
-  border: 1px solid var(--surface-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur-amount));
+  -webkit-backdrop-filter: blur(var(--blur-amount));
+  border: 1px solid var(--glass-border);
   border-radius: var(--bento-radius);
   padding: 2rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  box-shadow: var(--glass-shadow);
 }
 
 .bento-card::before {
@@ -204,13 +207,13 @@ body {
 }
 
 .bento-card:hover::before {
-  opacity: 0.05;
+  opacity: 0.1;
 }
 
 .bento-card:hover {
   border-color: var(--primary);
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 30px var(--primary-glow);
 }
 
 /* Bento Size Variants */

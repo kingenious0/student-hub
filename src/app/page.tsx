@@ -226,9 +226,16 @@ export default function Home() {
               </div>
             </motion.div>
            
-            <Suspense fallback={<div className="h-[600px] w-full bg-surface rounded-[3rem] animate-pulse border border-surface-border" />}>
-              <SmartFeed />
-           </Suspense>
+             <motion.div
+               initial={{ opacity: 0, y: 30 }}
+               whileInView={{ opacity: 1, y: 0 }}
+               viewport={{ once: true, margin: "-100px" }}
+               transition={{ duration: 0.8, ease: "easeOut" }}
+             >
+               <Suspense fallback={<div className="h-[600px] w-full bg-surface rounded-[3rem] animate-pulse border border-surface-border" />}>
+                 <SmartFeed />
+               </Suspense>
+             </motion.div>
 
             {isLoaded && !user && (
               <div className="mt-16 bg-surface/50 border border-surface-border rounded-[2.5rem] p-8 md:p-12 text-center shadow-xl max-w-3xl mx-auto relative overflow-hidden group">
