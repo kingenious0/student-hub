@@ -84,15 +84,31 @@ function MarketplaceContent() {
   const [selectedCategory, setSelectedCategory] = useFilterUrlParam('category', 'all');
   const [sortBy, setSortBy] = useFilterUrlParam('sort', 'newest');
   const [searchQuery, setSearchQuery] = useFilterUrlParam('q');
+  const [localSearch, setLocalSearch] = useState(searchQuery || '');
   const [pageNum, setPageNum] = useState(1);
-  const [pageFromUrl, setPageFromUrl] = useFilterUrlParam('page', '1');
+
+  // Keep local search input in sync if URL query param is cleared or updated externally
+  useEffect(() => {
+    setLocalSearch(searchQuery || '');
+  }, [searchQuery]);
+
+  // Debounce updating the URL search param to prevent excessive routing re-renders on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== searchQuery) {
+        setSearchQuery(localSearch);
+      }
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [localSearch, searchQuery, setSearchQuery]);
+
+  const pageFromUrl = useFilterUrlParam('page', '1')[0];
 
   const page = useMemo(() => parseInt(pageFromUrl) || 1, [pageFromUrl]);
 
   const setPage = useCallback((p: number) => {
     setPageNum(p);
-    setPageFromUrl(String(p));
-  }, [setPageFromUrl]);
+  }, []);
 
   const fetchProducts = useCallback(async (pageNum: number, reset: boolean) => {
     if (reset) { setLoading(true); setProducts([]); }
@@ -148,6 +164,7 @@ function MarketplaceContent() {
     setSelectedCategory('all');
     setSortBy('newest');
     setSearchQuery('');
+    setLocalSearch('');
     setPage(1);
   }, [setSelectedCategory, setSortBy, setSearchQuery, setPage]);
 
@@ -196,8 +213,8 @@ function MarketplaceContent() {
             <SearchIcon className="absolute left-4.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-foreground/30" />
             <input
               type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               placeholder="SEARCH CAMPUS PRODUCTS..."
               className="w-full pl-12 pr-5 py-4 bg-background border border-surface-border text-foreground rounded-2xl focus:outline-none focus:border-primary/50 transition-all text-xs font-black uppercase placeholder:text-foreground/20"
             />
