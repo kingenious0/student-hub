@@ -11,7 +11,7 @@ interface OrderConfirmationCardProps {
   paymentMethod: string;
   dateTime: string;
   totalAmount: string;
-  onGoToAccount: () => void;
+  onGoToAccount?: () => void;
   title?: string;
   buttonText?: string;
   icon?: React.ReactNode;
@@ -21,6 +21,7 @@ interface OrderConfirmationCardProps {
   deliveryFee?: number;
   serviceFee?: number;
   status?: string;
+  showButton?: boolean;
 }
 
 export const OrderConfirmationCard: React.FC<OrderConfirmationCardProps> = ({
@@ -38,6 +39,7 @@ export const OrderConfirmationCard: React.FC<OrderConfirmationCardProps> = ({
   deliveryFee = 0,
   serviceFee = 0,
   status = "COMPLETED",
+  showButton = true,
 }) => {
   const isCancelled = status.toUpperCase() === "CANCELLED";
 
@@ -201,20 +203,22 @@ export const OrderConfirmationCard: React.FC<OrderConfirmationCardProps> = ({
           </motion.div>
 
           {/* Action Button */}
-          <motion.div variants={itemVariants} className="w-full">
-            <Button
-              onClick={onGoToAccount}
-              className={cn(
-                "w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-lg",
-                isCancelled
-                  ? "bg-red-500 hover:bg-red-600 text-white shadow-red-500/10"
-                  : "bg-primary text-black hover:bg-primary/95 shadow-primary/10"
-              )}
-            >
-              {buttonText}
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </motion.div>
+          {showButton && onGoToAccount && (
+            <motion.div variants={itemVariants} className="w-full">
+              <Button
+                onClick={onGoToAccount}
+                className={cn(
+                  "w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95 shadow-lg",
+                  isCancelled
+                    ? "bg-red-500 hover:bg-red-600 text-white shadow-red-500/10"
+                    : "bg-primary text-black hover:bg-primary/95 shadow-primary/10"
+                )}
+              >
+                {buttonText}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </motion.div>
+          )}
         </div>
       </motion.div>
     </AnimatePresence>

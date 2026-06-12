@@ -291,12 +291,14 @@ export default function CheckoutForm({
                     <span className="text-[10px] font-black text-foreground/30 uppercase tracking-widest">Quantity</span>
                     <div className="flex items-center bg-background rounded-xl p-1 border border-surface-border">
                         <button
+                            type="button"
                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
                             aria-label="Decrease quantity"
                             className="w-11 h-11 rounded-lg bg-foreground/5 border border-surface-border flex items-center justify-center hover:bg-foreground/10 text-foreground font-black transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                         >-</button>
                         <span className="w-12 text-center text-foreground font-black">{quantity}</span>
                         <button
+                            type="button"
                             onClick={() => setQuantity(quantity + 1)}
                             aria-label="Increase quantity"
                             className="w-11 h-11 rounded-lg bg-foreground/5 border border-surface-border flex items-center justify-center hover:bg-foreground/10 text-foreground font-black transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"

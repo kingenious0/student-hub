@@ -13,7 +13,6 @@ import { OrderTracking } from '@/components/ui/order-tracking';
 
 // --- Interfaces ---
 interface Order {
-
     id: string;
     status: string;
     escrowStatus: string;
@@ -36,8 +35,26 @@ interface Order {
     vendor: {
         name: string | null;
         currentHotspot: string | null;
+        phoneNumber?: string | null;
     };
 }
+
+// Helper to sanitize phone number and get WhatsApp URL
+const getWhatsAppUrl = (phone: string | null | undefined, message?: string) => {
+    if (!phone) return '#';
+    let cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('0') && cleaned.length === 10) {
+        cleaned = '233' + cleaned.substring(1);
+    }
+    if (cleaned.length === 9 && (cleaned.startsWith('5') || cleaned.startsWith('2') || cleaned.startsWith('7') || cleaned.startsWith('9'))) {
+        cleaned = '233' + cleaned;
+    }
+    const url = `https://wa.me/${cleaned}`;
+    if (message) {
+        return `${url}?text=${encodeURIComponent(message)}`;
+    }
+    return url;
+};
 
 // Helper function to get display info for an order
 const getOrderDisplay = (order: Order) => {
@@ -55,7 +72,7 @@ const StatusIcon = ({ status, fulfillment }: { status: string, fulfillment?: str
         case 'PREPARING': return <span className="text-xl">⚙️</span>; // Operational
         case 'READY': return <span className="text-xl">{fulfillment === 'DELIVERY' ? '⚡' : '📍'}</span>; // Zone/Transit
         case 'PICKED_UP': return <span className="text-xl">🏃</span>; // Runner Active
-        case 'COMPLETED': return <span className="text-xl">✅</span>; // Success
+        case 'COMPLETED': return <span className="text-xl">✓</span>; // Success
         case 'CANCELLED': return <span className="text-xl">🚫</span>; // Aborted
         case 'REFUNDED': return <span className="text-xl">💸</span>; // Refunded
         default: return <span className="text-xl">📡</span>; // Pending loop
@@ -214,9 +231,20 @@ const ExpandedPriorityCard = ({ order, handleCancel }: { order: Order, handleCan
 
                 {/* Action Buttons */}
                 <div className="flex gap-3">
-                    <button className="flex-1 py-4 bg-primary text-black font-black uppercase tracking-widest text-xs rounded-xl hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
-                        Message Partner
-                    </button>
+                    <a
+                        href={order.vendor.phoneNumber ? getWhatsAppUrl(order.vendor.phoneNumber, `Hello, I am messaging regarding order #${order.id.slice(0, 8).toUpperCase()} for ${displayTitle}.`) : '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                            if (!order.vendor.phoneNumber) {
+                                e.preventDefault();
+                                toast.error("Vendor has no contact number registered");
+                            }
+                        }}
+                        className="flex-1 py-4 bg-primary text-black font-black uppercase tracking-widest text-xs rounded-xl hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none text-center block"
+                    >
+                        Message Vendor
+                    </a>
                     <button
                         onClick={() => handleCancel(order.id)}
                         className="px-6 py-4 bg-red-500/10 text-red-500 font-black uppercase tracking-widest text-xs rounded-xl hover:bg-red-500/20 transition-colors border border-red-500/20 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -300,6 +328,7 @@ const LedgerRow = ({ order, onClick }: { order: Order, onClick: () => void }) =>
 };
 
 import { toPng } from 'html-to-image';
+import { OrderConfirmationCard } from '@/components/ui/order-confirmation-card';
 
 // 4. Evidence Vault (Timeline Modal)
 // Declare native interface
@@ -316,13 +345,6 @@ const EvidenceVault = ({ order, onClose }: { order: Order, onClose: () => void }
     const [showFormats, setShowFormats] = useState(false);
     const [generating, setGenerating] = useState(false);
     const receiptRef = useRef<HTMLDivElement>(null);
-
-    const timeline = [
-        { label: 'Initialized', time: order.createdAt, done: true },
-        { label: 'Funds Secured', time: order.paidAt, done: !!order.paidAt },
-        { label: 'Picked Up', time: order.pickedUpAt, done: !!order.pickedUpAt },
-        { label: 'Digital Handshake', time: order.deliveredAt || (order.status === 'COMPLETED' ? order.updatedAt : null), done: order.status === 'COMPLETED' },
-    ];
 
     const handleCopy = () => {
         navigator.clipboard.writeText(order.id);
@@ -355,8 +377,6 @@ Live. Learn. Earn.
         const filename = `LaHustle-Receipt-${order.id.slice(0, 8)}.txt`;
 
         if (window.ReactNativeWebView) {
-            // Encode text to Base64 for native saving
-            // alert('Saving Receipt to Device...'); // Debug feedback
             const base64 = btoa(unescape(encodeURIComponent(receiptContent))); // handle utf8
             window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'DOWNLOAD_BLOB',
@@ -384,12 +404,10 @@ Live. Learn. Earn.
         if (receiptRef.current) {
             setGenerating(true);
             try {
-                // skipFonts: true avoids CORS SecurityError when reading external stylesheets
                 const dataUrl = await toPng(receiptRef.current, { cacheBust: true, pixelRatio: 3, skipFonts: true });
                 const filename = `LaHustle-Receipt-${order.id.slice(0, 8)}.png`;
 
                 if (window.ReactNativeWebView) {
-                    // alert('Saving Image to Device...'); // Debug feedback
                     window.ReactNativeWebView.postMessage(JSON.stringify({
                         type: 'DOWNLOAD_BLOB',
                         base64: dataUrl,
@@ -423,7 +441,7 @@ Live. Learn. Earn.
                 {/* Header */}
                 <div className="bg-surface/50 p-6 flex justify-between items-start border-b border-surface-border">
                     <div>
-                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Order History</h2>
+                        <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Order Receipt</h2>
                         <p className="text-xs text-foreground/40 font-mono mt-1">ID: #{order.id.toUpperCase()}</p>
                     </div>
                     <button onClick={onClose} aria-label="Close modal" className="w-11 h-11 rounded-full bg-foreground/10 text-foreground/40 flex items-center justify-center hover:bg-foreground/20 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">✕</button>
@@ -431,119 +449,85 @@ Live. Learn. Earn.
 
 
                 {/* Evidence Body */}
-                <div className="p-6">
-                    {/* Status Badge Big */}
-                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border mb-8 ${order.status === 'COMPLETED' ? 'bg-primary/5 border-primary/20 text-primary' : 'bg-red-500/5 border-red-500/20 text-red-500'}`}>
-                        <span className="w-2 h-2 rounded-full bg-current"></span>
-                        <span className="text-xs font-black uppercase tracking-widest">{order.status}</span>
-                    </div>
+                <div className="p-6 max-h-[60vh] overflow-y-auto">
+                    <OrderConfirmationCard
+                        orderId={order.id}
+                        paymentMethod="Escrow Secured"
+                        dateTime={new Date(order.createdAt).toLocaleString()}
+                        totalAmount={`₵${order.amount.toFixed(2)}`}
+                        showButton={false}
+                        vendorName={order.vendor.name || 'Unknown Vendor'}
+                        status={order.status}
+                        items={order.items.map(item => ({
+                            title: item.product.title,
+                            quantity: item.quantity,
+                            price: item.price
+                        }))}
+                        className="border-0 bg-transparent p-0 max-w-none shadow-none"
+                    />
+                </div>
 
-                    {/* Timeline */}
-                    <div className="space-y-6 relative pl-4 border-l-2 border-surface-border ml-2">
-                        {timeline.map((event, i) => (
-                            <div key={i} className={`relative pl-6 ${event.done ? 'opacity-100' : 'opacity-30'}`}>
-                                <div className={`absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 ${event.done ? 'bg-foreground border-primary' : 'bg-surface border-foreground/20'}`}></div>
-                                <div className="text-sm font-bold text-foreground uppercase tracking-wide">{event.label}</div>
-                                {event.time && <div className="text-xs text-foreground/40 font-mono mt-0.5">{new Date(event.time).toLocaleString()}</div>}
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Footer Actions */}
-                    <div className="mt-10 pt-6 border-t border-surface-border flex gap-4 h-16 items-center">
-                        {!showFormats ? (
-                            <>
-                                <button
-                                    onClick={handleCopy}
-                                    className="flex-1 py-3 bg-surface border border-surface-border rounded-xl text-xs font-black uppercase text-foreground/40 hover:text-foreground hover:bg-foreground/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                >
-                                    {copied ? '✅ Copied!' : 'Copy Evidence ID'}
-                                </button>
-                                <button
-                                    onClick={() => setShowFormats(true)}
-                                    className="flex-1 py-3 bg-primary text-black rounded-xl text-xs font-black uppercase hover:opacity-90 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                >
-                                    Download Receipt
-                                </button>
-                            </>
-                        ) : (
-                            <div className="flex-1 flex gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                                <button
-                                    onClick={handleDownloadTxt}
-                                    className="flex-1 py-3 bg-foreground/5 text-foreground rounded-xl text-xs font-black uppercase hover:bg-foreground/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                >
-                                    📄 TXT
-                                </button>
-                                <button
-                                    onClick={handleDownloadImage}
-                                    disabled={generating}
-                                    className="flex-1 py-3 bg-[#39FF14] text-black rounded-xl text-xs font-black uppercase hover:bg-[#32d911] transition-colors shadow-[0_0_15px_rgba(57,255,20,0.3)] focus-visible:ring-2 focus-visible:ring-[#39FF14] focus-visible:ring-offset-2 focus-visible:outline-none"
-                                >
-                                    {generating ? 'Wait...' : '🖼️ PNG'}
-                                </button>
-                                <button
-                                    onClick={() => setShowFormats(false)}
-                                    className="w-12 py-3 bg-surface border border-surface-border rounded-xl flex items-center justify-center hover:bg-foreground/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
-                                    aria-label="Cancel"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                {/* Footer Actions */}
+                <div className="p-6 border-t border-surface-border flex gap-4 h-24 items-center bg-surface/50">
+                    {!showFormats ? (
+                        <>
+                            <button
+                                onClick={handleCopy}
+                                className="flex-1 py-3 bg-surface border border-surface-border rounded-xl text-xs font-black uppercase text-foreground/40 hover:text-foreground hover:bg-foreground/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                            >
+                                {copied ? '✅ Copied!' : 'Copy Receipt ID'}
+                            </button>
+                            <button
+                                onClick={() => setShowFormats(true)}
+                                className="flex-1 py-3 bg-primary text-black rounded-xl text-xs font-black uppercase hover:opacity-90 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                            >
+                                Download Receipt
+                            </button>
+                        </>
+                    ) : (
+                        <div className="flex-1 flex gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                            <button
+                                onClick={handleDownloadTxt}
+                                className="flex-1 py-3 bg-foreground/5 text-foreground rounded-xl text-xs font-black uppercase hover:bg-foreground/10 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                            >
+                                📄 TXT
+                            </button>
+                            <button
+                                onClick={handleDownloadImage}
+                                disabled={generating}
+                                className="flex-1 py-3 bg-[#39FF14] text-black rounded-xl text-xs font-black uppercase hover:bg-[#32d911] transition-colors shadow-[0_0_15px_rgba(57,255,20,0.3)] focus-visible:ring-2 focus-visible:ring-[#39FF14] focus-visible:ring-offset-2 focus-visible:outline-none"
+                            >
+                                {generating ? 'Wait...' : '🖼️ PNG'}
+                            </button>
+                            <button
+                                onClick={() => setShowFormats(false)}
+                                className="w-12 py-3 bg-surface border border-surface-border rounded-xl flex items-center justify-center hover:bg-foreground/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                                aria-label="Cancel"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* HIDDEN RECEIPT TEMPLATE FOR IMAGE GEN */}
                 <div className="absolute top-0 left-0 w-full z-[-50] opacity-0 pointer-events-none">
-                    <div ref={receiptRef} className="w-[600px] bg-black text-white p-12 font-sans relative overflow-hidden border-8 border-black">
-                        {/* Background Texture */}
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-zinc-800/30 via-black to-black"></div>
-
-                        {/* Header */}
-                        <div className="relative z-10 flex justify-between items-start mb-12 border-b border-white/10 pb-8">
-                            <div>
-                                <h1 className="text-4xl font-black uppercase tracking-tighter mb-2">LaHustle Market</h1>
-                                <p className="text-sm font-mono text-foreground/40">OFFICIAL DIGITAL RECEIPT</p>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-[#39FF14] text-xl font-black">{order.status}</div>
-                                <div className="text-foreground/40 text-xs font-mono mt-1">{new Date().toLocaleDateString()}</div>
-                            </div>
-                        </div>
-
-                        {/* Order Details */}
-                        <div className="relative z-10 grid grid-cols-2 gap-8 mb-12">
-                            <div>
-                                <div className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest mb-1">Product Items</div>
-                                <div className="text-2xl font-bold">{getOrderDisplay(order).displayTitle}</div>
-                                <div className="text-sm text-foreground/20 mt-1">Vendor: {order.vendor.name}</div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest mb-1">Total Value</div>
-                                <div className="text-4xl font-black tracking-tight">₵{order.amount.toFixed(2)}</div>
-                            </div>
-                        </div>
-
-                        {/* ID Block */}
-                        <div className="relative z-10 bg-foreground/5 p-6 rounded-2xl border border-white/10 mb-8 flex items-center justify-between">
-                            <div>
-                                <div className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest mb-2">Transaction ID</div>
-                                <div className="font-mono text-lg tracking-widest text-[#39FF14]">{order.id.toUpperCase()}</div>
-                            </div>
-                            <div className="w-16 h-16 bg-white p-1 rounded-lg">
-                                {/* Mock QR */}
-                                <div className="w-full h-full bg-black/10 flex flex-wrap content-start">
-                                    {[...Array(16)].map((_, i) => (
-                                        <div key={i} className={`w-1/4 h-1/4 ${Math.random() > 0.5 ? 'bg-black' : 'bg-transparent'}`}></div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="relative z-10 pt-8 border-t border-white/10 text-center">
-                            <p className="text-foreground/30 text-[10px] uppercase tracking-[0.3em] font-bold">Verified by LaHustle Secure Protocol</p>
-                        </div>
+                    <div ref={receiptRef} className="w-[500px] bg-black text-white p-8 font-sans relative overflow-hidden border-8 border-black">
+                        <OrderConfirmationCard
+                            orderId={order.id}
+                            paymentMethod="Escrow Secured"
+                            dateTime={new Date(order.createdAt).toLocaleString()}
+                            totalAmount={`₵${order.amount.toFixed(2)}`}
+                            showButton={false}
+                            vendorName={order.vendor.name || 'Unknown Vendor'}
+                            status={order.status}
+                            items={order.items.map(item => ({
+                                title: item.product.title,
+                                quantity: item.quantity,
+                                price: item.price
+                            }))}
+                            className="bg-black border-0 p-0 shadow-none text-white max-w-none rounded-none"
+                        />
                     </div>
                 </div>
             </motion.div>

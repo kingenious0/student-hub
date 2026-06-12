@@ -71,6 +71,7 @@ export async function GET() {
                     select: {
                         name: true,
                         currentHotspot: true,
+                        phoneNumber: true,
                     },
                 },
             },
