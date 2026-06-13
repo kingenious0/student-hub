@@ -13,7 +13,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setTheme] = useState<Theme>('lahustle');
+    const [theme, setTheme] = useState<Theme>('standard');
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('lahustle-theme') as Theme;
@@ -21,7 +21,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             setTimeout(() => setTheme(savedTheme), 0);
             document.documentElement.setAttribute('data-theme', savedTheme);
         } else {
-            document.documentElement.setAttribute('data-theme', 'lahustle');
+            document.documentElement.setAttribute('data-theme', 'standard');
         }
 
         // Apply custom accent color

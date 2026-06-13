@@ -132,8 +132,11 @@ self.addEventListener('fetch', function(event) {
         return caches.match(event.request).then(function(cachedResponse) {
           if (cachedResponse) return cachedResponse;
           if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
-            return caches.match('/');
+            return caches.match('/').then(function(rootResponse) {
+              return rootResponse || new Response('Offline', { status: 503, statusText: 'Offline' });
+            });
           }
+          return new Response('Offline', { status: 503, statusText: 'Offline' });
         });
       })
     );

@@ -68,10 +68,10 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" data-theme="lahustle" suppressHydrationWarning>
+      <html lang="en" data-theme="standard" suppressHydrationWarning>
         <head>
           <link rel="preload" href="/lahustle-icon.svg" as="image" />
-          <meta name="theme-color" content="#050505" />
+          <meta name="theme-color" content="#ffffff" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
           <meta name="apple-mobile-web-app-title" content="LaHustle" />
@@ -118,7 +118,7 @@ export default function RootLayout({
                           <CartRecoveryTrigger />
                           <PushNotificationProvider />
                         </GlobalMaintenanceGuard>
-                        <Toaster richColors position="top-center" theme="dark" />
+                        <Toaster richColors position="top-center" theme="system" />
                       </ModalProvider>
                     </SecurityProvider>
                   </CartProvider>
