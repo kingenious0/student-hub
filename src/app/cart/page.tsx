@@ -7,6 +7,7 @@ import ProtocolGuard from '@/components/admin/ProtocolGuard';
 import { Trash2Icon, MinusIcon, PlusIcon, StoreIcon, ShieldIcon, ShoppingBag, ArrowLeft, ChevronRight, Lock } from 'lucide-react'; 
 import GoBack from '@/components/navigation/GoBack';
 import { useCartCheckout } from '@/hooks/useCartCheckout';
+import Image from 'next/image';
 
 export default function CartPage() {
     const {
@@ -132,7 +133,7 @@ export default function CartPage() {
                                                             {/* Image */}
                                                             <Link href={`/products/${item.id}`} className="w-full md:w-24 h-24 bg-background rounded-lg flex-shrink-0 overflow-hidden border border-surface-border relative">
                                                                 {item.imageUrl ? (
-                                                                    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                                                                    <Image src={item.imageUrl} alt={item.title} width={96} height={96} className="w-full h-full object-cover" />
                                                                 ) : (
                                                                     <div className="w-full h-full flex items-center justify-center text-4xl">📦</div>
                                                                 )}

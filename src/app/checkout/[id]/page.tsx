@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import CheckoutForm from '@/components/checkout/CheckoutForm';
 import { redirect } from 'next/navigation';
 import Script from 'next/script';
+import Image from 'next/image';
 
 export default async function CheckoutPage({
     params,
@@ -76,7 +77,7 @@ export default async function CheckoutPage({
                 <div className="md:hidden mb-6 bg-surface border border-surface-border rounded-2xl p-4 flex gap-4 items-center">
                     <div className="w-20 h-20 rounded-xl overflow-hidden bg-background shrink-0 border border-surface-border">
                         {product.imageUrl ? (
-                            <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" />
+                            <Image src={product.imageUrl} alt={product.title} width={80} height={80} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-3xl">📦</div>
                         )}
@@ -104,9 +105,11 @@ export default async function CheckoutPage({
                             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-primary/60 rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
                             <div className="relative aspect-square rounded-3xl overflow-hidden bg-surface border border-surface-border">
                                 {product.imageUrl ? (
-                                    <img
+                                    <Image
                                         src={product.imageUrl}
                                         alt={product.title}
+                                        width={400}
+                                        height={400}
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (

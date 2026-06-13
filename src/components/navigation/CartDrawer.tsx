@@ -6,6 +6,7 @@ import { useCartCheckout } from '@/hooks/useCartCheckout';
 import { useModal } from '@/context/ModalContext';
 import { X, Trash2, Plus, Minus, ShoppingBag, Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { CartItem } from '@/lib/store/cart';
 import { sanitizeImageUrl } from '@/lib/utils';
 
@@ -195,10 +196,12 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                                 <div key={item.cartItemId} className="p-4 flex gap-4 items-start">
                                                                     {/* Product Image */}
                                                                     {item.imageUrl ? (
-                                                                        <img 
+                                                                        <Image 
                                                                             src={sanitizeImageUrl(item.imageUrl)} 
                                                                             alt={item.title} 
-                                                                            className="w-16 h-16 rounded-xl object-cover flex-shrink-0 border border-surface-border"
+                                                                            width={64}
+                                                                            height={64}
+                                                                            className="rounded-xl object-cover flex-shrink-0 border border-surface-border"
                                                                         />
                                                                     ) : (
                                                                         <div className="w-16 h-16 rounded-xl bg-surface border border-surface-border flex-shrink-0 flex items-center justify-center text-2xl">
