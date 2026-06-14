@@ -66,34 +66,63 @@ export async function ensureUserExists() {
 
         const clerkPhone = clerkUser.phoneNumbers?.[0]?.phoneNumber || null;
 
-        user = await prisma.user.upsert({
-            where: { clerkId: userId },
-            update: {}, // No updates if exists, just fetch
-            create: {
-                clerkId: userId,
-                email: email,
-                name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Anonymous Student',
-                role: 'STUDENT', // Default role
-                university: 'USTED', // Default to USTED
-                phoneNumber: clerkPhone,
-            },
-            select: {
-                id: true,
-                clerkId: true,
-                email: true,
-                name: true,
-                role: true,
-                university: true,
-                onboarded: true,
-                currentHotspot: true,
-                lastActive: true,
-                walletFrozen: true,
-                banned: true,
-                banReason: true,
-                createdAt: true,
-                updatedAt: true,
-            }
+        // Check if a user with this email already exists to link their new Clerk ID
+        const existingUserByEmail = await prisma.user.findUnique({
+            where: { email }
         });
+
+        if (existingUserByEmail) {
+            user = await prisma.user.update({
+                where: { id: existingUserByEmail.id },
+                data: { clerkId: userId },
+                select: {
+                    id: true,
+                    clerkId: true,
+                    email: true,
+                    name: true,
+                    role: true,
+                    university: true,
+                    onboarded: true,
+                    currentHotspot: true,
+                    lastActive: true,
+                    walletFrozen: true,
+                    banned: true,
+                    banReason: true,
+                    createdAt: true,
+                    updatedAt: true,
+                }
+            });
+            console.log(`[Sync] Automatically linked existing user ${email} (DB ID: ${user.id}) to new Clerk ID: ${userId}`);
+        } else {
+            user = await prisma.user.upsert({
+                where: { clerkId: userId },
+                update: {}, // No updates if exists, just fetch
+                create: {
+                    clerkId: userId,
+                    email: email,
+                    name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'Anonymous Student',
+                    role: 'STUDENT', // Default role
+                    university: 'USTED', // Default to USTED
+                    phoneNumber: clerkPhone,
+                },
+                select: {
+                    id: true,
+                    clerkId: true,
+                    email: true,
+                    name: true,
+                    role: true,
+                    university: true,
+                    onboarded: true,
+                    currentHotspot: true,
+                    lastActive: true,
+                    walletFrozen: true,
+                    banned: true,
+                    banReason: true,
+                    createdAt: true,
+                    updatedAt: true,
+                }
+            });
+        }
 
         // Link any guest orders if the Clerk user has a phone number
         if (clerkPhone) {

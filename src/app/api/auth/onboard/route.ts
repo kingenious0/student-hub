@@ -44,25 +44,45 @@ export async function POST(request: NextRequest) {
 
         // Everyone starts as STUDENT by default (Jumia-style)
         // They can apply to become a vendor later via /become-vendor
-        const newUser = await prisma.user.upsert({
-            where: { clerkId: userId },
-            update: {
-                name: name,
-                university: university || 'USTED',
-                onboarded: true,
-                phoneNumber: phoneNumber
-            },
-            create: {
-                clerkId: userId,
-                email: email,
-                name: name,
-                role: 'STUDENT', // Everyone starts as STUDENT
-                university: university || 'USTED',
-                onboarded: true,
-                vendorStatus: 'NOT_APPLICABLE',
-                phoneNumber: phoneNumber
-            }
+        // Check if there is an existing user with the same email to link
+        const existingUser = await prisma.user.findUnique({
+            where: { email }
         });
+
+        let newUser;
+        if (existingUser) {
+            newUser = await prisma.user.update({
+                where: { id: existingUser.id },
+                data: {
+                    clerkId: userId,
+                    name: name,
+                    university: university || 'USTED',
+                    onboarded: true,
+                    phoneNumber: phoneNumber
+                }
+            });
+            console.log(`[Onboarding] Linked existing user ${email} (DB ID: ${newUser.id}) to new Clerk ID: ${userId} during onboarding`);
+        } else {
+            newUser = await prisma.user.upsert({
+                where: { clerkId: userId },
+                update: {
+                    name: name,
+                    university: university || 'USTED',
+                    onboarded: true,
+                    phoneNumber: phoneNumber
+                },
+                create: {
+                    clerkId: userId,
+                    email: email,
+                    name: name,
+                    role: 'STUDENT', // Everyone starts as STUDENT
+                    university: university || 'USTED',
+                    onboarded: true,
+                    vendorStatus: 'NOT_APPLICABLE',
+                    phoneNumber: phoneNumber
+                }
+            });
+        }
 
         // Link any guest orders from previous guest checkout using the same phone number
         let linkedOrderCount = 0;
