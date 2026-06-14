@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
+import { revalidateTag } from 'next/cache';
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -22,6 +23,12 @@ export async function POST(req: NextRequest) {
     where: { id: productId },
     data: { isInStock },
   });
+
+  try {
+    revalidateTag('products');
+  } catch (err) {
+    console.error('[Availability] Failed to revalidate products tag:', err);
+  }
 
   return NextResponse.json({ product: updated });
 }
