@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 const isAdminRoute = createRouteMatcher(['/dashboard/admin(.*)', '/admin(.*)', '/api/admin(.*)']);
 const isPublicRoute = createRouteMatcher(['/', '/sign-in(.*)', '/sign-up(.*)', '/verify', '/api/system/config(.*)', '/LaHustle-gate', '/command-center-z', '/marketplace(.*)', '/products(.*)', '/cart(.*)', '/wishlist(.*)', '/stories(.*)', '/search(.*)', '/category(.*)', '/become-vendor', '/api/marketplace(.*)', '/api/products(.*)', '/api/category(.*)', '/security-setup', '/api/security(.*)', '/checkout(.*)', '/order-success(.*)', '/vendor/(.*)']);
-const isIdentityRoute = createRouteMatcher(['/onboarding(.*)', '/api/auth/onboard(.*)', '/api/auth/sync(.*)', '/api/users/me(.*)', '/api/orders(.*)', '/api/vendor(.*)', '/api/push(.*)']);
+const isIdentityRoute = createRouteMatcher(['/onboarding(.*)', '/api/auth/onboard(.*)', '/api/auth/sync(.*)', '/api/auth/check-guest(.*)', '/api/notifications/unread(.*)', '/api/users/me(.*)', '/api/orders(.*)', '/api/vendor(.*)', '/api/push(.*)']);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();
