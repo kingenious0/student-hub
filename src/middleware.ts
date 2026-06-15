@@ -23,8 +23,8 @@ export default clerkMiddleware(async (auth, req) => {
 
   // 1. ADMIN PROTECTION
   if (isAdminRoute(req)) {
-    // Allow the unlock endpoint (it verifies password internally)
-    if (pathname === '/api/admin/unlock-command-center') {
+    // Allow the unlock endpoint and self promotion endpoint
+    if (pathname === '/api/admin/unlock-command-center' || pathname === '/api/admin/fix-my-role') {
       return NextResponse.next();
     }
 
