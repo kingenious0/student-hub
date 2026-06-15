@@ -70,7 +70,7 @@ export default async function CheckoutPage({
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
             {/* Paystack Script */}
-            <Script src="https://js.paystack.co/v1/inline.js" strategy="beforeInteractive" />
+            <Script src="https://js.paystack.co/v2/inline.js" strategy="beforeInteractive" />
 
             <div className="max-w-4xl mx-auto px-4">
                 {/* Mobile Compact View (Visible only below md) */}

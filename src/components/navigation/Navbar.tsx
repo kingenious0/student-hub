@@ -41,6 +41,9 @@ export default function Navbar() {
 
     useEffect(() => {
         setMounted(true);
+        const handleOpenCart = () => setCartDrawerOpen(true);
+        window.addEventListener('lh_open_cart_drawer', handleOpenCart);
+        return () => window.removeEventListener('lh_open_cart_drawer', handleOpenCart);
     }, []);
 
     const [dbUser, setDbUser] = useState<{ role: string; vendorStatus: string; onboarded: boolean; university?: string } | null>(null);

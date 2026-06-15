@@ -103,11 +103,7 @@ export default function CheckoutForm({
     };
 
     const handleCheckout = async () => {
-        const PaystackPop = (window as unknown as {
-            PaystackPop: {
-                setup: (options: unknown) => { openIframe: () => void }
-            }
-        }).PaystackPop;
+        const PaystackPop = (window as any).PaystackPop;
 
         if (!PaystackPop) {
             toast.error('Payment system (Paystack) not loaded yet. Please wait a moment or refresh.');
@@ -147,10 +143,11 @@ export default function CheckoutForm({
             const data = await res.json();
 
             if (data.success) {
-                const handler = PaystackPop.setup({
+                const paystack = new PaystackPop();
+                paystack.newTransaction({
                     key: paystackPublicKey,
-                    email: data.email || email,
-                    amount: total * 100,
+                    email: data.email || email || 'guest@LaHustle-marketplace.com',
+                    amount: Math.round(total * 100),
                     currency: 'GHS',
                     ref: data.paystackRef,
                     metadata: {
@@ -162,14 +159,13 @@ export default function CheckoutForm({
                             }
                         ]
                     },
-                    callback: function (response: { reference: string }) {
+                    onSuccess: function (response: { reference: string }) {
                         onSuccess(response);
                     },
-                    onClose: function () {
+                    onCancel: function () {
                         onClose();
                     }
                 });
-                handler.openIframe();
             } else {
                 toast.error(`Failed to initialize order: ${data.error}`);
                 setIsCreatingOrder(false);

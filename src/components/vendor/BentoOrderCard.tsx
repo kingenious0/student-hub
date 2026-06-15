@@ -11,6 +11,8 @@ interface Order {
     escrowStatus: string;
     amount: number;
     createdAt: string;
+    fulfillmentType: string;
+    fulfillmentNote: string | null;
     items: Array<{
         product: {
             title: string;
@@ -165,6 +167,18 @@ export default function BentoOrderCard({ order }: BentoOrderCardProps) {
                     <span className="text-[10px] font-bold text-foreground/30 uppercase">Customer:</span>
                     <span className="text-xs font-black text-foreground">{order.student.name || 'Anonymous'}</span>
                 </div>
+
+                {/* Fulfillment Note */}
+                {order.fulfillmentNote && (
+                    <div className="mb-4 p-3 bg-foreground/5 border border-surface-border rounded-xl">
+                        <span className="text-[8px] font-black uppercase tracking-widest text-foreground/35 block mb-1">
+                            {order.fulfillmentType === 'DELIVERY' ? '🚚 Delivery Note' : '📍 Pickup Note'}
+                        </span>
+                        <p className="text-xs font-bold text-foreground/80 leading-relaxed">
+                            "{order.fulfillmentNote}"
+                        </p>
+                    </div>
+                )}
 
                 {/* Amount */}
                 <div className="text-2xl font-black text-foreground mb-4">

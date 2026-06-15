@@ -218,7 +218,7 @@ export default function ProductDetailsPage() {
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => router.push('/cart')}
+                            onClick={() => window.dispatchEvent(new Event('lh_open_cart_drawer'))}
                             className="relative"
                         >
                             <span className="mr-2">Cart</span>
@@ -535,6 +535,20 @@ export default function ProductDetailsPage() {
                                     >
                                         Instant Checkout
                                     </button>
+
+                                    {cartItems.length > 0 && (
+                                        <div className="mt-4 p-4 rounded-2xl bg-primary/10 border border-primary/20 text-center animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                            <p className="text-xs font-bold text-foreground mb-2">
+                                                You have <span className="text-primary font-black">{cartItems.length}</span> item{cartItems.length > 1 ? 's' : ''} in your cart.
+                                            </p>
+                                            <button
+                                                onClick={() => window.dispatchEvent(new Event('lh_open_cart_drawer'))}
+                                                className="w-full h-10 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-wider text-[10px] hover:scale-[1.02] active:scale-95 transition-all shadow-md"
+                                            >
+                                                Go to Cart & Checkout All Items →
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Trust Indicators */}

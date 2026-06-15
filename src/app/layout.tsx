@@ -126,7 +126,7 @@ export default function RootLayout({
               </LocationProvider>
             </AdminProvider>
           </ThemeProvider>
-          <Script src="https://js.paystack.co/v1/inline.js" strategy="lazyOnload" />
+          <Script src="https://js.paystack.co/v2/inline.js" strategy="lazyOnload" />
         </body>
       </html>
     </ClerkProvider >

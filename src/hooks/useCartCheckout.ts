@@ -142,7 +142,7 @@ export function useCartCheckout() {
       return
     }
 
-    const PaystackPop = (window as unknown as { PaystackPop: { setup: (options: unknown) => { openIframe: () => void } } }).PaystackPop
+    const PaystackPop = (window as any).PaystackPop
     if (!PaystackPop) {
       modal.alert("Payment system loading... Please wait or refresh.", "Paystack Loading")
       return
@@ -173,10 +173,11 @@ export function useCartCheckout() {
       const data = await res.json()
 
       if (data.success) {
-        const handler = PaystackPop.setup({
+        const paystack = new PaystackPop()
+        paystack.newTransaction({
           key: paystackPublicKey,
           email: data.email || userEmail || "guest@LaHustle-marketplace.com",
-          amount: Math.ceil(total * 100),
+          amount: Math.round(total * 100),
           currency: "GHS",
           ref: data.paystackRef,
           metadata: {
@@ -184,7 +185,7 @@ export function useCartCheckout() {
               { display_name: "Order ID", variable_name: "order_id", value: data.paystackRef }
             ]
           },
-          callback: function (response: { reference: string }) {
+          onSuccess: function (response: { reference: string }) {
             const verifyPayment = async () => {
               try {
                 const vRes = await fetch("/api/payments/verify", {
@@ -215,12 +216,11 @@ export function useCartCheckout() {
             }
             verifyPayment()
           },
-          onClose: function () {
+          onCancel: function () {
             setIsCreatingOrder(false)
             modal.alert("Payment cancelled.", "Action Aborted", "info")
           }
         })
-        handler.openIframe()
       } else {
         modal.alert(`Order Error: ${data.error}`, "Submission Failed", "error")
         setIsCreatingOrder(false)

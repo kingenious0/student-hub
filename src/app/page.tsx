@@ -12,6 +12,9 @@ import ServicesShowcase from "@/components/services/ServicesShowcase";
 import { Suspense } from "react";
 import * as React from "react";
 import { useScroll, useTransform } from "framer-motion";
+import CategoriesMarquee from "@/components/marketplace/CategoriesMarquee";
+
+
 
 const FlashSalesSection = dynamic(() => import("@/components/marketplace/FlashSalesSection"), {
     loading: () => (
@@ -87,22 +90,22 @@ export default function Home() {
         <div className="absolute w-[320px] h-[320px] bg-primary/5 rounded-full blur-[90px] bottom-[15%] left-[20%] hidden md:block md:animate-pulse" style={{ animationDuration: '12s' }} />
       </div>
 
-      {/* 1. PREMIUM DYNAMIC HERO */}
+      {/* 1. PREMIUM DYNAMIC HERO - GoCart Inspired Hybrid Bento Layout */}
       <motion.div 
         ref={heroRef}
         onMouseMove={handleMouseMove}
         style={{ y: heroY, willChange: 'transform' }}
-        className="relative pt-32 pb-24 px-4 overflow-hidden group/hero z-10"
+        className="relative pt-32 pb-16 px-4 overflow-hidden group/hero z-10"
       >
-        {/* Premium Dark Minimalist Background - Apple/Stripe Aesthetic */}
-        <div className="absolute inset-0 bg-[#050505]">
+        {/* Premium Minimalist Background that conforms to light/dark themes */}
+        <div className="absolute inset-0 bg-background">
            {/* Single Elegant Static Radial Glow - 0% CPU/GPU overhead, highly sophisticated */}
-           <div className="absolute top-[-20%] left-[15%] w-[70%] h-[80%] rounded-full bg-gradient-to-br from-orange-500/15 via-rose-600/10 to-transparent blur-[130px] pointer-events-none" />
-           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3D%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22noiseFilter%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.65%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23noiseFilter)%22%2F%3E%3C%2Fsvg%3E')] opacity-[0.08] mix-blend-overlay pointer-events-none" />
+           <div className="absolute top-[-20%] left-[15%] w-[70%] h-[80%] rounded-full bg-gradient-to-br from-primary/10 via-accent/5 to-transparent blur-[130px] pointer-events-none" />
+           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3D%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22noiseFilter%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.65%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23noiseFilter)%22%2F%3E%3C%2Fsvg%3E')] opacity-[0.05] mix-blend-overlay pointer-events-none" />
            
-           {/* Interactive Glow Follower - High performance translation using direct CSS variables (0 React re-renders) */}
+           {/* Interactive Glow Follower - High performance translation using direct CSS variables */}
            <div 
-             className="absolute pointer-events-none w-[350px] h-[350px] bg-white opacity-0 group-hover/hero:opacity-[0.05] rounded-full blur-[80px] transition-opacity duration-700 hidden md:block"
+             className="absolute pointer-events-none w-[350px] h-[350px] bg-primary opacity-0 group-hover/hero:opacity-[0.05] rounded-full blur-[80px] transition-opacity duration-700 hidden md:block"
              style={{
                left: '0px',
                top: '0px',
@@ -113,68 +116,41 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex flex-col items-center text-center">
-            {/* Main Headline */}
-            <motion.div
-              style={{ y: contentY, opacity, willChange: 'transform, opacity' }}
-              className="mb-8 relative w-full px-4"
-            >
+          {/* Full-width Centered Hero Showcase Panel */}
+          <div className="glass-strong rounded-[3rem] p-8 md:p-20 border border-surface-border/80 flex flex-col justify-between relative overflow-hidden group/main-card shadow-2xl">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-accent to-emerald-400" />
+            <div>
+              {/* Main Headline */}
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white tracking-tighter leading-none italic uppercase select-none"
-                style={{ 
-                  textShadow: '0 8px 24px rgba(0,0,0,0.2)', 
-                  willChange: 'transform, opacity' 
-                }}
+                className="text-5xl sm:text-7xl md:text-8xl font-black text-foreground tracking-tight leading-none mb-6"
               >
-                Campus<br className="sm:hidden" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30"> Market</span>
+                Campus<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-emerald-600 to-teal-500">Market</span>
               </motion.h1>
-            </motion.div>
+              {/* Description */}
+              <p className="text-foreground/70 text-sm md:text-lg font-medium mb-12 max-w-xl leading-relaxed">
+                Fuel your student hustle. Buy & sell safely on campus.
+              </p>
+            </div>
 
-            {/* Description */}
-            <motion.p 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="text-white/40 text-lg md:text-2xl font-bold mb-14 max-w-2xl leading-normal tracking-tight px-4"
-            >
-              The peer-to-peer digital hub powering the <span className="text-white">USTED</span> student economy. Buy, sell, and trade safely.
-            </motion.p>
-
-            {/* CTA Button with Liquid Gradient */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1 }}
-            >
-               <Link href="/deals" className="relative group px-12 py-6 rounded-[2rem] bg-white text-black font-black uppercase tracking-[0.3em] text-xs transition-all overflow-hidden inline-block active:scale-95">
-                  <span className="relative z-10">Start Digging Deals →</span>
-                  <motion.div 
-                    animate={{ x: ['100%', '-100%'] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent skew-x-12"
-                  />
-               </Link>
-            </motion.div>
-
-            {/* Search Integration with 3D Physics */}
-            <motion.div 
-              whileHover={{ rotateX: 5, rotateY: -5 }}
-              style={{ perspective: 1200 }}
-              className="w-full max-w-4xl mt-20"
-            >
-              <motion.div 
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2, type: "spring" }}
-                className="glass-strong p-3 rounded-[3rem] shadow-[0_80px_160px_-40px_rgba(0,0,0,0.8)] border border-white/5"
-              >
+            <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center w-full mt-4">
+              {/* CTA Button */}
+              <Link href="/deals" className="relative group px-8 py-4.5 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-wider text-xs transition-all overflow-hidden inline-block hover:shadow-xl hover:shadow-primary/25 active:scale-95 text-center shrink-0">
+                <span className="relative z-10">Start Digging Deals →</span>
+                <motion.div 
+                  animate={{ x: ['100%', '-100%'] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+                />
+              </Link>
+              {/* Search Bar inside Main Card */}
+              <div className="flex-1">
                 <GlobalSearch variant="hero" />
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -191,26 +167,9 @@ export default function Home() {
       {/* 2. LIVE TRENDING FEED */}
       <FlashSalesSection />
 
-      {/* 3. DYNAMIC CATEGORY BAR */}
-      <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        whileInView={{ y: 0, opacity: 1 }}
-        viewport={{ margin: "-100px" }}
-        className="sticky top-[72px] z-30 bg-background/60 backdrop-blur-3xl border-b border-surface-border"
-      >
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex items-center gap-2 md:gap-6 overflow-x-auto pb-4 hide-scrollbar scroll-smooth snap-x">
-             <CategoryPill href="/category/food" icon="🍔" label="Food" active />
-             <CategoryPill href="/category/tech" icon="🔋" label="Tech" />
-             <CategoryPill href="/category/fashion" icon="💎" label="Fashion" />
-             <CategoryPill href="/category/study" icon="🧠" label="Study" />
-             <CategoryPill href="/category/services" icon="🛠️" label="Services" />
-             <CategoryPill href="/category/beauty" icon="✨" label="Beauty" />
-             <CategoryPill href="/category/lifestyle" icon="🌊" label="Lifestyle" />
-             <CategoryPill href="/category/more" icon="+" label="More" />
-          </div>
-        </div>
-      </motion.div>
+      {/* 3. SCROLLING CATEGORY MARQUEE (GoCart Inspired) */}
+      <CategoriesMarquee />
+
 
       {/* MAIN FEED */}
       <main className="max-w-7xl mx-auto px-4 py-24 z-10 relative">
