@@ -1,8 +1,3 @@
-<p align="center">
-  <img src="./public/lahustle-icon.svg" alt="LaHustle Logo" width="120" height="120" style="border-radius: 24px;" />
-</p>
-
-<h1 align="center">LaHustle (Student Marketplace & Hub)</h1>
 
 <p align="center">
   <strong>A premium, secure campus marketplace and vendor engagement platform designed for university student micro-economies.</strong>

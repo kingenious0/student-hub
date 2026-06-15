@@ -1,4 +1,4 @@
-# Contributing to Student Hub
+# Contributing to LaHustle
 
 Thank you for your interest in contributing to the Student Hub project! Since this is a private repository, please adhere to the following guidelines to maintain code quality and security.
 
