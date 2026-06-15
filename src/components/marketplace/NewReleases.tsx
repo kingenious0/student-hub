@@ -8,6 +8,7 @@ import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useModal } from '@/context/ModalContext';
 import { toast } from 'sonner';
+import { sanitizeImageUrl } from '@/lib/utils';
 
 interface NewRelease {
     id: string;
@@ -79,7 +80,7 @@ export default function NewReleases() {
 
             {loading ? (
                 <div className="text-center py-12">
-                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent omni-glow"></div>
+                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent lh-glow"></div>
                     <p className="mt-4 text-primary font-black uppercase tracking-[0.4em] text-[10px]">Loading Fresh Drops...</p>
                 </div>
             ) : (
@@ -106,7 +107,7 @@ export default function NewReleases() {
                                     <div className="h-56 bg-background/50 relative overflow-hidden">
                                         {product.imageUrl ? (
                                             <img
-                                                src={product.imageUrl}
+                                                src={sanitizeImageUrl(product.imageUrl)}
                                                 alt={product.title}
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
@@ -192,7 +193,7 @@ export default function NewReleases() {
                                                                     const res = await fetch(`/api/admin/products/${product.id}`, {
                                                                         method: 'DELETE',
                                                                         headers: {
-                                                                            'x-admin-key': 'omniadmin.com'
+                                                                            'x-admin-key': 'LaHustleadmin.com'
                                                                         }
                                                                     });
                                                                     if (res.ok) {

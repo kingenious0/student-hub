@@ -7,6 +7,7 @@ const getDiscoveryFeed = unstable_cache(
     async () => {
         // 1. New Arrivals (Absolute Latest)
         const newArrivals = await prisma.product.findMany({
+            where: { isInStock: true },
             take: 10,
             orderBy: { createdAt: 'desc' },
             include: {
@@ -19,6 +20,7 @@ const getDiscoveryFeed = unstable_cache(
         // 2. Trending (Ranked by Order Count)
         // If order counts are zero, it falls back to ID sort, which is fine.
         const trending = await prisma.product.findMany({
+            where: { isInStock: true },
             take: 10,
             orderBy: {
                 salesCount: 'desc'
@@ -39,7 +41,9 @@ const getDiscoveryFeed = unstable_cache(
 
         let recommended = await prisma.product.findMany({
             take: 10,
-            where: randomCategory ? { categoryId: randomCategory.id } : {}, // Filter by random category
+            where: randomCategory 
+                ? { categoryId: randomCategory.id, isInStock: true } 
+                : { isInStock: true }, // Filter by random category & in-stock
             orderBy: {
                 // Randomize within the filtered category
                 // Since Prisma doesn't support random sort natively easily in finding, 
@@ -56,6 +60,7 @@ const getDiscoveryFeed = unstable_cache(
         // FALLBACK: If the random category turned out to be empty, fetch from ALL categories
         if (recommended.length === 0) {
             recommended = await prisma.product.findMany({
+                where: { isInStock: true },
                 take: 10,
                 orderBy: { createdAt: 'desc' }, // Just get latest
                 include: {

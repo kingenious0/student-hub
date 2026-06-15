@@ -1,17 +1,46 @@
-const CACHE_NAME = 'omni-cache-v1';
+const CACHE_NAME = 'lahustle-cache-v2';
 
 const PRECACHE_ASSETS = [
   '/',
-  '/offline',
-  '/omni-icon.svg',
+  '/lahustle-icon.svg',
   '/icon-192x192.png',
+  '/icon-512x512.png',
+  '/LaHustle-Official_logo.svg',
+  '/Lahustle Logo Official.png',
+  '/manifest.json',
+  '/services',
+  '/notifications',
+  '/settings',
+  '/cart',
+  '/profile',
+  '/deals',
+  '/wishlist',
+  '/orders',
+  '/become-vendor',
+  '/help',
+  '/about',
+  '/privacy',
+  '/terms',
+  '/category/more',
+  '/category/food-and-snacks',
+  '/category/tech-and-gadgets',
+  '/category/books-and-notes',
+  '/category/fashion',
+  '/category/services',
+  '/category/everything-else'
 ];
 
 self.addEventListener('install', function(event) {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(PRECACHE_ASSETS);
+      return Promise.all(
+        PRECACHE_ASSETS.map(function(url) {
+          return cache.add(url).catch(function(err) {
+            console.warn('LaHustle SW: Optional precache failed for ' + url, err);
+          });
+        })
+      );
     })
   );
 });
@@ -28,23 +57,102 @@ self.addEventListener('activate', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
-  if (event.request.url.includes('/api/')) {
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+
+  // Only handle local requests and Cloudinary assets
+  const isSelf = url.origin === self.location.origin;
+  const isCloudinary = url.hostname.includes('cloudinary.com');
+  if (!isSelf && !isCloudinary) return;
+
+  // 1. Specific API feeds for offline browsing: Network first, then Cache fallback
+  if (
+    url.pathname.startsWith('/api/marketplace/discovery') ||
+    url.pathname.startsWith('/api/products') ||
+    url.pathname.startsWith('/api/services')
+  ) {
+    event.respondWith(
+      fetch(event.request).then(function(networkResponse) {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      }).catch(function() {
+        return caches.match(event.request);
+      })
+    );
+  }
+  // 2. Generic API calls: Network only (with catch fallback)
+  else if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request).catch(function() {
         return caches.match(event.request);
       })
     );
-  } else {
+  } 
+  // 3. Static assets & Images (local and external like Cloudinary): Cache First, then Network
+  else if (
+    url.pathname.startsWith('/_next/static/') ||
+    event.request.destination === 'image' ||
+    url.pathname.match(/\.(png|jpg|jpeg|svg|css|js|webp|ico)$/) ||
+    event.request.url.includes('cloudinary.com') ||
+    event.request.url.includes('res.cloudinary.com')
+  ) {
     event.respondWith(
       caches.match(event.request).then(function(cachedResponse) {
-        return cachedResponse || fetch(event.request);
+        if (cachedResponse) return cachedResponse;
+        return fetch(event.request).then(function(networkResponse) {
+          if (!networkResponse || networkResponse.status !== 200) {
+            return networkResponse;
+          }
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(function(cache) {
+            cache.put(event.request, responseToCache);
+          });
+          return networkResponse;
+        });
+      })
+    );
+  } 
+  // 4. Pages/HTML: Network First, then Cache
+  else {
+    event.respondWith(
+      fetch(event.request).then(function(networkResponse) {
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then(function(cache) {
+          cache.put(event.request, responseToCache);
+        });
+        return networkResponse;
+      }).catch(function() {
+        return caches.match(event.request).then(function(cachedResponse) {
+          if (cachedResponse) return cachedResponse;
+          if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
+            return caches.match('/').then(function(rootResponse) {
+              return rootResponse || new Response('Offline', { status: 503, statusText: 'Offline' });
+            });
+          }
+          return new Response('Offline', { status: 503, statusText: 'Offline' });
+        });
       })
     );
   }
 });
 
 self.addEventListener('push', function(event) {
-  const data = event.data.json();
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    data = {
+      title: 'LaHustle Update',
+      body: event.data ? event.data.text() : ''
+    };
+  }
   const options = {
     body: data.body || '',
     icon: '/icon-192x192.png',

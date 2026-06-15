@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
-import { sendSMS } from '@/lib/sms/wigal';
+import { sendSMS } from '@/lib/sms';
 
 export async function POST(
     request: NextRequest,
@@ -49,7 +49,7 @@ export async function POST(
 
         await sendSMS(
             order.student.phoneNumber,
-            `OMNI PAY: Hello ${studentName}, your release key for ${shop} is: ${order.releaseKey}\nShare this only when you receive your items.`
+            `LaHustle PAY: Hello ${studentName}, your release key for ${shop} is: ${order.releaseKey}\nShare this only when you receive your items.`
         );
 
         return NextResponse.json({ success: true, message: 'Release key resent' });

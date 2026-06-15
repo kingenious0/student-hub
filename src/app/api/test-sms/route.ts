@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendSMS } from '@/lib/sms/wigal';
+import { sendSMS } from '@/lib/sms';
 import { isAuthorizedAdmin } from '@/lib/auth/admin';
 
 export async function POST(req: NextRequest) {
@@ -49,7 +49,7 @@ export async function GET() {
 <body>
   <div class="card">
     <h1>📡 Test SMS</h1>
-    <p>Send a test SMS via Wigal</p>
+    <p>Send a test SMS via mNotify</p>
     <form id="smsForm">
       <label>Phone Number</label>
       <input type="tel" id="phone" placeholder="054 XXX XXXX" required />

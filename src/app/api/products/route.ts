@@ -10,7 +10,7 @@ import { prisma } from '@/lib/db/prisma';
 import { ensureUserExists } from '@/lib/auth/sync';
 import { validateData, productCreateSchema, sanitizeHtml } from '@/lib/security/validation';
 import { searchProducts, type SearchQuery } from '@/lib/utils/search';
-import { revalidateTag } from 'next/cache';
+import { revalidateTag as revalidateCacheTag } from 'next/cache';
 import { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        revalidateTag('products');
+        try { (revalidateCacheTag as any)('products'); } catch {}
 
         return NextResponse.json({ success: true, product }, { status: 201 });
     } catch (error) {

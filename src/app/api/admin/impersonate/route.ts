@@ -8,7 +8,7 @@ async function checkAuth() {
     if (sessionClaims?.metadata?.role === 'GOD_MODE') return true;
 
     const cookieStore = await cookies();
-    const bossToken = cookieStore.get('OMNI_BOSS_TOKEN');
+    const bossToken = cookieStore.get('LH_BOSS_TOKEN');
     return bossToken?.value === 'AUTHORIZED_ADMIN';
 }
 

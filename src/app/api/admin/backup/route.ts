@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     try {
         let data: any[] = [];
-        let filename = `omni_${table}_${new Date().toISOString().split('T')[0]}`;
+        let filename = `LaHustle_${table}_${new Date().toISOString().split('T')[0]}`;
 
         // Fetch based on requested table
         switch (table) {

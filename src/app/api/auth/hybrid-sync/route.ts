@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
                 data: {
                     clerkId,
                     email: clerkUser.emailAddresses[0].emailAddress,
-                    name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'OMNI User',
+                    name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'LaHustle User',
                     role: 'STUDENT',
                 }
             });
@@ -43,12 +43,12 @@ export async function GET(req: NextRequest) {
 
         // 3. Keep the token alive by passing it to the destination (Bypassing Cookie reliance)
         const destination = new URL(redirectUrl, req.url);
-        destination.searchParams.set('__omni_token', token);
+        destination.searchParams.set('__LaHustle_token', token);
 
         const response = NextResponse.redirect(destination);
 
         // Critical: Set the identity cookie so the web app trusts this native user
-        response.cookies.set('OMNI_IDENTITY_VERIFIED', 'TRUE', {
+        response.cookies.set('LH_IDENTITY_VERIFIED', 'TRUE', {
             httpOnly: false,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
         });
 
         // Add a small helper cookie to tell the client-side to try and refresh Clerk
-        response.cookies.set('OMNI_HYBRID_SYNCED', clerkId, {
+        response.cookies.set('LH_HYBRID_SYNCED', clerkId, {
             maxAge: 60 * 5, // 5 mins
             path: '/',
         });

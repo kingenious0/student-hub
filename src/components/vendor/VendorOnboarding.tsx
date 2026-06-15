@@ -49,7 +49,7 @@ export default function VendorOnboarding({ onComplete }: { onComplete: () => voi
                 <div className="text-center relative z-10">
                     <div className="text-5xl mb-6">🏪</div>
                     <h1 className="text-3xl font-black text-foreground mb-2 uppercase tracking-tighter">Partner Onboarding</h1>
-                    <p className="text-primary/40 text-xs font-bold uppercase tracking-widest mb-12">Setup your OMNI Shopfront</p>
+                    <p className="text-primary/40 text-xs font-bold uppercase tracking-widest mb-12">Setup your LaHustle Shopfront</p>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-4 text-left">
@@ -59,7 +59,7 @@ export default function VendorOnboarding({ onComplete }: { onComplete: () => voi
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="e.g., OMNI Fast Food"
+                                    placeholder="e.g., LaHustle Fast Food"
                                     required
                                     value={formData.shopName}
                                     onChange={(e) => setFormData({ ...formData, shopName: e.target.value })}
@@ -84,7 +84,7 @@ export default function VendorOnboarding({ onComplete }: { onComplete: () => voi
                         <button
                             type="submit"
                             disabled={status !== 'IDLE'}
-                            className="w-full py-5 bg-[#39FF14] text-black rounded-2xl font-black text-xs uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 omni-glow"
+                            className="w-full py-5 bg-[#39FF14] text-black rounded-2xl font-black text-xs uppercase tracking-[0.3em] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 lh-glow"
                         >
                             {status === 'SUBMITTING' ? 'TRANSMITTING...' : status === 'SUCCESS' ? 'SUBMITTED' : 'INITIALIZE PARTNERSHIP'}
                         </button>

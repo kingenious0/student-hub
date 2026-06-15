@@ -10,7 +10,7 @@ export function useCartCheckout() {
   const { items, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCartStore()
   const modal = useModal()
   const [fulfillmentMethod, setFulfillmentMethod] = useState<"delivery" | "pickup">("delivery")
-  const { user } = useUser()
+  const { user, isLoaded } = useUser()
   const { getToken } = useAuth()
   const router = useRouter()
   const [isCreatingOrder, setIsCreatingOrder] = useState(false)
@@ -19,6 +19,12 @@ export function useCartCheckout() {
   const [tempEmailInput, setTempEmailInput] = useState("")
   const [isHybridAuth, setIsHybridAuth] = useState(false)
   const [hybridClerkId, setHybridClerkId] = useState<string | null>(null)
+
+  // Guest Checkout States
+  const [showGuestModal, setShowGuestModal] = useState(false)
+  const [guestName, setGuestName] = useState("")
+  const [guestPhone, setGuestPhone] = useState("")
+
 
   // Coupon Engine States
   const [couponCodeInput, setCouponCodeInput] = useState("")
@@ -49,8 +55,8 @@ export function useCartCheckout() {
     fetchSettings()
 
     if (typeof window !== "undefined") {
-      const isVerified = document.cookie.split("; ").some(c => c.startsWith("OMNI_IDENTITY_VERIFIED=TRUE"))
-      const syncId = document.cookie.split("; ").find(c => c.trim().startsWith("OMNI_HYBRID_SYNCED="))?.split("=")[1]
+      const isVerified = document.cookie.split("; ").some(c => c.startsWith("LH_IDENTITY_VERIFIED=TRUE"))
+      const syncId = document.cookie.split("; ").find(c => c.trim().startsWith("LH_HYBRID_SYNCED="))?.split("=")[1]
       if (isVerified) {
         setIsHybridAuth(true)
         if (syncId) setHybridClerkId(syncId)
@@ -97,12 +103,23 @@ export function useCartCheckout() {
     setCouponError(null)
   }
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (guestData?: { name: string; phone: string }) => {
     if (items.length === 0) return
 
+    if (!isLoaded) {
+      modal.alert("Checking authorization session...", "Please Wait");
+      return;
+    }
+
+    let isGuest = false
+    let checkoutGuestInfo = guestData
+
     if (!user && !isHybridAuth) {
-      modal.alert("Please sign in to checkout.", "Sign In Required", "warning")
-      return
+      if (!checkoutGuestInfo) {
+        setShowGuestModal(true)
+        return
+      }
+      isGuest = true
     }
 
     let userEmail = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || manualEmail
@@ -120,12 +137,12 @@ export function useCartCheckout() {
       }
     }
 
-    if (!userEmail) {
+    if (!userEmail && !isGuest) {
       setShowEmailModal(true)
       return
     }
 
-    const PaystackPop = (window as unknown as { PaystackPop: { setup: (options: unknown) => { openIframe: () => void } } }).PaystackPop
+    const PaystackPop = (window as any).PaystackPop
     if (!PaystackPop) {
       modal.alert("Payment system loading... Please wait or refresh.", "Paystack Loading")
       return
@@ -148,17 +165,19 @@ export function useCartCheckout() {
         body: JSON.stringify({
           items: items.map(i => ({ id: i.id, quantity: i.quantity, selectedModifiers: i.selectedModifiers || [] })),
           fulfillmentType: fulfillmentMethod === "delivery" ? "DELIVERY" : "PICKUP",
-          couponCode: appliedCoupon?.code || null
+          couponCode: appliedCoupon?.code || null,
+          ...(isGuest ? { guestInfo: checkoutGuestInfo } : {})
         })
       })
 
       const data = await res.json()
 
       if (data.success) {
-        const handler = PaystackPop.setup({
+        const paystack = new PaystackPop()
+        paystack.newTransaction({
           key: paystackPublicKey,
-          email: userEmail,
-          amount: Math.ceil(total * 100),
+          email: data.email || userEmail || "guest@LaHustle-marketplace.com",
+          amount: Math.round(total * 100),
           currency: "GHS",
           ref: data.paystackRef,
           metadata: {
@@ -166,7 +185,7 @@ export function useCartCheckout() {
               { display_name: "Order ID", variable_name: "order_id", value: data.paystackRef }
             ]
           },
-          callback: function (response: { reference: string }) {
+          onSuccess: function (response: { reference: string }) {
             const verifyPayment = async () => {
               try {
                 const vRes = await fetch("/api/payments/verify", {
@@ -177,7 +196,14 @@ export function useCartCheckout() {
                 const vData = await vRes.json()
                 if (vData.success) {
                   clearCart()
-                  window.location.href = "/orders?success=true"
+                  if (isGuest && checkoutGuestInfo) {
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem('lh_has_guest_checkout', 'true');
+                    }
+                    window.location.href = `/order-success?ref=${response.reference}&phone=${encodeURIComponent(checkoutGuestInfo.phone)}`
+                  } else {
+                    window.location.href = "/orders?success=true"
+                  }
                 } else {
                   modal.alert(`Verification failed: ${vData.error || "Unknown error"}`, "Payment Error", "error")
                   setIsCreatingOrder(false)
@@ -190,12 +216,11 @@ export function useCartCheckout() {
             }
             verifyPayment()
           },
-          onClose: function () {
+          onCancel: function () {
             setIsCreatingOrder(false)
             modal.alert("Payment cancelled.", "Action Aborted", "info")
           }
         })
-        handler.openIframe()
       } else {
         modal.alert(`Order Error: ${data.error}`, "Submission Failed", "error")
         setIsCreatingOrder(false)
@@ -206,6 +231,7 @@ export function useCartCheckout() {
       setIsCreatingOrder(false)
     }
   }
+
 
   return {
     items,
@@ -239,6 +265,13 @@ export function useCartCheckout() {
     couponError,
     isValidatingCoupon,
     handleApplyCoupon,
-    handleRemoveCoupon
+    handleRemoveCoupon,
+    showGuestModal,
+    setShowGuestModal,
+    guestName,
+    setGuestName,
+    guestPhone,
+    setGuestPhone
   }
 }
+

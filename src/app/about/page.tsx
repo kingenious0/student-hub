@@ -4,16 +4,16 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background text-foreground pt-32 pb-12 px-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-5xl font-black uppercase tracking-tighter mb-8 text-primary">About OMNI</h1>
+        <h1 className="text-5xl font-black uppercase tracking-tighter mb-8 text-primary">About LaHustle</h1>
         
         <div className="prose prose-lg prose-invert">
           <p className="text-xl font-bold leading-relaxed mb-6">
-            OMNI is the ultimate campus ecosystem designed to connect students, vendors, and runners in a seamless digital economy.
+            LaHustle is the ultimate campus ecosystem designed to connect students, vendors, and runners in a seamless digital economy.
           </p>
 
           <h2 className="text-2xl font-black uppercase tracking-tight mt-12 mb-4">Our Mission</h2>
           <p>
-            We aim to digitize the student experience by providing a safe, fast, and reliable platform for commerce and connection. Whether you're looking for late-night food, selling your old textbooks, or starting your own shop, OMNI is your hub.
+            We aim to digitize the student experience by providing a safe, fast, and reliable platform for commerce and connection. Whether you're looking for late-night food, selling your old textbooks, or starting your own shop, LaHustle is your hub.
           </p>
 
           <h2 className="text-2xl font-black uppercase tracking-tight mt-12 mb-4">The Ecosystem</h2>
@@ -38,7 +38,7 @@ export default function AboutPage() {
 
         <div className="mt-12 pt-8 border-t border-surface-border">
           <Link href="/" className="inline-flex items-center font-bold text-primary hover:underline">
-            ← Back to Marketplace
+            ← Back to LaHustle
           </Link>
         </div>
       </div>

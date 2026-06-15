@@ -24,6 +24,8 @@ import PushNotificationProvider from "@/components/providers/PushNotificationPro
 import PWARegistration from "@/components/providers/PWARegistration";
 import PWAInstallPrompt from "@/components/providers/PWAInstallPrompt";
 import CartRecoveryTrigger from "@/components/cart/CartRecoveryTrigger";
+import HciManager from "@/components/providers/HciManager";
+import GooglePixelTracker from "@/components/tracking/GooglePixelTracker";
 
 
 const geistSans = Geist({
@@ -37,7 +39,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OMNI",
+  title: "LaHustle",
   description: "The everything store for university students",
   manifest: "/manifest.json",
   icons: {
@@ -51,7 +53,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'OMNI',
+    title: 'LaHustle',
     startupImage: '/splash-1290x2796.png',
   },
   other: {
@@ -66,13 +68,13 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" data-theme="omni" suppressHydrationWarning>
+      <html lang="en" data-theme="standard" suppressHydrationWarning>
         <head>
-          <link rel="preload" href="/omni-icon.svg" as="image" />
-          <meta name="theme-color" content="#050505" />
+          <link rel="preload" href="/lahustle-icon.svg" as="image" />
+          <meta name="theme-color" content="#ffffff" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-          <meta name="apple-mobile-web-app-title" content="OMNI" />
+          <meta name="apple-mobile-web-app-title" content="LaHustle" />
           <link rel="apple-touch-startup-image" href="/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" />
           <link rel="apple-touch-startup-image" href="/splash-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" />
           <link rel="apple-touch-startup-image" href="/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" />
@@ -80,11 +82,20 @@ export default function RootLayout({
           <link rel="apple-touch-startup-image" href="/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" />
           <link rel="apple-touch-startup-image" href="/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />
           <link rel="apple-touch-startup-image" href="/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" />
+          <script dangerouslySetInnerHTML={{ __html: `
+            window.addEventListener('beforeinstallprompt', (e) => {
+              e.preventDefault();
+              window.deferredPrompt = e;
+              window.dispatchEvent(new CustomEvent('captured-beforeinstallprompt', { detail: e }));
+            });
+          ` }} />
         </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased transition-colors duration-300`}
         >
           <ThemeProvider>
+            <HciManager />
+            <GooglePixelTracker />
             <AdminProvider>
               <LocationProvider>
                 <QueryProvider>
@@ -107,7 +118,7 @@ export default function RootLayout({
                           <CartRecoveryTrigger />
                           <PushNotificationProvider />
                         </GlobalMaintenanceGuard>
-                        <Toaster richColors position="top-center" theme="dark" />
+                        <Toaster richColors position="top-center" theme="system" />
                       </ModalProvider>
                     </SecurityProvider>
                   </CartProvider>
@@ -115,7 +126,7 @@ export default function RootLayout({
               </LocationProvider>
             </AdminProvider>
           </ThemeProvider>
-          <Script src="https://js.paystack.co/v1/inline.js" strategy="lazyOnload" />
+          <Script src="https://js.paystack.co/v2/inline.js" strategy="lazyOnload" />
         </body>
       </html>
     </ClerkProvider >

@@ -16,7 +16,7 @@ export async function getCurrentUser() {
     if (impersonateUserId) {
         // Verify admin privileges
         const role = (sessionClaims?.metadata as any)?.role;
-        const bossToken = cookieStore.get('OMNI_BOSS_TOKEN');
+        const bossToken = cookieStore.get('LH_BOSS_TOKEN');
         const isAdmin = role === 'GOD_MODE' || role === 'ADMIN' || bossToken?.value === 'AUTHORIZED_ADMIN';
 
         if (isAdmin) {

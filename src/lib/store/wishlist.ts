@@ -69,7 +69,7 @@ export const useWishlistStore = create<WishlistStore>()(
             setItems: (ids: string[]) => set({ items: ids }),
         }),
         {
-            name: 'omni-wishlist',
+            name: 'LaHustle-wishlist',
         }
     )
 )

@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { sanitizeImageUrl } from '@/lib/utils';
+
 
 // Custom Star Icon
 const StarIcon = ({ className, fill }: { className?: string, fill?: boolean }) => (
@@ -58,7 +60,7 @@ export default function ProductCard({
     const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
-        setIsAdmin(localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true');
+        setIsAdmin(localStorage.getItem('LH_GOD_MODE_UNLOCKED') === 'true');
     }, []);
 
     const handleDelete = async (e: React.MouseEvent) => {
@@ -76,7 +78,7 @@ export default function ProductCard({
         try {
             const res = await fetch(`/api/admin/products/${product.id}`, {
                 method: 'DELETE',
-                headers: { 'x-admin-key': 'omniadmin.com' }
+                headers: { 'x-admin-key': 'LaHustleadmin.com' }
             });
             if (res.ok) {
                 window.location.reload();
@@ -99,7 +101,7 @@ export default function ProductCard({
             id: product.id,
             title: product.title,
             price: finalPrice,
-            imageUrl: product.imageUrl || '',
+            imageUrl: sanitizeImageUrl(product.imageUrl) || '',
             vendorName: product.vendor.name || '',
             flashSaleId: product.flashSale?.isActive ? 'active' : undefined
         });
@@ -123,13 +125,13 @@ export default function ProductCard({
             layout
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={`group relative bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all ${isDeleting ? 'opacity-50 grayscale' : ''} ${compact ? 'min-w-[160px] w-[160px]' : ''}`}
+            className={`group relative glass border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all hover:border-primary hover:shadow-[0_0_25px_var(--primary-glow)] ${isDeleting ? 'opacity-50 grayscale' : ''} ${compact ? 'min-w-[160px] w-[160px]' : ''}`}
         >
             {/* Image Container - Aspect Square */}
             <div className="aspect-square relative flex items-center justify-center bg-muted overflow-hidden">
                 {product.imageUrl ? (
                     <Image
-                        src={product.imageUrl}
+                        src={sanitizeImageUrl(product.imageUrl)}
                         alt={product.title}
                         fill
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"

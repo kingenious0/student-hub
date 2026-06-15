@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal, SearchIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
 import EnhancedProductCard from '@/components/marketplace/EnhancedProductCard';
 import MobileFilterSheet from '@/components/marketplace/MobileFilterSheet';
 import FilterPills from '@/components/marketplace/FilterPills';
 import BackToTop from '@/components/marketplace/BackToTop';
 import { useFilterUrlParam, useFilterUrlBool } from '@/hooks/useFilterUrlState';
+import { cn } from '@/lib/utils';
 
 interface Product {
   id: string;
@@ -38,17 +40,18 @@ interface Product {
 
 const categories = [
   { slug: 'all', name: 'All Products', icon: '🎯' },
-  { slug: 'food', name: 'Food & Snacks', icon: '🍕' },
-  { slug: 'tech', name: 'Tech & Gadgets', icon: '💻' },
+  { slug: 'food-and-snacks', name: 'Food & Snacks', icon: '🍕' },
+  { slug: 'tech-and-gadgets', name: 'Tech & Gadgets', icon: '💻' },
   { slug: 'fashion', name: 'Fashion', icon: '👕' },
-  { slug: 'books', name: 'Books & Notes', icon: '📚' },
+  { slug: 'books-and-notes', name: 'Books & Notes', icon: '📚' },
   { slug: 'services', name: 'Services', icon: '⚡' },
-  { slug: 'beauty', name: 'Beauty & Health', icon: '💄' },
-  { slug: 'sports', name: 'Sports & Fitness', icon: '⚽' },
-  { slug: 'other', name: 'Everything Else', icon: '🎁' }
+  { slug: 'everything-else', name: 'Everything Else', icon: '🎯' }
 ];
 
 function MarketplaceContent() {
+  const { user, isLoaded: clerkLoaded } = useUser();
+  const [dbUser, setDbUser] = useState<{ role: string; vendorStatus: string } | null>(null);
+  const [showVendorPromo, setShowVendorPromo] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -56,18 +59,54 @@ function MarketplaceContent() {
   const [total, setTotal] = useState(0);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
 
+  useEffect(() => {
+    if (clerkLoaded && user) {
+      fetch('/api/users/me')
+        .then(res => res.json())
+        .then(data => {
+          setDbUser(data);
+          const dismissed = sessionStorage.getItem('dismissed_vendor_promo') === 'true';
+          if (data && data.role !== 'VENDOR' && data.vendorStatus !== 'PENDING' && !dismissed) {
+            setShowVendorPromo(true);
+          }
+        })
+        .catch(() => setDbUser(null));
+    }
+  }, [clerkLoaded, user]);
+
+  const handleDismissPromo = () => {
+    setShowVendorPromo(false);
+    sessionStorage.setItem('dismissed_vendor_promo', 'true');
+  };
+
   const [selectedCategory, setSelectedCategory] = useFilterUrlParam('category', 'all');
   const [sortBy, setSortBy] = useFilterUrlParam('sort', 'newest');
   const [searchQuery, setSearchQuery] = useFilterUrlParam('q');
+  const [localSearch, setLocalSearch] = useState(searchQuery || '');
   const [pageNum, setPageNum] = useState(1);
-  const [pageFromUrl, setPageFromUrl] = useFilterUrlParam('page', '1');
+
+  // Keep local search input in sync if URL query param is cleared or updated externally
+  useEffect(() => {
+    setLocalSearch(searchQuery || '');
+  }, [searchQuery]);
+
+  // Debounce updating the URL search param to prevent excessive routing re-renders on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== searchQuery) {
+        setSearchQuery(localSearch);
+      }
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [localSearch, searchQuery, setSearchQuery]);
+
+  const pageFromUrl = useFilterUrlParam('page', '1')[0];
 
   const page = useMemo(() => parseInt(pageFromUrl) || 1, [pageFromUrl]);
 
   const setPage = useCallback((p: number) => {
     setPageNum(p);
-    setPageFromUrl(String(p));
-  }, [setPageFromUrl]);
+  }, []);
 
   const fetchProducts = useCallback(async (pageNum: number, reset: boolean) => {
     if (reset) { setLoading(true); setProducts([]); }
@@ -102,14 +141,12 @@ function MarketplaceContent() {
 
   useEffect(() => {
     setPage(1);
-    setPageState(1);
     fetchProducts(1, true);
   }, [fetchProducts]);
 
   const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    setPageState(nextPage);
     fetchProducts(nextPage, false);
   };
 
@@ -125,104 +162,114 @@ function MarketplaceContent() {
     setSelectedCategory('all');
     setSortBy('newest');
     setSearchQuery('');
-    setPage('1');
+    setLocalSearch('');
+    setPage(1);
   }, [setSelectedCategory, setSortBy, setSearchQuery, setPage]);
 
   const categoryThemeColor = useMemo(() => {
     const map: Record<string, string> = {
-      food: '#FF4D00',
-      tech: '#0070FF',
-      fashion: '#A333FF',
-      books: '#2ECC71',
-      services: '#FFD700',
-      beauty: '#EC4899',
-      sports: '#10B981',
+      'food-and-snacks': '#FF4D00',
+      'tech-and-gadgets': '#0070FF',
+      'fashion': '#A333FF',
+      'books-and-notes': '#2ECC71',
+      'services': '#FFD700',
+      'everything-else': '#10B981',
     };
     return map[selectedCategory] || '#10B981';
   }, [selectedCategory]);
 
   return (
-    <div className="min-h-screen bg-background pt-32 pb-20">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-background pt-32 pb-20 relative overflow-hidden">
+      {/* Dynamic Background Glow Elements */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
+        <div className="absolute w-[300px] h-[300px] bg-primary/5 rounded-full blur-[90px] top-[10%] left-[5%]" />
+        <div className="absolute w-[350px] h-[350px] bg-primary/5 rounded-full blur-[100px] bottom-[20%] right-[10%]" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-6">
-            <Link href="/" className="text-foreground/40 hover:text-primary transition-colors font-black text-[10px] uppercase tracking-widest">
-              ← Back Home
-            </Link>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
-            Marketplace
+        <div className="mb-10">
+          <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4 italic">
+            Marketplace <span className="text-primary font-black">.</span>
           </h1>
-          <p className="text-foreground/60 text-lg">
+          <p className="text-foreground/45 text-sm uppercase font-bold tracking-widest">
             Browse all products from verified campus vendors
           </p>
         </div>
 
-        {/* Search & Filters */}
-        <div className="bg-surface border border-surface-border rounded-3xl p-6 mb-8 space-y-6">
+        {/* Search & Filters (Enclosed in a clean card container) */}
+        <div className="bg-surface border border-surface-border/80 rounded-[2.5rem] p-6 sm:p-8 mb-10 space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/30 via-transparent to-transparent" />
           {/* Search Bar */}
-          <div className="relative">
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/40" />
+          <div className="relative font-mono">
+            <SearchIcon className="absolute left-4.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-foreground/30" />
             <input
               type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search products..."
-              className="w-full pl-12 pr-4 py-4 bg-background border border-surface-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+              placeholder="SEARCH CAMPUS PRODUCTS..."
+              className="w-full pl-12 pr-5 py-4 bg-background border border-surface-border text-foreground rounded-2xl focus:outline-none focus:border-primary/50 transition-all text-xs font-black uppercase placeholder:text-foreground/20"
             />
           </div>
 
           {/* Category Filters */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {categories.map((cat) => (
-              <button
-                key={cat.slug}
-                onClick={() => setSelectedCategory(cat.slug)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all ${
-                  selectedCategory === cat.slug
-                    ? 'bg-primary text-primary-foreground shadow-lg scale-105'
-                    : 'bg-background border border-surface-border hover:border-primary/50'
-                }`}
-              >
-                <span>{cat.icon}</span>
-                <span>{cat.name}</span>
-              </button>
-            ))}
+          <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide snap-x">
+            {categories.map((cat) => {
+              const isActive = selectedCategory === cat.slug;
+              return (
+                <button
+                  key={cat.slug}
+                  onClick={() => setSelectedCategory(cat.slug)}
+                  className={cn(
+                    "flex items-center gap-2 px-5 py-3 rounded-full font-black text-[10px] uppercase tracking-widest transition-all whitespace-nowrap border cursor-pointer snap-center",
+                    isActive
+                      ? "bg-primary border-transparent text-black shadow-md shadow-primary/20"
+                      : "bg-background border-surface-border text-foreground/60 hover:border-foreground/30 hover:text-foreground"
+                  )}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{cat.name}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Sort + Filter Controls */}
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          {/* Sort Controls */}
+          <div className="space-y-4 pt-4 border-t border-dashed border-surface-border/60">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-foreground/60">Sort by:</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-foreground/45">Sort by:</span>
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2.5 flex-wrap">
               {[
-                { value: 'newest', label: 'Newest' },
+                { value: 'newest', label: 'Newest Arrivals' },
                 { value: 'price-asc', label: 'Price: Low to High' },
                 { value: 'price-desc', label: 'Price: High to Low' },
                 { value: 'popular', label: 'Most Popular' },
                 { value: 'rating', label: 'Top Rated' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setSortBy(option.value)}
-                  className={`px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
-                    sortBy === option.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-background border border-surface-border hover:border-primary/50'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+              ].map((option) => {
+                const isActive = sortBy === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => setSortBy(option.value)}
+                    className={cn(
+                      "px-4.5 py-2.5 rounded-full font-black text-[9px] uppercase tracking-widest transition-all border cursor-pointer",
+                      isActive
+                        ? "bg-primary border-transparent text-black shadow-md shadow-primary/20"
+                        : "bg-background border-surface-border text-foreground/60 hover:border-foreground/30 hover:text-foreground"
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
         {/* Active Filter Pills */}
         {activeFilterPills.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-8">
             <FilterPills
               pills={activeFilterPills}
               onClearAll={clearAllFilters}
@@ -231,9 +278,9 @@ function MarketplaceContent() {
         )}
 
         {/* Results Count */}
-        <div className="flex items-center justify-between mb-6 px-2">
-          <p className="text-sm font-black uppercase tracking-wider text-foreground/60">
-            {loading ? 'Loading...' : `${total} Products Found`}
+        <div className="flex items-center justify-between mb-8 px-2">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-foreground/45 font-mono">
+            {loading ? 'STATUS: LOADING...' : `${total} PRODUCTS DISCOVERED`}
           </p>
 
           {/* Mobile Filter Button */}
@@ -253,7 +300,7 @@ function MarketplaceContent() {
 
         {/* Products Grid */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="h-96 bg-surface/50 rounded-3xl animate-pulse" />
             ))}
@@ -276,7 +323,7 @@ function MarketplaceContent() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               <AnimatePresence>
                 {products.map((product, idx) => (
                   <motion.div
@@ -380,6 +427,49 @@ function MarketplaceContent() {
           </button>
         )}
       </MobileFilterSheet>
+
+      {/* Sell on LaHustle Floating Promo Card */}
+      <AnimatePresence>
+        {showVendorPromo && (
+          <motion.div
+            initial={{ opacity: 0, y: 100, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="fixed bottom-6 right-6 z-40 max-w-sm w-[calc(100vw-3rem)] bg-background/80 backdrop-blur-xl border border-primary/20 rounded-[2rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.7)] group overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent pointer-events-none" />
+            <button
+              onClick={handleDismissPromo}
+              className="absolute top-4 right-4 w-6 h-6 flex items-center justify-center rounded-full hover:bg-foreground/10 transition-colors text-foreground/45 hover:text-foreground z-10 font-bold border-0 bg-transparent cursor-pointer"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+            <div className="flex gap-4 items-start relative z-10">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl flex-shrink-0 animate-bounce" style={{ animationDuration: '3s' }}>
+                🏪
+              </div>
+              <div className="space-y-1 pr-6 text-left">
+                <h4 className="font-black text-sm uppercase tracking-tight text-foreground">
+                  Sell on LaHustle
+                </h4>
+                <p className="text-foreground/60 text-[11px] leading-relaxed font-bold uppercase tracking-wider">
+                  Turn your items into cash! Reach 10,000+ campus students instantly with escrow safety.
+                </p>
+                <div className="pt-3">
+                  <Link
+                    href="/become-vendor"
+                    className="inline-block px-5 py-2.5 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-transform shadow-md"
+                  >
+                    Open Shop Now →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -388,7 +478,7 @@ export default function MarketplacePage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin omni-glow" />
+        <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin lh-glow" />
       </div>
     }>
       <MarketplaceContent />

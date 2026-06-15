@@ -121,7 +121,7 @@ export default function MaintenanceAlert({ onClose }: MaintenanceAlertProps) {
                                 <p className="text-[10px] text-gray-600 font-medium">
                                     Need help?{' '}
                                     <a
-                                        href="mailto:support@omni.com"
+                                        href="mailto:support@LaHustle.com"
                                         className="text-red-500 hover:text-red-400 underline"
                                     >
                                         Contact Support

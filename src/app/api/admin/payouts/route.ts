@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
             
             // 1. Create Recipient
             const recipientCode = await createTransferRecipient(
-                payout.vendor.name || payout.vendor.shopName || 'OMNI Vendor',
+                payout.vendor.name || payout.vendor.shopName || 'LaHustle Vendor',
                 momoNumber,
                 bankCode
             );
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
             const transfer = await initiateTransfer(
                 amount,
                 recipientCode,
-                `OMNI Retried Payout to ${payout.vendor.name || 'Vendor'}`
+                `LaHustle Retried Payout to ${payout.vendor.name || 'Vendor'}`
             );
 
             console.log(`[AdminPayoutRetry] Paystack success! Code: ${transfer.transfer_code}, Status: ${transfer.status}`);

@@ -28,9 +28,9 @@ interface FAQItem {
 const faqs: FAQItem[] = [
     {
         category: 'general',
-        question: 'What is OMNI?',
+        question: 'What is LaHustle?',
         answer:
-            'OMNI is an all-in-one campus marketplace that connects students with local vendors and student runners for seamless shopping and delivery within university ecosystems.',
+            'LaHustle is an all-in-one campus marketplace that connects students with local vendors and student runners for seamless shopping and delivery within university ecosystems.',
     },
     {
         category: 'general',
@@ -42,7 +42,7 @@ const faqs: FAQItem[] = [
         category: 'orders',
         question: 'How do payments work?',
         answer:
-            'We use a secure escrow system. When you pay, funds are held safely by OMNI. They are only released to the vendor when you scan the QR code upon delivery to confirm you have received your order.',
+            'We use a secure escrow system. When you pay, funds are held safely by LaHustle. They are only released to the vendor when you scan the QR code upon delivery to confirm you have received your order.',
     },
     {
         category: 'payments',
@@ -51,13 +51,13 @@ const faqs: FAQItem[] = [
     },
     {
         category: 'vendors',
-        question: 'How can I sell on OMNI?',
+        question: 'How can I sell on LaHustle?',
         answer:
             'Click on "Become a Vendor" in the navigation menu, fill in your shop details, and submit your application. Our team reviews applications within 24 hours.',
     },
     {
         category: 'account',
-        question: 'Can I use OMNI on multiple campuses?',
+        question: 'Can I use LaHustle on multiple campuses?',
         answer:
             'Yes! You can switch your location in the header to see vendors and hubs at supported campuses like USTED, UPSA, etc.',
     },
@@ -100,7 +100,7 @@ export default function HelpPage() {
 
             if (res.ok) {
                 setIsSubmitted(true);
-                toast.success('Support ticket successfully transmitted to OMNI Command.');
+                toast.success('Support ticket successfully transmitted to LaHustle Command.');
                 // Reset form fields
                 setName('');
                 setEmail('');
@@ -137,7 +137,7 @@ export default function HelpPage() {
                             Help Hub
                         </h1>
                         <p className="text-lg md:text-xl text-foreground/60 max-w-xl font-medium">
-                            Everything you need to know about the OMNI ecosystem. Can't find it here? Contact our support squad.
+                            Everything you need to know about the LaHustle ecosystem. Can't find it here? Contact our support squad.
                         </p>
                     </div>
 
@@ -148,7 +148,7 @@ export default function HelpPage() {
                             <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
                         </div>
                         <div>
-                            <div className="text-[10px] font-black uppercase tracking-widest text-foreground/40 leading-none">OMNI NETWORK</div>
+                            <div className="text-[10px] font-black uppercase tracking-widest text-foreground/40 leading-none">LaHustle NETWORK</div>
                             <div className="text-xs font-black uppercase text-foreground/95 tracking-wide mt-1">Systems Operational</div>
                         </div>
                     </div>
@@ -383,9 +383,9 @@ export default function HelpPage() {
                                 Need emergency system assistance? Contact our central operations desk directly.
                             </p>
                             <div className="space-y-3 font-semibold text-xs text-foreground/80">
-                                <a href="mailto:omnighana@gmail.com" className="flex items-center gap-3 p-3 rounded-xl hover:bg-foreground/5 border border-transparent hover:border-surface-border transition-all">
+                                <a href="mailto:LaHustleghana@gmail.com" className="flex items-center gap-3 p-3 rounded-xl hover:bg-foreground/5 border border-transparent hover:border-surface-border transition-all">
                                     <Mail className="w-4 h-4 text-primary" />
-                                    omnighana@gmail.com
+                                    LaHustleghana@gmail.com
                                 </a>
                                 <a href="tel:0597626090" className="flex items-center gap-3 p-3 rounded-xl hover:bg-foreground/5 border border-transparent hover:border-surface-border transition-all">
                                     <Phone className="w-4 h-4 text-primary" />

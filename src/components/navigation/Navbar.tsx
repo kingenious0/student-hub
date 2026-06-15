@@ -27,7 +27,7 @@ import {
     ClockIcon
 } from '@/components/ui/Icons';
 import { Shield, Settings, Tag, Bell } from 'lucide-react';
-import { OmniLogo } from '@/components/ui/OmniLogo';
+import { LaHustleLogo } from '@/components/ui/LaHustleLogo';
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -41,6 +41,9 @@ export default function Navbar() {
 
     useEffect(() => {
         setMounted(true);
+        const handleOpenCart = () => setCartDrawerOpen(true);
+        window.addEventListener('lh_open_cart_drawer', handleOpenCart);
+        return () => window.removeEventListener('lh_open_cart_drawer', handleOpenCart);
     }, []);
 
     const [dbUser, setDbUser] = useState<{ role: string; vendorStatus: string; onboarded: boolean; university?: string } | null>(null);
@@ -87,7 +90,8 @@ export default function Navbar() {
 
             if (finalCount === 1) {
                 // If only one tap was recorded, navigate home normally
-                if (pathname !== '/') router.push('/');
+                const destination = user ? '/marketplace' : '/';
+                if (pathname !== destination) router.push(destination);
             }
         }, 500);
     };
@@ -236,13 +240,13 @@ export default function Navbar() {
 
     return (
         <>
-            <nav id="omni-navbar" className="fixed top-0 w-full z-50 backdrop-blur-xl bg-background/90 border-b border-surface-border shadow-md transition-all duration-300">
+            <nav id="LaHustle-navbar" className="fixed top-0 w-full z-50 backdrop-blur-xl bg-background/90 border-b border-surface-border shadow-md transition-all duration-300">
                 <div className="flex justify-between items-center px-4 h-16 max-w-7xl mx-auto gap-4">
                     {/* LEFT: Mobile Hamburger / Desktop Logo */}
                     <div className="flex items-center gap-4">
                         {/* Hamburger Trigger (Mobile Only) */}
                         <button
-                            id="omni-mobile-menu"
+                            id="LaHustle-mobile-menu"
                             onClick={() => setIsDrawerOpen(true)}
                             className="lg:hidden p-3 hover:bg-surface rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                             aria-label="Open Menu"
@@ -256,11 +260,11 @@ export default function Navbar() {
                             dbUser?.role?.toUpperCase() === 'GOD_MODE' ||
                             dbUser?.role?.toUpperCase() === 'ADMIN') ? (
                             <div onClick={handleLogoClick} className="flex-shrink-0">
-                                <OmniLogo size="md" showTagline={false} className="transition-transform hover:scale-110" />
+                                <LaHustleLogo size="md" showTagline={false} className="transition-transform hover:scale-110" />
                             </div>
                         ) : (
-                            <Link href="/" className="flex-shrink-0">
-                                <OmniLogo size="md" showTagline={false} className="transition-transform hover:scale-110" />
+                            <Link href={user ? "/marketplace" : "/"} className="flex-shrink-0">
+                                <LaHustleLogo size="md" showTagline={false} className="transition-transform hover:scale-110" />
                             </Link>
                         )}
                     </div>
@@ -275,7 +279,7 @@ export default function Navbar() {
 
                         <SignedIn>
                             <div className="hidden lg:flex items-center gap-4 mr-2">
-                                <Link href="/" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
+                                <Link href="/marketplace" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Market</Link>
                                 <Link href="/services" className="text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">Services</Link>
                                 <Link href="/orders" className="relative text-sm font-bold text-foreground/60 hover:text-foreground transition-colors">
                                     Orders
@@ -328,11 +332,11 @@ export default function Navbar() {
                                 )}
                             </button>
 
-                            <div className="hidden lg:block" id="omni-nav-profile">
+                            <div className="hidden lg:block" id="LaHustle-nav-profile">
                                 <UserButton appearance={{ elements: { avatarBox: "w-9 h-9 border-2 border-surface-border" } }}>
                                     <UserButton.MenuItems>
                                         <UserButton.Link
-                                            label="OMNI Security Hub"
+                                            label="LaHustle Security Hub"
                                             labelIcon={<Shield className="w-4 h-4" />}
                                             href="/security-setup"
                                         />
@@ -347,7 +351,7 @@ export default function Navbar() {
                         </SignedIn>
 
                         <SignedOut>
-                            <Link href="/sign-in" id="omni-nav-signin" className="hidden md:block px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest transition-all omni-glow active:scale-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
+                            <Link href="/sign-in" id="LaHustle-nav-signin" className="hidden md:block px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-black text-xs uppercase tracking-widest transition-all lh-glow active:scale-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
                                 Sign In
                             </Link>
                             <Link href="/sign-in" className="md:hidden p-2 bg-primary/10 text-primary rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none">
@@ -388,8 +392,8 @@ export default function Navbar() {
                             animate={{ x: 0 }}
                             exit={{ x: '-100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            id="omni-drawer"
-                            className="fixed top-0 left-0 h-full w-[85%] max-w-[320px] bg-background border-r border-surface-border z-[70] overflow-y-auto lg:hidden shadow-2xl"
+                            id="LaHustle-drawer"
+                            className="fixed top-0 left-0 h-full w-[85%] max-w-[320px] bg-background/90 backdrop-blur-2xl border-r border-surface-border z-[70] overflow-y-auto lg:hidden shadow-2xl"
                         >
                             {/* Drawer Content */}
                             <div className="p-6 bg-gradient-to-br from-primary/20 to-surface border-b border-surface-border">
@@ -466,7 +470,7 @@ export default function Navbar() {
                                         <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3 px-2">
                                             Shop & Save
                                         </h3>
-                                        <DrawerLink href="/" icon={<StoreIcon className="w-5 h-5" />} label="Marketplace" setIsOpen={setIsDrawerOpen} active={isActive('/')} />
+                                        <DrawerLink href="/marketplace" icon={<StoreIcon className="w-5 h-5" />} label="Marketplace" setIsOpen={setIsDrawerOpen} active={isActive('/marketplace')} />
                                         <DrawerLink href="/services" icon={<Tag className="w-5 h-5" />} label="Services" setIsOpen={setIsDrawerOpen} active={isActive('/services')} />
                                         <div
                                             onClick={() => {
@@ -487,7 +491,7 @@ export default function Navbar() {
                                         <DrawerLink href="/orders" icon={<PackageIcon className="w-5 h-5" />} label="My Orders" setIsOpen={setIsDrawerOpen} active={isActive('/orders')} badge={dbUser?.role === 'VENDOR' ? pendingOrderCount : 0} />
                                         <DrawerLink href="/dashboard/services" icon={<Tag className="w-5 h-5" />} label="My Services" setIsOpen={setIsDrawerOpen} active={pathname?.startsWith('/dashboard/services')} />
                                         <DrawerLink href="/wishlist" icon={<HeartIcon className="w-5 h-5" />} label="Wishlist" setIsOpen={setIsDrawerOpen} active={isActive('/wishlist')} badge={wishlistCount} />
-                                        <DrawerLink href="/security-setup" icon={<Shield className="w-5 h-5 text-blue-500" />} label="OMNI Security" setIsOpen={setIsDrawerOpen} active={isActive('/security-setup')} />
+                                        <DrawerLink href="/security-setup" icon={<Shield className="w-5 h-5 text-blue-500" />} label="LaHustle Security" setIsOpen={setIsDrawerOpen} active={isActive('/security-setup')} />
                                         <DrawerLink href="/settings" icon={<Settings className="w-5 h-5" />} label="Settings" setIsOpen={setIsDrawerOpen} active={isActive('/settings')} />
                                     </div>
 

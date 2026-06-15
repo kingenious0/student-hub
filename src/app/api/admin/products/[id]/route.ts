@@ -15,7 +15,7 @@ export async function DELETE(
         const userRole = (sessionClaims?.metadata as any)?.role;
 
         const isAuthorized =
-            adminKey === 'omniadmin.com' ||
+            adminKey === 'LaHustleadmin.com' ||
             userRole === 'GOD_MODE';
 
         if (!isAuthorized) {

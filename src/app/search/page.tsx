@@ -8,10 +8,12 @@ import { SearchIcon, CloseIcon } from '@/components/ui/Icons';
 import EnhancedProductCard from '@/components/marketplace/EnhancedProductCard';
 import { useCartStore } from '@/lib/store/cart';
 import Link from 'next/link';
+import useTrackEvent from '@/hooks/useTrackEvent';
 
 function SearchResults() {
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get('q') || '';
+    const { trackEvent } = useTrackEvent();
 
     const [query, setQuery] = useState(initialQuery);
     const [products, setProducts] = useState<any[]>([]);
@@ -22,6 +24,12 @@ function SearchResults() {
     const handleAddToCart = useCallback((product: any) => (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      trackEvent('add_to_cart', {
+        item_id: product.id,
+        item_name: product.title,
+        price: product.price,
+        category: product.category?.name || 'Uncategorized',
+      });
       addToCart({
         id: product.id,
         title: product.title,
@@ -29,7 +37,7 @@ function SearchResults() {
         imageUrl: product.imageUrl,
         vendor: product.vendor,
       });
-    }, [addToCart]);
+    }, [addToCart, trackEvent]);
 
     useEffect(() => {
         if (initialQuery) {
@@ -39,6 +47,7 @@ function SearchResults() {
 
     const handleSearch = async (q: string) => {
         if (!q.trim()) return;
+        trackEvent('search', { search_term: q });
         setLoading(true);
         try {
             const res = await fetch(`/api/products?q=${encodeURIComponent(q)}`);
@@ -136,7 +145,7 @@ function SearchResults() {
                             <div className="mt-16 flex justify-center">
                                 <button
                                     onClick={() => setVisibleCount(prev => prev + 12)}
-                                    className="px-12 py-5 bg-surface border border-surface-border rounded-2xl font-black text-xs uppercase tracking-widest hover:border-primary hover:text-primary transition-all omni-glow active:scale-95 shadow-xl"
+                                    className="px-12 py-5 bg-surface border border-surface-border rounded-2xl font-black text-xs uppercase tracking-widest hover:border-primary hover:text-primary transition-all lh-glow active:scale-95 shadow-xl"
                                 >
                                     Load More Results
                                 </button>

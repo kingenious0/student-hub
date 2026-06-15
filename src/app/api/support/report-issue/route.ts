@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
 import { sendOrderIssueEmail } from '@/lib/email';
-import { sendSMS } from '@/lib/sms/wigal';
+import { sendSMS } from '@/lib/sms';
 
 export async function POST(req: NextRequest) {
     try {
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
         // Send SMS to Admin
         const adminPhone = process.env.ADMIN_SUPPORT_PHONE || '0597626090';
         if (adminPhone) {
-            const smsText = `OMNI ESCROW ISSUE: Order #${order.id.slice(0, 8).toUpperCase()} has been flagged by vendor ${vendor.shopName || vendor.name}. Check your email.`;
+            const smsText = `LaHustle ESCROW ISSUE: Order #${order.id.slice(0, 8).toUpperCase()} has been flagged by vendor ${vendor.shopName || vendor.name}. Check your email.`;
             await sendSMS(adminPhone, smsText);
         }
 

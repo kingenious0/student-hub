@@ -50,6 +50,12 @@ export default function VerifyIdentityPage() {
 
         if (data.error) throw new Error(data.error)
 
+        if (!data.onboarded) {
+          console.warn('[SECURITY] User is not onboarded yet. Redirecting to onboarding.')
+          router.push('/onboarding')
+          return
+        }
+
         setHasPasskey(data.hasPasskey)
         setHasPin(!!data.securityPin)
 
@@ -183,7 +189,7 @@ export default function VerifyIdentityPage() {
               )}
             </div>
             <h1 className="text-3xl font-black uppercase tracking-tighter italic">
-              {status === 'success' ? `Welcome Back` : 'Omni Secure'}
+              {status === 'success' ? `Welcome Back` : 'LaHustle Secure'}
             </h1>
             <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-[0.3em] mt-3 italic">
               {status === 'checking' && 'Initializing Vault Access...'}

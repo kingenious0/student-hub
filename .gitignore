@@ -57,3 +57,21 @@ certificates
 autopilot.log
 .autopilot.pid
 .vscode/
+.contact-bulk/
+.agent/
+.agents/
+
+# IDE configurations
+.idea/
+
+# OS system files
+Thumbs.db
+desktop.ini
+
+# SQLite local database files
+*.db
+*.sqlite
+*.sqlite-journal
+
+# Expo cache
+.expo/

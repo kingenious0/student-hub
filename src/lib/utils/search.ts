@@ -110,7 +110,11 @@ export function applyFilters<T extends Record<string, any>>(
 
       if (key === 'minPrice' && (item.price || 0) < value) return false;
       if (key === 'maxPrice' && (item.price || 0) > value) return false;
-      if (key === 'category' && item.categoryId !== value) return false;
+      if (key === 'category') {
+        const itemCategory = item.category as { slug?: string; name?: string } | undefined;
+        if (item.categoryId !== value && itemCategory?.slug !== value) return false;
+        continue;
+      }
       if (key === 'inStock' && value === true && !item.isInStock) return false;
 
       // Custom filter
@@ -146,7 +150,7 @@ export function paginate<T>(
  * Search products with all filters and sorting
  */
 export function searchProducts<
-  T extends { price?: number; createdAt?: string | Date; rating?: number; salesCount?: number; title?: string; description?: string; categoryId?: string }
+  T extends { price?: number; createdAt?: string | Date; rating?: number; salesCount?: number; title?: string; description?: string; categoryId?: string; category?: { name: string; slug: string } }
 >(items: T[], query: SearchQuery): SearchResult<T> {
   let results = [...items];
 
@@ -159,7 +163,7 @@ export function searchProducts<
           query.q || '',
           item.title || '',
           item.description || '',
-          item.categoryId || ''
+          item.category?.name || item.categoryId || ''
         ),
       }))
       .filter(x => x.score > 0)

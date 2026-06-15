@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { auth } from '@clerk/nextjs/server';
-import { revalidateTag } from 'next/cache';
+import { revalidateTag as revalidateCacheTag } from 'next/cache';
 import { sanitizeHtml } from '@/lib/security/validation';
 
 export async function GET(
@@ -78,7 +78,6 @@ export async function PATCH(
         const { id } = await params;
         const body = await request.json();
 
-        // Check verification
         const existing = await prisma.product.findUnique({
             where: { id },
             include: { vendor: true }
@@ -105,8 +104,7 @@ export async function PATCH(
             }
         });
 
-        // CRITICAL: Invalidate Cache
-        revalidateTag('products');
+        try { (revalidateCacheTag as any)('products'); } catch {}
 
         return NextResponse.json({ success: true, product: updated });
     } catch (error) {
@@ -138,8 +136,7 @@ export async function DELETE(
 
         await prisma.product.delete({ where: { id } });
 
-        // CRITICAL: Invalidate Cache
-        revalidateTag('products');
+        try { (revalidateCacheTag as any)('products'); } catch {}
 
         return NextResponse.json({ success: true });
     } catch (error) {

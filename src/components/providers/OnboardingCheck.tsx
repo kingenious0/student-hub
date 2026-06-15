@@ -20,7 +20,7 @@ export default function OnboardingCheck() {
         }
 
         // Skip check for onboarding and admin pages
-        if (pathname === '/onboarding' || pathname === '/command-center-z' || pathname === '/omni-gate') {
+        if (pathname === '/onboarding' || pathname === '/command-center-z' || pathname === '/LaHustle-gate') {
             return;
         }
 
@@ -37,7 +37,7 @@ export default function OnboardingCheck() {
                 const profileData = await res.json();
                 console.log('[DEBUG] OnboardingCheck - Profile data received:', profileData);
 
-                if (profileData.onboarded === false) {
+                if (profileData.onboarded !== true) {
                     console.log('[DEBUG] OnboardingCheck - Not onboarded. Redirecting to /onboarding');
                     router.push('/onboarding');
                 } else {

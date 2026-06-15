@@ -29,6 +29,11 @@ export const env = {
   WIGAL_API_KEY: process.env.WIGAL_API_KEY,
   WIGAL_USERNAME: process.env.WIGAL_USERNAME,
 
+  // SMS (mNotify)
+  MNOTIFY_API_KEY: process.env.MNOTIFY_API_KEY,
+  MNOTIFY_SENDER_ID: process.env.MNOTIFY_SENDER_ID,
+
+
   // Location Services (Radar)
   RADAR_SECRET_KEY: process.env.RADAR_SECRET_KEY,
   RADAR_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_RADAR_PUBLISHABLE_KEY,

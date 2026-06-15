@@ -1,4 +1,4 @@
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
+const VAPID_PUBLIC_KEY = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').replace(/['"]/g, '');
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -32,6 +32,19 @@ export async function subscribeUserToPush(): Promise<boolean> {
 
     const existingSubscription = await registration.pushManager.getSubscription();
     if (existingSubscription) {
+      const subJSON = existingSubscription.toJSON();
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: existingSubscription.endpoint,
+          keys: {
+            p256dh: subJSON.keys!.p256dh,
+            auth: subJSON.keys!.auth,
+          },
+          userAgent: navigator.userAgent,
+        }),
+      });
       return true;
     }
 

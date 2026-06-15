@@ -23,13 +23,40 @@ export function useSecurityCheck() {
     const checkSecurity = async () => {
       if (!isLoaded) return
       
-      // Skip security check for public routes
-      const publicRoutes = ["/", "/sign-in", "/sign-up", "/security-setup"]
-      if (publicRoutes.some(route => pathname.startsWith(route))) {
+      // Public routes — guests are always allowed here without redirecting to sign-in.
+      // Keep this in sync with the middleware's isPublicRoute list.
+      const publicRoutePrefixes = [
+        "/",
+        "/sign-in",
+        "/sign-up",
+        "/security-setup",
+        "/marketplace",
+        "/products",
+        "/cart",
+        "/checkout",
+        "/order-success",
+        "/wishlist",
+        "/stories",
+        "/search",
+        "/category",
+        "/become-vendor",
+        "/vendor",
+        "/verify",
+        "/LaHustle-gate",
+        "/command-center-z",
+        "/api/marketplace",
+        "/api/products",
+        "/api/category",
+        "/api/system",
+        "/api/security",
+      ]
+      if (publicRoutePrefixes.some(prefix => pathname === prefix || pathname.startsWith(prefix + "/"))) {
         setLoading(false)
         return
       }
       
+      // If the user is not logged in and trying to access a protected route, redirect to sign-in.
+      // Note: guest users browsing public routes are handled above and will never reach this.
       if (!user) {
         router.push("/sign-in")
         return

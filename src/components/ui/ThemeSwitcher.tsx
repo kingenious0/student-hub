@@ -14,18 +14,18 @@ export default function ThemeSwitcher() {
             <div className="relative w-4 h-4 overflow-hidden">
                 <motion.div
                     initial={false}
-                    animate={{ y: theme === 'omni' ? 0 : -20 }}
+                    animate={{ y: theme === 'lahustle' ? 0 : -20 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     className="flex flex-col items-center"
                 >
-                    {/* Moon Icon (Dark/Omni) */}
+                    {/* Moon Icon (Dark/LaHustle) */}
                     <span className="text-xs h-5 flex items-center justify-center">🌙</span>
                     {/* Sun Icon (Light/Standard) */}
                     <span className="text-xs h-5 flex items-center justify-center text-orange-500">☀️</span>
                 </motion.div>
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-foreground/60 group-hover:text-foreground transition-colors">
-                {theme === 'omni' ? 'Dark' : 'Light'}
+                {theme === 'lahustle' ? 'Dark' : 'Light'}
             </span>
         </button>
     );

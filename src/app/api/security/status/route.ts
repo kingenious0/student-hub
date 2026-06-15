@@ -19,7 +19,8 @@ export async function GET(req: NextRequest) {
         hasPasskey: true,
         securityPin: true,
         securitySetupComplete: true,
-        lastSecurityCheck: true
+        lastSecurityCheck: true,
+        onboarded: true
       }
     })
     

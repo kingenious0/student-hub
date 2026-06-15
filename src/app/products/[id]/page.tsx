@@ -17,6 +17,8 @@ import ReviewList from '@/components/reviews/ReviewList';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import ProductRecommendations from '@/components/marketplace/ProductRecommendations';
 import Link from 'next/link';
+import { sanitizeImageUrl } from '@/lib/utils';
+
 
 // Custom Star Icon
 const StarIcon = ({ className, fill }: { className?: string, fill?: boolean }) => (
@@ -33,6 +35,7 @@ export default function ProductDetailsPage() {
     const addToCart = useCartStore((state) => state.addToCart);
     const cartItems = useCartStore((state) => state.items);
     const [quantity, setQuantity] = useState(1);
+    const [isDescExpanded, setIsDescExpanded] = useState(false);
     const { isInWishlist, addItem, removeItem } = useWishlistStore();
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [reviewListKey, setReviewListKey] = useState(0);
@@ -40,7 +43,7 @@ export default function ProductDetailsPage() {
     const viewTrackedRef = useRef(false);
 
     // Initial Auth Check
-    const isGhostAdmin = typeof window !== 'undefined' && localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
+    const isGhostAdmin = typeof window !== 'undefined' && localStorage.getItem('LH_GOD_MODE_UNLOCKED') === 'true';
 
     // Track product view
     useEffect(() => {
@@ -92,16 +95,34 @@ export default function ProductDetailsPage() {
     const rating = product.averageRating || 0;
     const reviewCount = product.totalReviews || 0;
 
+    const slugify = (text: string) => {
+        return text
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-');
+    };
+
     // Image Gallery Setup
-    // If 'images' array exists, map it. fallback to single imageUrl.
-    const galleryImages = product.images && product.images.length > 0
-        ? product.images.map((url: string) => ({ original: url, thumbnail: url }))
-        : [{ original: product.imageUrl, thumbnail: product.imageUrl }];
+    // Filter out invalid/empty images to prevent gallery crashes
+    const rawImages = (product.images || [])
+        .filter((url: any) => typeof url === 'string' && url.trim() !== '')
+        .map((url: string) => sanitizeImageUrl(url));
+    const mainImageUrl = typeof product.imageUrl === 'string' && product.imageUrl.trim() !== '' ? sanitizeImageUrl(product.imageUrl) : null;
+
+    const galleryImages = rawImages.length > 0
+        ? rawImages.map((url: string) => ({ original: url, thumbnail: url }))
+        : (mainImageUrl ? [{ original: mainImageUrl, thumbnail: mainImageUrl }] : []);
 
     // If main image isn't in array (legacy), add it to front
-    if (product.imageUrl && !product.images?.includes(product.imageUrl) && product.images?.length > 0) {
-        galleryImages.unshift({ original: product.imageUrl, thumbnail: product.imageUrl });
+    if (mainImageUrl && !rawImages.includes(mainImageUrl) && rawImages.length > 0) {
+        galleryImages.unshift({ original: mainImageUrl, thumbnail: mainImageUrl });
     }
+
+    const validGalleryImages = galleryImages.filter((img: any) => typeof img.original === 'string' && img.original.trim() !== '');
+
 
     // Modifier helpers
     const hasModifiers = product.hasModifiers && product.modifierGroups?.length > 0;
@@ -142,23 +163,20 @@ export default function ProductDetailsPage() {
     };
 
     const handleAddToCart = () => {
-        if (!user) {
-            router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
-            return;
-        }
-
         const modifiers = getSelectedModifiersList();
+
 
         addToCart({
             id: product.id,
             title: product.title,
             price: currentPrice,
-            imageUrl: product.imageUrl || '',
+            imageUrl: sanitizeImageUrl(product.imageUrl) || '',
             vendorId: product.vendorId,
             vendorName: product.vendor.shopName || product.vendor.name,
             flashSaleId: product.flashSale?.isActive ? 'active' : undefined,
             selectedModifiers: modifiers,
         }, quantity);
+
 
         toast.success(`${product.title} added to cart`, {
             description: modifiers.length > 0
@@ -200,7 +218,7 @@ export default function ProductDetailsPage() {
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => router.push('/cart')}
+                            onClick={() => window.dispatchEvent(new Event('lh_open_cart_drawer'))}
                             className="relative"
                         >
                             <span className="mr-2">Cart</span>
@@ -218,19 +236,26 @@ export default function ProductDetailsPage() {
                     {/* LEFT COLUMN: Immersive Gallery */}
                     <div className="relative">
                         <div className="sticky top-32 space-y-8">
-                            <div className="relative rounded-[2rem] overflow-hidden bg-surface shadow-2xl shadow-foreground/5 border border-foreground/5 group" style={{ maxHeight: '70vh' }}>
-                                <ImageGallery
-                                    items={galleryImages}
-                                    showPlayButton={false}
-                                    showFullscreenButton={false}
-                                    showNav={galleryImages.length > 1}
-                                    autoPlay={false}
-                                    infinite={true}
-                                    showThumbnails={galleryImages.length > 1}
-                                    isRTL={false}
-                                    thumbnailPosition="bottom"
-                                    additionalClass="premium-gallery"
-                                />
+                            <div className="relative rounded-[2rem] overflow-hidden bg-surface shadow-2xl shadow-foreground/5 border border-foreground/5 group w-full aspect-square md:aspect-[4/3] lg:aspect-square flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px]" style={{ maxHeight: '70vh' }}>
+                                {validGalleryImages.length > 0 ? (
+                                    <ImageGallery
+                                        items={validGalleryImages}
+                                        showPlayButton={false}
+                                        showFullscreenButton={false}
+                                        showNav={validGalleryImages.length > 1}
+                                        autoPlay={false}
+                                        infinite={true}
+                                        showThumbnails={validGalleryImages.length > 1}
+                                        isRTL={false}
+                                        thumbnailPosition="bottom"
+                                        additionalClass="premium-gallery w-full h-full"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full min-h-[300px] flex flex-col items-center justify-center bg-surface-hover/10 text-foreground/30 p-8">
+                                        <span className="text-7xl mb-4 select-none">{product.category?.icon || '📦'}</span>
+                                        <span className="text-xs font-bold uppercase tracking-widest">No Image Preview Available</span>
+                                    </div>
+                                )}
                                 {isOutOfStock && (
                                     <div className="absolute top-6 right-6 z-20">
                                         <span className="px-4 py-2 bg-red-500 text-white text-xs font-black uppercase tracking-widest rounded-full shadow-lg shadow-red-500/20 backdrop-blur-md">
@@ -282,7 +307,7 @@ export default function ProductDetailsPage() {
                             <div className="flex items-center gap-2 text-sm">
                                 <span className="opacity-60">Sold by</span>
                                 <Link
-                                    href={`/vendor/${product.vendor.id}`}
+                                    href={`/vendor/${product.vendor.shopName ? slugify(product.vendor.shopName) : product.vendor.id}`}
                                     className="font-bold border-b border-primary hover:text-primary transition-colors"
                                 >
                                     {product.vendor.shopName || product.vendor.name}
@@ -495,12 +520,9 @@ export default function ProductDetailsPage() {
                                     {/* Instant Checkout */}
                                     <button
                                         onClick={() => {
-                                            if (!user) {
-                                                router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
-                                                return;
-                                            }
                                             const modifiers = getSelectedModifiersList();
-                                            sessionStorage.setItem('omni_checkout_modifiers', JSON.stringify({
+
+                                            sessionStorage.setItem('LaHustle_checkout_modifiers', JSON.stringify({
                                                 productId: product.id,
                                                 quantity,
                                                 selectedModifiers: modifiers,
@@ -513,6 +535,20 @@ export default function ProductDetailsPage() {
                                     >
                                         Instant Checkout
                                     </button>
+
+                                    {cartItems.length > 0 && (
+                                        <div className="mt-4 p-4 rounded-2xl bg-primary/10 border border-primary/20 text-center animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                            <p className="text-xs font-bold text-foreground mb-2">
+                                                You have <span className="text-primary font-black">{cartItems.length}</span> item{cartItems.length > 1 ? 's' : ''} in your cart.
+                                            </p>
+                                            <button
+                                                onClick={() => window.dispatchEvent(new Event('lh_open_cart_drawer'))}
+                                                className="w-full h-10 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-wider text-[10px] hover:scale-[1.02] active:scale-95 transition-all shadow-md"
+                                            >
+                                                Go to Cart & Checkout All Items →
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Trust Indicators */}
@@ -523,7 +559,7 @@ export default function ProductDetailsPage() {
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-[10px] font-black uppercase tracking-widest opacity-50">Guarantee</span>
-                                            <span className="text-xs font-bold">Omni Secure™</span>
+                                            <span className="text-xs font-bold">LaHustle Secure™</span>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
@@ -556,12 +592,29 @@ export default function ProductDetailsPage() {
 
                                 <AnimatePresence mode="wait">
                                     <TabsContent key="details" value="details" className="mt-8 focus:outline-none">
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="prose prose-lg prose-neutral prose-invert max-w-none leading-relaxed font-light"
-                                            dangerouslySetInnerHTML={{ __html: product.description || '<p class="opacity-50 italic">No description available.</p>' }}
-                                        />
+                                        <div className="relative">
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className={`prose prose-lg prose-neutral prose-invert max-w-none leading-relaxed font-light transition-all duration-300 ${
+                                                    !isDescExpanded ? 'max-h-[220px] overflow-hidden' : ''
+                                                }`}
+                                                dangerouslySetInnerHTML={{ __html: product.description || '<p class="opacity-50 italic">No description available.</p>' }}
+                                            />
+                                            {!isDescExpanded && product.description && product.description.length > 150 && (
+                                                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                                            )}
+                                        </div>
+                                        {product.description && product.description.length > 150 && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setIsDescExpanded(!isDescExpanded)}
+                                                className="mt-4 font-black uppercase tracking-widest text-xs text-primary hover:text-primary/80 p-0 h-auto hover:bg-transparent"
+                                            >
+                                                {isDescExpanded ? 'View Less ▲' : 'View More ▼'}
+                                            </Button>
+                                        )}
                                     </TabsContent>
 
                                     <TabsContent key="specs" value="specs" className="mt-8 focus:outline-none">

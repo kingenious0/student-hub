@@ -40,14 +40,14 @@ export default function CheckoutForm({
     // Restore modifiers from sessionStorage (set by Instant Checkout on product page)
     useEffect(() => {
         try {
-            const stored = sessionStorage.getItem('omni_checkout_modifiers');
+            const stored = sessionStorage.getItem('LaHustle_checkout_modifiers');
             if (stored) {
                 const data = JSON.parse(stored);
                 if (data.productId === productId) {
                     setSelectedModifiers(data.selectedModifiers || []);
                     setQuantity(data.quantity || 1);
                 }
-                sessionStorage.removeItem('omni_checkout_modifiers');
+                sessionStorage.removeItem('LaHustle_checkout_modifiers');
             }
         } catch {}
     }, [productId]);
@@ -103,11 +103,7 @@ export default function CheckoutForm({
     };
 
     const handleCheckout = async () => {
-        const PaystackPop = (window as unknown as {
-            PaystackPop: {
-                setup: (options: unknown) => { openIframe: () => void }
-            }
-        }).PaystackPop;
+        const PaystackPop = (window as any).PaystackPop;
 
         if (!PaystackPop) {
             toast.error('Payment system (Paystack) not loaded yet. Please wait a moment or refresh.');
@@ -147,10 +143,11 @@ export default function CheckoutForm({
             const data = await res.json();
 
             if (data.success) {
-                const handler = PaystackPop.setup({
+                const paystack = new PaystackPop();
+                paystack.newTransaction({
                     key: paystackPublicKey,
-                    email: data.email || email,
-                    amount: total * 100,
+                    email: data.email || email || 'guest@LaHustle-marketplace.com',
+                    amount: Math.round(total * 100),
                     currency: 'GHS',
                     ref: data.paystackRef,
                     metadata: {
@@ -162,14 +159,13 @@ export default function CheckoutForm({
                             }
                         ]
                     },
-                    callback: function (response: { reference: string }) {
+                    onSuccess: function (response: { reference: string }) {
                         onSuccess(response);
                     },
-                    onClose: function () {
+                    onCancel: function () {
                         onClose();
                     }
                 });
-                handler.openIframe();
             } else {
                 toast.error(`Failed to initialize order: ${data.error}`);
                 setIsCreatingOrder(false);
@@ -291,12 +287,14 @@ export default function CheckoutForm({
                     <span className="text-[10px] font-black text-foreground/30 uppercase tracking-widest">Quantity</span>
                     <div className="flex items-center bg-background rounded-xl p-1 border border-surface-border">
                         <button
+                            type="button"
                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
                             aria-label="Decrease quantity"
                             className="w-11 h-11 rounded-lg bg-foreground/5 border border-surface-border flex items-center justify-center hover:bg-foreground/10 text-foreground font-black transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                         >-</button>
                         <span className="w-12 text-center text-foreground font-black">{quantity}</span>
                         <button
+                            type="button"
                             onClick={() => setQuantity(quantity + 1)}
                             aria-label="Increase quantity"
                             className="w-11 h-11 rounded-lg bg-foreground/5 border border-surface-border flex items-center justify-center hover:bg-foreground/10 text-foreground font-black transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -334,7 +332,7 @@ export default function CheckoutForm({
             <button
                 type="submit"
                 disabled={isCreatingOrder}
-                className="w-full py-6 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 omni-glow mb-6 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+                className="w-full py-6 bg-primary hover:brightness-110 disabled:opacity-50 text-primary-foreground rounded-[1.5rem] font-black text-xs uppercase tracking-[0.3em] transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 lh-glow mb-6 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
             >
                 {isCreatingOrder ? (
                     'TRANSMITTING PROTOCOL...'
@@ -345,7 +343,7 @@ export default function CheckoutForm({
 
             <div className="text-center p-4 bg-foreground/5 rounded-2xl border border-surface-border">
                 <p className="text-[9px] font-black text-foreground/40 uppercase tracking-[0.3em]">
-                    🔒 Protected by OMNI Escrow Shield
+                    🔒 Protected by LaHustle Escrow Shield
                 </p>
             </div>
         </form>

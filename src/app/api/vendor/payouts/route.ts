@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
                 
                 // 1. Create Recipient
                 const recipientCode = await createTransferRecipient(
-                    vendor.name || 'OMNI Vendor',
+                    vendor.name || 'LaHustle Vendor',
                     momoNumber,
                     bankCode
                 );
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
                 const transfer = await initiateTransfer(
                     requestAmount,
                     recipientCode,
-                    `OMNI Payout to ${vendor.name || 'Vendor'}`
+                    `LaHustle Payout to ${vendor.name || 'Vendor'}`
                 );
                 
                 console.log(`[PayoutInstant] Paystack success! Code: ${transfer.transfer_code}, Status: ${transfer.status}`);

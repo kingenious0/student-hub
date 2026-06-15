@@ -6,7 +6,7 @@ export async function POST(request: Request) {
         const { password } = await request.json();
 
         // Verify the God Mode password
-        if (password !== 'omniadmin.com') {
+        if (password !== 'LaHustleadmin.com') {
             return NextResponse.json({ error: 'Invalid password' }, { status: 403 });
         }
 
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
         // Set cookie using Next.js cookies API (more reliable)
         const cookieStore = await cookies();
-        cookieStore.set('OMNI_BOSS_TOKEN', 'AUTHORIZED_ADMIN', {
+        cookieStore.set('LH_BOSS_TOKEN', 'AUTHORIZED_ADMIN', {
             path: '/',
             maxAge: 604800, // 7 days
             sameSite: 'lax',

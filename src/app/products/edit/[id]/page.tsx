@@ -238,7 +238,7 @@ export default function EditProductPage() {
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="flex-1 px-6 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50 omni-glow shadow-lg shadow-primary/20"
+                                className="flex-1 px-6 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50 lh-glow shadow-lg shadow-primary/20"
                             >
                                 {submitting ? 'Saving...' : 'Save Changes'}
                             </button>

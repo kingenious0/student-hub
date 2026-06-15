@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useUser } from '@clerk/nextjs';
 import { useModal } from '@/context/ModalContext';
-import { OmniLogo } from '@/components/ui/OmniLogo';
+import { LaHustleLogo } from '@/components/ui/LaHustleLogo';
 import { toast } from 'sonner';
 
 export default function OnboardingPage() {
@@ -14,8 +14,35 @@ export default function OnboardingPage() {
     const [loading, setLoading] = useState(false);
     const [name, setName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [localGuestFound, setLocalGuestFound] = useState(false);
+    const [dbGuestFound, setDbGuestFound] = useState(false);
 
     const router = useRouter();
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const hasGuest = localStorage.getItem('lh_has_guest_checkout') === 'true';
+            setLocalGuestFound(hasGuest);
+        }
+    }, []);
+
+    useEffect(() => {
+        const cleanPhone = phoneNumber.replace(/\s+/g, '');
+        if (cleanPhone.length >= 9) {
+            const checkGuestDb = async () => {
+                try {
+                    const res = await fetch(`/api/auth/check-guest?phone=${encodeURIComponent(cleanPhone)}`);
+                    const data = await res.json();
+                    setDbGuestFound(data.hasGuestOrder);
+                } catch (e) {
+                    console.error("Check guest orders failed", e);
+                }
+            };
+            checkGuestDb();
+        } else {
+            setDbGuestFound(false);
+        }
+    }, [phoneNumber]);
 
     useEffect(() => {
         if (isLoaded && user) {
@@ -46,17 +73,17 @@ export default function OnboardingPage() {
             }
 
             if (data.onboarded) {
-                // Already onboarded - Proceed to Security Check
-                window.location.href = '/security-setup';
+                // Already onboarded - Proceed to Home
+                window.location.href = '/';
             }
         } catch (error) {
             console.error('Status check failed');
         }
     };
-
+ 
     const handleComplete = async () => {
         if (!name) return;
-
+ 
         setLoading(true);
         try {
             const res = await fetch('/api/auth/onboard', {
@@ -64,9 +91,9 @@ export default function OnboardingPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, phoneNumber }),
             });
-
+ 
             if (res.ok) {
-                window.location.href = '/security-setup';
+                window.location.href = '/';
             } else {
                 modal.alert('The onboarding protocol failed to initialize. Please verify your data and try again.', 'Handshake Failure', 'error');
             }
@@ -90,12 +117,12 @@ export default function OnboardingPage() {
                 >
                     {/* Logo */}
                     <div className="flex justify-center mb-6">
-                        <OmniLogo size="xl" showTagline={true} />
+                        <LaHustleLogo size="xl" showTagline={true} />
                     </div>
 
                     {/* Header */}
                     <div>
-                        <h1 className="text-5xl font-black uppercase tracking-tighter mb-3">Welcome to OMNI</h1>
+                        <h1 className="text-5xl font-black uppercase tracking-tighter mb-3">Welcome to LaHustle</h1>
                         <p className="text-foreground/60 font-bold text-sm">
                             Let's get you started in seconds
                         </p>
@@ -131,9 +158,11 @@ export default function OnboardingPage() {
                                 placeholder="e.g. 055 123 4567"
                                 required
                             />
-                            <p className="text-[10px] text-amber-500 font-bold mt-1.5">
-                                ⚠️ Use the same number you used for guest checkout to recover your orders
-                            </p>
+                            {(localGuestFound || dbGuestFound) && (
+                                <p className="text-[10px] text-amber-500 font-bold mt-1.5">
+                                    ⚠️ Use the same number you used for guest checkout to recover your orders
+                                </p>
+                            )}
                         </div>
 
                         {/* Submit Button */}
@@ -150,7 +179,7 @@ export default function OnboardingPage() {
 
                         {/* Info Text */}
                         <p className="text-xs text-foreground/40 text-center mt-4">
-                            You can become a vendor later by clicking "Sell on Omni"
+                            You can become a vendor later by clicking "Sell on LaHustle"
                         </p>
                     </div>
                 </motion.div>

@@ -1,13 +1,13 @@
 {
-  "name": "OMNI Student Marketplace",
-  "short_name": "OMNI",
+  "name": "LaHustle Student Marketplace",
+  "short_name": "LaHustle",
   "description": "The everything store for university students",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#050505",
-  "theme_color": "#10B981",
+  "theme_color": "#39FF14",
   "orientation": "portrait-primary",
   "categories": ["education", "shopping"],
   "lang": "en-US",
@@ -44,7 +44,7 @@
       "sizes": "1290x2796",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "OMNI Student Marketplace"
+      "label": "LaHustle Student Marketplace"
     }
   ]
 }

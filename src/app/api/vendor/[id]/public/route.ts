@@ -7,9 +7,31 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
+        const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
+        let vendorId = id;
+
+        if (!isUuid) {
+            const activeVendors = await prisma.user.findMany({
+                where: { vendorStatus: 'ACTIVE' },
+                select: { id: true, shopName: true }
+            });
+            const slugify = (text: string) => {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/[^\w\-]+/g, '')
+                    .replace(/\-\-+/g, '-');
+            };
+            const matched = activeVendors.find(v => v.shopName && slugify(v.shopName) === id.toLowerCase());
+            if (matched) {
+                vendorId = matched.id;
+            }
+        }
 
         const vendor = await prisma.user.findUnique({
-            where: { id },
+            where: { id: vendorId },
             select: {
                 id: true,
                 name: true,
@@ -56,8 +78,8 @@ export async function GET(
                             select: {
                                 id: true,
                                 name: true,
-                                required: true,
-                                options: {
+                                isRequired: true,
+                                modifiers: {
                                     select: {
                                         id: true,
                                         name: true,
@@ -81,7 +103,7 @@ export async function GET(
         }
 
         const now = new Date();
-        const products = vendor.products.map(p => {
+        const products = (vendor as any).products.map((p: any) => {
             const isFlashSaleActive = p.flashSale && now >= p.flashSale.startTime && now <= p.flashSale.endTime && p.flashSale.stockSold < p.flashSale.stockLimit;
 
             return {

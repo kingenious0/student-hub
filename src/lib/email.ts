@@ -8,7 +8,7 @@ interface EmailPayload {
 
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 const API_KEY = process.env.BREVO_API_KEY;
-const SENDER = { name: 'OMNI', email: 'noreply@omni.upsa.edu.gh' };
+const SENDER = { name: 'LaHustle', email: 'noreply@LaHustle.upsa.edu.gh' };
 
 async function sendEmail(payload: EmailPayload) {
     if (!API_KEY) {
@@ -47,19 +47,19 @@ export async function sendOrderConfirmation(studentEmail: string, orderGroupCoun
     const html = `
         <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #4F46E5;">Order Confirmed! 🚀</h1>
-            <p>Thanks for shopping on OMNI.</p>
+            <p>Thanks for shopping on LaHustle.</p>
             <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
                 <p style="margin: 0; font-weight: bold;">Total Paid: ₵${totalAmount.toFixed(2)}</p>
                 <p style="margin: 5px 0 0 0; font-size: 0.9em;">Includes ${orderGroupCount} separate shipments.</p>
             </div>
             <p>Your orders have been sent to the respective vendors. You will receive notifications when they are ready.</p>
-            <a href="https://omni-student.com/orders" style="display: inline-block; background: #000; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Orders</a>
+            <a href="https://LaHustle-student.com/orders" style="display: inline-block; background: #000; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Orders</a>
         </div>
     `;
 
     await sendEmail({
         to: studentEmail,
-        subject: 'OMNI Receipt: Your order is confirmed',
+        subject: 'LaHustle Receipt: Your order is confirmed',
         htmlContent: html
     });
 }
@@ -70,13 +70,13 @@ export async function sendVendorNewOrderAlert(vendorEmail: string, orderId: stri
             <h2 style="color: #10B981;">New Order Received! 🔔</h2>
             <p>You have a new order (#${orderId.slice(0, 8)}) with ${itemCount} items.</p>
             <p>Please log in to your dashboard to accept and process it.</p>
-            <a href="https://omni-student.com/dashboard/vendor" style="display: inline-block; background: #000; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Open Dashboard</a>
+            <a href="https://LaHustle-student.com/dashboard/vendor" style="display: inline-block; background: #000; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Open Dashboard</a>
         </div>
     `;
 
     await sendEmail({
         to: vendorEmail,
-        subject: '🔔 New OMNI Order Alert',
+        subject: '🔔 New LaHustle Order Alert',
         htmlContent: html
     });
 }
@@ -107,16 +107,16 @@ export async function sendSupportTicketEmail({
                 </div>
             </div>
             <div style="font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 15px; text-align: center; text-transform: uppercase;">
-                Sent via OMNI Support Engine • System Notification
+                Sent via LaHustle Support Engine • System Notification
             </div>
         </div>
     `;
 
-    const adminEmail = process.env.ADMIN_SUPPORT_EMAIL || 'omnighana@gmail.com';
+    const adminEmail = process.env.ADMIN_SUPPORT_EMAIL || 'LaHustleghana@gmail.com';
 
     await sendEmail({
         to: adminEmail,
-        subject: `[OMNI SUPPORT] ${subject}`,
+        subject: `[LaHustle SUPPORT] ${subject}`,
         htmlContent: html
     });
 }
@@ -150,16 +150,16 @@ export async function sendOrderIssueEmail({
                 </div>
             </div>
             <div style="font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 15px; text-align: center; text-transform: uppercase;">
-                OMNI Security Escrow Hold Protocol Activated
+                LaHustle Security Escrow Hold Protocol Activated
             </div>
         </div>
     `;
 
-    const adminEmail = process.env.ADMIN_SUPPORT_EMAIL || 'omnighana@gmail.com';
+    const adminEmail = process.env.ADMIN_SUPPORT_EMAIL || 'LaHustleghana@gmail.com';
 
     await sendEmail({
         to: adminEmail,
-        subject: `⚠️ [OMNI ESCROW ISSUE] Order #${orderId.slice(0, 8).toUpperCase()}`,
+        subject: `⚠️ [LaHustle ESCROW ISSUE] Order #${orderId.slice(0, 8).toUpperCase()}`,
         htmlContent: html
     });
 }

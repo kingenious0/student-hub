@@ -63,6 +63,8 @@ interface Order {
         email: string;
         phoneNumber: string | null;
     };
+    fulfillmentType: string;
+    fulfillmentNote: string | null;
     vendorId: string;
     runnerId: string | null;
     pickupCode: string | null;
@@ -132,7 +134,7 @@ export default function VendorOrdersPage() {
     // Sync SSE orders into local state
     useEffect(() => {
         if (streamOrders.length > 0) {
-            setOrders(streamOrders);
+            setOrders(streamOrders as any);
             setConnected(true);
         }
     }, [streamOrders]);
@@ -453,9 +455,14 @@ export default function VendorOrdersPage() {
                                                 <TableCell className="font-mono text-xs font-medium">#{order.id.slice(0, 8)}</TableCell>
                                                 <TableCell className="text-muted-foreground text-xs">{formatDate(order.createdAt)}</TableCell>
                                                 <TableCell>
-                                                    <div className="flex flex-col">
+                                                    <div className="flex flex-col gap-1">
                                                         <span className="font-medium text-sm">{order.student.name}</span>
                                                         <span className="text-xs text-muted-foreground">{order.student.email}</span>
+                                                        {order.fulfillmentNote && (
+                                                            <div className="text-[10px] mt-1 bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-md w-fit max-w-[220px] truncate font-bold uppercase tracking-wider" title={order.fulfillmentNote}>
+                                                                {order.fulfillmentType === 'DELIVERY' ? '🚚' : '📍'} {order.fulfillmentNote}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
@@ -710,7 +717,7 @@ export default function VendorOrdersPage() {
             </AnimatePresence>
             
             <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
-                <p>© 2026 OMNI Student Marketplace • All Rights Reserved</p>
+                <p>© 2026 LaHustle Student Marketplace • All Rights Reserved</p>
             </div>
         </div>
     );

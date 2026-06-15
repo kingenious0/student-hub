@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { SearchIcon, XIcon, StoreIcon, PackageIcon, ChevronRightIcon, TrendingUpIcon } from 'lucide-react';
+import Image from 'next/image';
+import { sanitizeImageUrl } from '@/lib/utils';
 
 // Manual debounce if hook missing
 function useDebounceValue<T>(value: T, delay: number): T {
@@ -101,7 +103,7 @@ export default function GlobalSearch({ className = "", variant = "navbar", dropd
                         if (query.length > 0) setIsOpen(true);
                     }}
                     placeholder="Search for products, brands and categories..."
-                    className={`w-full transition-all duration-300 outline-none border border-transparent focus:border-orange-500/50
+                    className={`w-full transition-all duration-300 outline-none border border-transparent focus:border-primary/50
                         ${isHero
                             ? 'h-14 pl-12 pr-12 rounded-full bg-white text-gray-900 shadow-2xl text-lg font-medium placeholder:text-gray-400'
                             : 'h-10 pl-10 pr-10 rounded-lg bg-gray-100 dark:bg-surface-hover text-foreground focus:bg-background shadow-sm text-sm'
@@ -110,14 +112,14 @@ export default function GlobalSearch({ className = "", variant = "navbar", dropd
                 />
 
                 {/* Search Icon */}
-                <div className={`absolute left-0 top-0 h-full flex items-center justify-center pointer-events-none ${isHero ? 'w-14 text-orange-500' : 'w-10 text-foreground/40'}`}>
+                <div className={`absolute left-0 top-0 h-full flex items-center justify-center pointer-events-none ${isHero ? 'w-14 text-primary' : 'w-10 text-foreground/40'}`}>
                     <SearchIcon className={isHero ? 'w-6 h-6' : 'w-4 h-4'} />
                 </div>
 
                 {/* Clear/Loading Icon */}
                 <div className="absolute right-0 top-0 h-full w-10 flex items-center justify-center">
                     {isLoading ? (
-                        <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                     ) : query.length > 0 ? (
                         <button type="button" onClick={clearSearch} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
                             <XIcon className="w-4 h-4 text-gray-400" />
@@ -127,7 +129,7 @@ export default function GlobalSearch({ className = "", variant = "navbar", dropd
 
                 {/* Hero Submit Button (Only for Hero variant) */}
                 {isHero && (
-                    <button type="submit" className="absolute right-2 top-2 bottom-2 bg-orange-500 text-white px-6 rounded-full font-bold text-sm uppercase tracking-wide hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20">
+                    <button type="submit" className="absolute right-2 top-2 bottom-2 bg-primary text-primary-foreground px-6 rounded-full font-bold text-sm uppercase tracking-wide hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
                         Search
                     </button>
                 )}
@@ -218,18 +220,18 @@ export default function GlobalSearch({ className = "", variant = "navbar", dropd
                                             onClick={() => setIsOpen(false)}
                                             className="flex items-center gap-4 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-surface-hover transition-colors group"
                                         >
-                                            <div className="w-10 h-10 bg-gray-100 dark:bg-background rounded-lg overflow-hidden flex-shrink-0 border border-transparent group-hover:border-orange-500/20 transition-colors">
+                                            <div className="w-10 h-10 bg-gray-100 dark:bg-background rounded-lg overflow-hidden flex-shrink-0 border border-transparent group-hover:border-primary/20 transition-colors">
                                                 {product.imageUrl ? (
-                                                    <img src={product.imageUrl} alt={product.title} className="w-full h-full object-cover" />
+                                                    <Image src={sanitizeImageUrl(product.imageUrl)} alt={product.title} width={40} height={40} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-xs">📦</div>
                                                 )}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <span className="block text-sm font-bold text-foreground truncate group-hover:text-orange-600 transition-colors">{product.title}</span>
+                                                <span className="block text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">{product.title}</span>
                                                 <div className="flex items-center justify-between mt-0.5">
                                                     <span className="text-[10px] text-foreground/40 font-bold uppercase">{product.vendor?.shopName || 'Unknown Vendor'}</span>
-                                                    <span className="text-xs font-black text-orange-600">₵{product.price.toFixed(2)}</span>
+                                                    <span className="text-xs font-black text-primary">₵{product.price.toFixed(2)}</span>
                                                 </div>
                                             </div>
                                         </Link>
@@ -241,7 +243,7 @@ export default function GlobalSearch({ className = "", variant = "navbar", dropd
                             <Link
                                 href={`/search?q=${encodeURIComponent(query)}`}
                                 onClick={() => setIsOpen(false)}
-                                className="block p-3 text-center text-xs font-black uppercase tracking-widest text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors"
+                                className="block p-3 text-center text-xs font-black uppercase tracking-widest text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
                             >
                                 See all results for "{query}"
                             </Link>

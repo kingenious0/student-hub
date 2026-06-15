@@ -9,9 +9,9 @@ export interface PushPayload {
 let initialized = false;
 function ensureInit() {
   if (initialized) return;
-  const subject = process.env.VAPID_SUBJECT;
-  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  const privateKey = process.env.VAPID_PRIVATE_KEY;
+  const subject = (process.env.VAPID_SUBJECT || '').replace(/['"]/g, '');
+  const publicKey = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').replace(/['"]/g, '');
+  const privateKey = (process.env.VAPID_PRIVATE_KEY || '').replace(/['"]/g, '');
   if (!subject || !publicKey || !privateKey) return;
   webpush.setVapidDetails(subject, publicKey, privateKey);
   initialized = true;
@@ -23,10 +23,17 @@ export async function sendPushNotification(
 ) {
   ensureInit();
   try {
-    await webpush.sendNotification(subscription, JSON.stringify(payload));
+    const options = {
+      headers: {
+        'Urgency': 'high'
+      },
+      TTL: 24 * 60 * 60 // 1 day Time To Live
+    };
+    await webpush.sendNotification(subscription, JSON.stringify(payload), options);
     return { sent: true };
   } catch (err) {
-    const isGone = err?.statusCode === 410 || err?.statusCode === 404;
+    const webpushErr = err as { statusCode?: number };
+    const isGone = webpushErr?.statusCode === 410 || webpushErr?.statusCode === 404;
     return { sent: false, expired: isGone, endpoint: subscription.endpoint };
   }
 }

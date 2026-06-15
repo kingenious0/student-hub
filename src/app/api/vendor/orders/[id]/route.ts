@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/db/prisma';
-import { sendSMS } from '@/lib/sms/wigal';
+import { sendSMS } from '@/lib/sms';
 import { getVendorTier } from '@/lib/vendor/tier';
 
 export async function PATCH(
@@ -88,10 +88,10 @@ export async function PATCH(
                 const isPickup = order.fulfillmentType === 'PICKUP';
 
                 const msg = targetStatus === 'COMPLETED'
-                    ? `OMNI: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready and completed! Enjoy your meal.`
+                    ? `LaHustle: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready and completed! Enjoy your meal.`
                     : isPickup
-                        ? `OMNI: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready for pickup! Please go to the vendor's location to collect it.`
-                        : `OMNI: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready! Someone will bring it to you.`;
+                        ? `LaHustle: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready for pickup! Please go to the vendor's location to collect it.`
+                        : `LaHustle: Your order for ${displayTitle} at ${vendor.shopName || 'Vendor'} is ready! Someone will bring it to you.`;
                 await sendSMS(order.student.phoneNumber, msg);
             }
         }

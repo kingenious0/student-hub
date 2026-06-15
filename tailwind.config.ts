@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 import plugin from 'tailwindcss/plugin';
-import { colors, shadows, spacing, borderRadius } from './src/lib/design/colors.ts';
-import { typography } from './src/lib/design/typography.ts';
+import { colors, shadows, spacing, borderRadius } from './src/lib/design/colors';
+import { typography } from './src/lib/design/typography';
 
 const config: Config = {
   content: [

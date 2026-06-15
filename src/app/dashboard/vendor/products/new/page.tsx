@@ -42,7 +42,7 @@ export default function NewProductPage() {
             </div>
 
             <div className="text-center text-xs text-muted-foreground pt-8 pb-4 opacity-50">
-                <p>© 2026 OMNI Student Marketplace • All Rights Reserved</p>
+                <p>© 2026 LaHustle Student Marketplace • All Rights Reserved</p>
             </div>
         </div>
     );

@@ -31,7 +31,7 @@ export async function GET() {
             success: true,
             code: referralCode.code,
             totalReferrals: referralCount,
-            shareUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://omni.ug'}/sign-up?ref=${referralCode.code}`,
+            shareUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://LaHustle.ug'}/sign-up?ref=${referralCode.code}`,
         });
     } catch (error) {
         console.error('Referral code error:', error);

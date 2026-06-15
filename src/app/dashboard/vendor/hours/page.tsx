@@ -32,7 +32,7 @@ export default function HoursPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const fetch = async () => {
+    const loadHours = async () => {
       try {
         const token = await getToken();
         const res = await fetch('/api/vendor/hours', {
@@ -48,7 +48,7 @@ export default function HoursPage() {
         setLoading(false);
       }
     };
-    fetch();
+    loadHours();
   }, []);
 
   const updateDay = (idx: number, partial: Partial<DaySchedule>) => {

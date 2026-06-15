@@ -56,7 +56,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
                     if (data.role === 'GOD_MODE' || data.role === 'ADMIN') {
                         clerkGod = true;
                         console.log(`[ADMIN-CONTEXT] 🔥 ${data.role} privileges detected!`);
-                        localStorage.setItem('OMNI_GOD_MODE_UNLOCKED', 'true'); // Sync to localStorage
+                        localStorage.setItem('LH_GOD_MODE_UNLOCKED', 'true'); // Sync to localStorage
                     }
                 }
             } catch (e) {
@@ -75,13 +75,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
                     // Active User is NOT God. Revoke everything.
                     setIsGhostAdmin(false);
                     setSuperAccess(false);
-                    localStorage.removeItem('OMNI_GOD_MODE_UNLOCKED'); // Kill the stale key
+                    localStorage.removeItem('LH_GOD_MODE_UNLOCKED'); // Kill the stale key
                     console.log('[ADMIN-CONTEXT] 🛡️ Security: Stale Admin Key purged for non-admin user.');
                 }
             } else {
                 // Formatting: No User Logged In (Guest). 
                 // We allow LocalStorage unlock here (e.g. Secret Command Center Password unlock)
-                const localGhost = localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
+                const localGhost = localStorage.getItem('LH_GOD_MODE_UNLOCKED') === 'true';
                 if (localGhost) console.log('[ADMIN-CONTEXT] 👻 Ghost Session Active (Local Key)');
 
                 setIsGhostAdmin(localGhost);
@@ -118,9 +118,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         setIsGhostAdmin(value);
         setSuperAccess(value);
         if (value) {
-            localStorage.setItem('OMNI_GOD_MODE_UNLOCKED', 'true');
+            localStorage.setItem('LH_GOD_MODE_UNLOCKED', 'true');
         } else {
-            localStorage.removeItem('OMNI_GOD_MODE_UNLOCKED');
+            localStorage.removeItem('LH_GOD_MODE_UNLOCKED');
         }
     };
 

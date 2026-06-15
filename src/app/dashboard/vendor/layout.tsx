@@ -18,7 +18,7 @@ export default function VendorLayout({
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { user } = useUser();
-    const omniToken = searchParams?.get('__omni_token');
+    const LaHustleToken = searchParams?.get('__LaHustle_token');
     const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
     const [kdsEnabled, setKdsEnabled] = useState(false);
     const [pendingOrderCount, setPendingOrderCount] = useState(0);
@@ -54,7 +54,7 @@ export default function VendorLayout({
     }, [user]);
 
     // Helper to preserve auth token in navigation
-    const getHref = (path: string) => omniToken ? `${path}?__omni_token=${omniToken}` : path;
+    const getHref = (path: string) => LaHustleToken ? `${path}?__LaHustle_token=${LaHustleToken}` : path;
     const isActive = (path: string) => pathname === path;
     const canKDS = vendorTier !== 'GOODS' && kdsEnabled;
     const canScan = vendorTier !== 'FOOD';
@@ -71,7 +71,7 @@ export default function VendorLayout({
                             <StoreIcon className="w-5 h-5 text-black" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-black text-lg tracking-tight leading-none text-foreground">OMNI</span>
+                            <span className="font-black text-lg tracking-tight leading-none text-foreground">LaHustle</span>
                             <span className="text-[10px] font-bold text-primary dark:text-[#39FF14] tracking-widest uppercase leading-none">{typeLabel}</span>
                         </div>
                     </div>

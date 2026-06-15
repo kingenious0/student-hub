@@ -30,7 +30,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     // Load from localStorage on mount
     useEffect(() => {
-        const savedCart = localStorage.getItem('omni_cart');
+        const savedCart = localStorage.getItem('LaHustle_cart');
         if (savedCart) {
             try {
                 setItems(JSON.parse(savedCart));
@@ -44,7 +44,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // Save to localStorage whenever items change
     useEffect(() => {
         if (isLoaded) {
-            localStorage.setItem('omni_cart', JSON.stringify(items));
+            localStorage.setItem('LaHustle_cart', JSON.stringify(items));
         }
     }, [items, isLoaded]);
 

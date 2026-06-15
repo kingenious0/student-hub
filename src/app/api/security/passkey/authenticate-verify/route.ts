@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         credentialPublicKey: Buffer.from(passkey.credentialPublicKey, "base64url"),
         counter: Number(passkey.counter),
       },
-    });
+    } as any);
 
     if (verification.verified) {
       const { newCounter } = verification.authenticationInfo;
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
       // Set verification cookie
       const response = NextResponse.json({ verified: true });
-      response.cookies.set("OMNI_IDENTITY_VERIFIED", "TRUE", {
+      response.cookies.set("LH_IDENTITY_VERIFIED", "TRUE", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",

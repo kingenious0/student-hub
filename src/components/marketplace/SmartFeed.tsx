@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUser } from '@clerk/nextjs';
+import GhostFeed from './GhostFeed';
 
 interface FeedProduct {
     id: string;
@@ -19,7 +20,6 @@ interface FeedProduct {
     category: {
         name: string;
     };
-    // New Fields for Enhanced UI
     averageRating?: number;
     totalReviews?: number;
     isInStock?: boolean;
@@ -38,75 +38,91 @@ interface DiscoveryFeedData {
 }
 
 export default function SmartFeed() {
-    const { user } = useUser(); // Hook added
+    const { user, isLoaded } = useUser();
     const [feed, setFeed] = useState<DiscoveryFeedData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isOffline, setIsOffline] = useState(false);
 
-    // Fetch Feed Data
+    // Fetch Feed Data — gracefully degrades to GhostFeed on any error/offline state
     useEffect(() => {
-        fetch('/api/marketplace/discovery')
+        // Detect initial offline state
+        if (typeof window !== 'undefined' && !navigator.onLine) {
+            setIsOffline(true);
+        }
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
+        fetch('/api/marketplace/discovery', { signal: controller.signal })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
                     setFeed(data.feed);
-                } else {
-                    console.error('Failed to load feed:', data.error);
                 }
             })
-            .catch(err => console.error('Feed fetch error:', err))
-            .finally(() => setLoading(false));
+            .catch(() => {
+                setIsOffline(!navigator.onLine);
+            })
+            .finally(() => {
+                clearTimeout(timeout);
+                setLoading(false);
+            });
+
+        // Listen for online/offline events
+        const handleOffline = () => setIsOffline(true);
+        const handleOnline = () => {
+            setIsOffline(false);
+            setLoading(true);
+            fetch('/api/marketplace/discovery')
+                .then(res => res.json())
+                .then(data => { if (data.success) setFeed(data.feed); })
+                .catch(() => {})
+                .finally(() => setLoading(false));
+        };
+
+        window.addEventListener('offline', handleOffline);
+        window.addEventListener('online', handleOnline);
+
+        return () => {
+            clearTimeout(timeout);
+            window.removeEventListener('offline', handleOffline);
+            window.removeEventListener('online', handleOnline);
+        };
     }, []);
 
-    // NEW: Premium Empty State
-    const isEmpty = !feed || (feed.newArrivals.length === 0 && feed.trending.length === 0 && feed.recommended.length === 0);
-
-    if (isEmpty) {
-        const isVendor = user?.publicMetadata?.role === 'VENDOR';
-
+    if (loading || !isLoaded) {
         return (
-
-            <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 animate-in fade-in zoom-in duration-500">
-                <div className="relative">
-                    <div className="absolute -inset-4 bg-orange-500/20 rounded-full blur-xl animate-pulse"></div>
-                    <div className="relative bg-surface border border-surface-border p-8 rounded-full shadow-2xl">
-                        <span className="text-4xl">🔥</span>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-24">
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="bg-surface border border-surface-border rounded-2xl overflow-hidden">
+                        <div className="h-40 md:h-52 bg-foreground/5 animate-pulse" />
+                        <div className="p-3 space-y-2">
+                            <div className="h-3 bg-foreground/5 rounded animate-pulse w-3/4" />
+                            <div className="h-2 bg-foreground/5 rounded animate-pulse w-1/2" />
+                        </div>
                     </div>
-                </div>
-                <div className="space-y-4 max-w-md px-4">
-                    <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">
-                        USTED's Biggest Hustle is About to Begin
-                    </h2>
-                    <p className="text-sm text-foreground/60 font-medium leading-relaxed">
-                        The marketplace is fresh, and the opportunity is huge. <br />
-                        Be the first to list your products and earn the exclusive <span className="text-primary font-bold">"Founding Vendor"</span> badge!
-                    </p>
-                </div>
-                <div className="flex flex-col gap-3 w-full max-w-xs">
-                    {isVendor ? (
-                        <Link
-                            href="/dashboard/vendor"
-                            className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
-                        >
-                            <span>📦</span> Manage Shop
-                        </Link>
-                    ) : (
-                        <Link
-                            href="/become-vendor"
-                            className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
-                        >
-                            <span>🚀</span> Register as a Seller
-                        </Link>
-                    )}
-                    <p className="text-[10px] uppercase font-bold text-foreground/30">
-                        Limited Spots for Alpha Launch
-                    </p>
-                </div>
+                ))}
             </div>
         );
     }
 
+    const isEmpty = !feed || (feed.newArrivals.length === 0 && feed.trending.length === 0 && feed.recommended.length === 0);
+
+    if (isEmpty) {
+        const isSignedIn = !!user;
+        return <GhostFeed isSignedIn={isSignedIn} isOffline={isOffline} />;
+    }
+
     return (
         <div className="space-y-12 pb-24">
+            {isOffline && (
+                <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-4 flex items-center justify-between gap-4">
+                    <p className="text-xs font-bold text-amber-500 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                        You are offline. Browsing cached campus catalog.
+                    </p>
+                </div>
+            )}
 
             {/* Section 1: Recommended For You (Horizontal) */}
             {feed.recommended.length > 0 && (
@@ -167,28 +183,29 @@ export default function SmartFeed() {
 
 function ProductCard({ product, index, compact = false, badge, badgeColor = 'bg-primary' }: { product: FeedProduct, index: number, compact?: boolean, badge?: string, badgeColor?: string }) {
     return (
-        <Link href={`/products/${product.id}`} className={`block group ${compact ? 'min-w-[160px] w-[160px]' : 'w-full'}`}>
+        <Link href={`/products/${product.id}`} className={`block group ${compact ? 'min-w-[170px] w-[170px]' : 'w-full'}`}>
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-surface border border-surface-border rounded-2xl overflow-hidden group-hover:border-primary/50 transition-all shadow-sm h-full flex flex-col"
+                transition={{ delay: index * 0.04 }}
+                className="bg-surface border border-surface-border/80 rounded-2xl overflow-hidden group-hover:border-primary/50 transition-all shadow-md h-full flex flex-col relative"
             >
-                <div className={`${compact ? 'h-32' : 'h-40 md:h-56'} bg-background relative overflow-hidden flex-shrink-0`}>
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                <div className={`${compact ? 'h-36' : 'h-40 md:h-56'} bg-background/50 relative overflow-hidden flex-shrink-0 border-b border-surface-border/50`}>
                     {product.imageUrl ? (
                         <Image 
                             src={product.imageUrl} 
                             alt={product.title} 
                             fill 
                             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw" 
-                            className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
                             loading="lazy" 
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-3xl">📦</div>
+                        <div className="w-full h-full flex items-center justify-center text-3xl opacity-30">📦</div>
                     )}
                     {/* Price Tag */}
-                    <div className="absolute bottom-2 right-2 px-2 py-1 bg-background/80 backdrop-blur-md rounded-lg text-xs font-black text-foreground z-10">
+                    <div className="absolute bottom-2 right-2 px-3 py-1 bg-background/95 backdrop-blur-md border border-primary/30 rounded-full text-xs font-black text-primary font-mono tracking-tight z-10 shadow-[0_4px_12px_rgba(16,185,129,0.2)]">
                         ₵{product.price.toFixed(2)}
                     </div>
                     {/* Badge */}
@@ -198,9 +215,9 @@ function ProductCard({ product, index, compact = false, badge, badgeColor = 'bg-
                         </div>
                     )}
                 </div>
-                <div className="p-3 flex flex-col flex-1">
-                    <h3 className="text-xs font-black uppercase truncate text-foreground mb-1">{product.title}</h3>
-                    <p className="text-[10px] text-foreground/50 font-bold uppercase truncate">{product.vendor.shopName || product.vendor.name}</p>
+                <div className="p-3.5 flex flex-col flex-1 gap-1">
+                    <h3 className="text-[11px] font-black uppercase tracking-wide truncate text-foreground/90 group-hover:text-primary transition-colors">{product.title}</h3>
+                    <p className="text-[9px] text-foreground/45 font-bold uppercase tracking-wider truncate">✓ {product.vendor.shopName || product.vendor.name}</p>
                 </div>
             </motion.div>
         </Link>

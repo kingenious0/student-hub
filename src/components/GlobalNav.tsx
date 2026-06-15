@@ -13,7 +13,7 @@ export default function GlobalNav() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
-        const ghost = localStorage.getItem('OMNI_GOD_MODE_UNLOCKED') === 'true';
+        const ghost = localStorage.getItem('LH_GOD_MODE_UNLOCKED') === 'true';
         setIsGhostAdmin(ghost);
     }, []);
 
@@ -44,7 +44,7 @@ export default function GlobalNav() {
                             </div>
                             <div className="hidden md:block">
                                 <h1 className="text-xl font-black uppercase tracking-tighter text-foreground">
-                                    OMNI
+                                    LaHustle
                                 </h1>
                                 <p className="text-[8px] text-foreground/40 font-bold uppercase tracking-widest">
                                     Student Hub
