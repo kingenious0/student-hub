@@ -1,50 +1,73 @@
-# OMNI Student Hub
+<p align="center">
+  <img src="./public/lahustle-icon.svg" alt="LaHustle Logo" width="120" height="120" style="border-radius: 24px;" />
+</p>
 
-OMNI Student Hub is a comprehensive campus marketplace and vendor engagement platform. It connects student buyers and campus vendors in a unified digital economy, secured by a custom escrow payment verification system.
+<h1 align="center">LaHustle (Student Marketplace & Hub)</h1>
 
-The repository is organized as a decoupled monorepo containing:
-* **`student-hub/`**: Next.js App Router API server, merchant portals, and administrative tooling.
-* **`student-mobile/`**: React Native (Expo SDK 54) mobile app targeting students.
+<p align="center">
+  <strong>A premium, secure campus marketplace and vendor engagement platform designed for university student micro-economies.</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16%20App%20Router-black?logo=next.js&style=for-the-badge" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Prisma-5.10-blue?logo=prisma&style=for-the-badge" alt="Prisma" />
+  <img src="https://img.shields.io/badge/Paystack-Integrated-teal?logo=paystack&style=for-the-badge" alt="Paystack" />
+  <img src="https://img.shields.io/badge/Clerk-Auth-6C47FF?logo=clerk&style=for-the-badge" alt="Clerk" />
+</p>
+
+---
+
+## 👨‍💻 Lead Developer & Author
+* **Lead Developer & System Architect:** **Elliot Paakow Entsiwah (Kingenious)**
+* **Role:** Student Founder & Lead Software Engineer
+* **University Affiliate:** USTED
+
+---
+
+## 📖 Project Overview
+
+**LaHustle** is an all-in-one student micro-marketplace platform. It connects student buyers with trusted campus vendors in a unified ecosystem. The platform enforces security through a custom-built escrow payment settlement loop, dynamic verification, and logical hotspot geolocation tracking.
+
+The repository contains:
+* **`student-hub/`**: The Next.js App Router merchant dashboard, administrative command centers, and API backend.
+* **`student-mobile/`**: The companion React Native (Expo SDK 54) mobile app targeting on-the-go student users.
 
 ---
 
 ## 🛠️ Core Tech Stack
 
-* **Web Application**: Next.js 16 (App Router + Turbopack) | React 19 | Tailwind CSS v4
-* **Mobile Application**: React Native (Expo SDK 54) | TypeScript | NativeWind v4
-* **Database & Persistence**: Postgres | Prisma ORM 5.10.2 (CockroachDB compatibility in cloud environments)
-* **Authentication**: Clerk (standard session state and JWT verification)
-* **Media Handling**: Cloudinary CDN (direct signed uploads for vendor listings and stories)
-* **Payments**: Paystack API (sandbox/live processing with signature webhook validation)
+* **Frontend & Server Components**: Next.js 16 (App Router + Turbopack) | React 19 | Tailwind CSS v4
+* **Database & Persistence Layer**: PostgreSQL | Prisma ORM 5.10.2 (Cloud-optimized configuration)
+* **Authentication & Identity**: Clerk (Custom session synchronization and JWT verification)
+* **Media Assets**: Cloudinary CDN (Signed uploads for product images, vendor stories, and verification)
+* **Payments Infrastructure**: Paystack Inline SDK v2 (Live/Sandbox gateway with automated webhook signature validation)
 
 ---
 
 ## 🚀 Key Architectural Highlights
 
-1. **Dual-Factor Identity Verification (Biometric + TOTP)**
-   * Built-in multi-layered authorization gating high-risk transactions (escrow release, payout queries).
-   * WebAuthn/Passkey integration via SimpleWebAuthn.
-   * Client-side face descriptor vector extraction (128-dimensional floating point vectors via `face-api.js` + `TensorFlow.js`) verified server-side using Euclidean distance calculations.
-   * Speakeasy-powered Time-based One-Time Password (TOTP) 2FA with secure backup codes.
+### 1. QR-Escrow Settlement Loop 🛡️
+To eliminate peer-to-peer transaction risk on campus:
+* Payments made via Paystack are held securely in a database-backed `HELD` state.
+* The buyer receives an AES-256 encrypted transaction payload encapsulated in a QR code.
+* To complete the order and release the funds to the seller, the vendor scans the QR code at the physical handover. The system decrypts the payload and triggers a single, atomic database transaction to release funds.
 
-2. **QR-Escrow Settlement Loop**
-   * Eliminates student-to-student peer transactional risk.
-   * Payments made via Paystack checkout are placed in a database-secured `HELD` state.
-   * The buyer receives an AES-256 encrypted QR code payload containing transaction tokens.
-   * Scan verification decrypts the payload, completing the order and releasing funds to the vendor in a single database transaction.
+### 2. Dual-Factor Security Protocols (Face Biometrics + TOTP) 🔑
+Built-in verification safeguards high-risk merchant events (payout releases, settings overrides):
+* **Biometric Verification**: Client-side face descriptor vector extraction (128-dimensional floating point vectors via `face-api.js` + `TensorFlow.js`) verified server-side using Euclidean distance thresholds.
+* **TOTP 2FA**: Speakeasy-powered Time-based One-Time Password multi-factor authentication with secure backup keys.
 
-3. **Logical Geolocation ("Flash-Match" Algorithm)**
-   * Avoids heavy background battery drain and browser GPS tracking prompts.
-   * Localizes sellers and buyers using logical landmarks (hotspots) as routing indices.
-   * Uses a combined, weighted scoring query: $60\%$ proximity rating + $40\%$ seller transaction activity rate to prioritize active merchants.
+### 3. Logical Geolocation ("Flash-Match" Algorithm) 📍
+* Localizes sellers and buyers using logical landmarks (campus hotspots) as routing indices.
+* Utilizes a weighted query: $60\%$ proximity rating + $40\%$ seller transaction activity rate to prioritize active merchants, avoiding battery drain from continuous browser GPS polling.
 
-4. **Campus Pulse Video Feed**
-   * A vertical 24-hour video discovery feed designed to drive vendor sales.
-   * Optimizes browser rendering using a single intersection observer pipeline to auto-play only the vertical video taking up the active viewport.
+### 4. Campus Pulse Video Feed 📱
+* A vertical 24-hour video discovery feed designed to drive vendor sales.
+* Uses a single intersection observer pipeline to auto-play only the vertical video taking up the active viewport.
 
-5. **Ghost Edit Dynamic Copy Hot-Patching**
-   * Dynamic administrative translation layer allowing real-time static text overrides throughout the frontend.
-   * Copy adjustments write directly to the `SystemSettings` table's JSON payload and propagate dynamically to all connected client views.
+### 5. Ghost Edit Dynamic Copy Hot-Patching ⚙️
+* Admin translation layer allowing real-time static text overrides throughout the frontend.
+* Adjustments write directly to the `SystemSettings` table's JSON payload and propagate dynamically to all connected client views.
 
 ---
 
