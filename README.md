@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/kingenious0/student-hub/development/public/lahustle-icon.svg" alt="LaHustle Logo" width="120" height="120" style="border-radius: 24px;" />
+  <img src="public/LaHustle-Official_logo.svg" alt="LaHustle Logo" width="120" height="120" style="border-radius: 24px;" />
 </p>
 
 <h1 align="center">LaHustle (Student Marketplace & Hub)</h1>
