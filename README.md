@@ -1,6 +1,6 @@
-# OMNI Student Hub
+# LaHustle Marketplace
 
-OMNI Student Hub is a comprehensive campus marketplace and vendor engagement platform. It connects student buyers and campus vendors in a unified digital economy, secured by a custom escrow payment verification system.
+LaHustle (Formally OMNI) Student Hub is a comprehensive campus marketplace and vendor engagement platform. It connects student buyers and campus vendors in a unified digital economy, secured by a custom escrow payment verification system.
 
 The repository is organized as a decoupled monorepo containing:
 * **`student-hub/`**: Next.js App Router API server, merchant portals, and administrative tooling.
