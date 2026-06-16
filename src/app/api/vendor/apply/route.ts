@@ -12,12 +12,18 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { shopName, shopDescription, location, phoneNumber } = body;
+        const { shopName, shopDescription, location, phoneNumber, vendorType } = body;
 
         // Validate required fields
         if (!shopName || !shopDescription || !location || !phoneNumber) {
             return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
         }
+
+        // Validate vendorType if provided
+        const validVendorTypes = ['FOOD', 'GOODS', 'MIXED'];
+        const resolvedVendorType = vendorType && validVendorTypes.includes(vendorType.toUpperCase())
+            ? vendorType.toUpperCase()
+            : 'MIXED';
 
         // Get internal user ID from Clerk ID
         const dbUser = await prisma.user.findUnique({
@@ -86,7 +92,8 @@ export async function POST(req: NextRequest) {
                 role: 'VENDOR',
                 vendorStatus: 'ACTIVE',
                 shopName: shopName,
-                phoneNumber: phoneNumber
+                phoneNumber: phoneNumber,
+                vendorType: resolvedVendorType as 'FOOD' | 'GOODS' | 'MIXED'
             }
         });
 
