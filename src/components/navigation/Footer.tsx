@@ -47,10 +47,14 @@ export default function Footer() {
                     <FooterLink href="/become-vendor" label="Vendor" />
                     <FooterLink href="/orders" label="Missions" />
                     <FooterLink href="/help" label="Support" />
+                    <FooterLink href="/contact" label="Contact" />
                 </div>
 
                 {/* Policies */}
                 <div className="flex items-center gap-6">
+                    <Link href="/shipping-and-returns" className="text-[10px] font-black text-foreground/30 uppercase tracking-widest hover:text-primary transition-colors cursor-pointer">
+                        Shipping
+                    </Link>
                     <Link href="/privacy" className="text-[10px] font-black text-foreground/30 uppercase tracking-widest hover:text-primary transition-colors cursor-pointer">
                         Privacy
                     </Link>
