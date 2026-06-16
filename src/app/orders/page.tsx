@@ -353,6 +353,14 @@ const EvidenceVault = ({ order, onClose }: { order: Order, onClose: () => void }
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const receiptItems = order.items.map(item => ({
+        title: item.product.title,
+        quantity: item.quantity,
+        price: item.price
+    }));
+    const itemsTotal = receiptItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const deliveryFee = order.fulfillmentType === 'DELIVERY' ? Math.max(0, order.amount - itemsTotal) : 0;
+
     const handleDownloadTxt = () => {
         const receiptContent = `
 LaHustle MARKETPLACE - DIGITAL RECEIPT
@@ -459,11 +467,8 @@ Live. Learn. Earn.
                         showButton={false}
                         vendorName={order.vendor.name || 'Unknown Vendor'}
                         status={order.status}
-                        items={order.items.map(item => ({
-                            title: item.product.title,
-                            quantity: item.quantity,
-                            price: item.price
-                        }))}
+                        items={receiptItems}
+                        deliveryFee={deliveryFee}
                         className="border-0 bg-transparent p-0 max-w-none shadow-none"
                     />
                 </div>
@@ -533,11 +538,8 @@ Live. Learn. Earn.
                             showButton={false}
                             vendorName={order.vendor.name || 'Unknown Vendor'}
                             status={order.status}
-                            items={order.items.map(item => ({
-                                title: item.product.title,
-                                quantity: item.quantity,
-                                price: item.price
-                            }))}
+                            items={receiptItems}
+                            deliveryFee={deliveryFee}
                             className="bg-[#0d1117] border-0 p-0 shadow-none text-white max-w-none rounded-none"
                         />
                     </div>

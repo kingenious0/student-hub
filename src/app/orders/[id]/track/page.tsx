@@ -123,8 +123,8 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
     }));
     const itemsTotal = receiptItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const difference = Math.max(0, order.amount - itemsTotal);
-    const serviceFee = difference > 0 ? Math.min(difference, 1.50) : 0;
-    const deliveryFee = Math.max(0, difference - serviceFee);
+    const deliveryFee = order.fulfillmentType === 'DELIVERY' ? difference : 0;
+    const serviceFee = 0;
 
     return (
         <div className="min-h-screen bg-background pb-20">
