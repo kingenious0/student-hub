@@ -187,14 +187,29 @@ function MarketplaceContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4 italic">
-            Marketplace <span className="text-primary font-black">.</span>
-          </h1>
-          <p className="text-foreground/45 text-sm uppercase font-bold tracking-widest">
-            Browse all products from verified campus vendors
-          </p>
+        {/* Premium Marketplace Header */}
+        <div className="mb-12 relative">
+          <div className="absolute -left-20 -top-20 w-[300px] h-[300px] bg-gradient-to-br from-primary/10 to-teal-500/5 blur-[100px] pointer-events-none -z-10" />
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="space-y-4"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
+              Verified Student Economy
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tight leading-none">
+              Campus <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-emerald-500 to-teal-400">Marketplace</span>
+            </h1>
+            
+            <p className="text-foreground/50 text-xs md:text-sm uppercase font-black tracking-widest max-w-xl leading-relaxed">
+              Discover verified deals and request campus services from trusted student vendors. Fully secured by automatic MoMo escrow payments.
+            </p>
+          </motion.div>
         </div>
 
         {/* Search & Filters (Enclosed in a clean card container) */}

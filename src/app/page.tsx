@@ -13,6 +13,7 @@ import { Suspense } from "react";
 import * as React from "react";
 import { useScroll, useTransform } from "framer-motion";
 import CategoriesMarquee from "@/components/marketplace/CategoriesMarquee";
+import { Hero2 } from "@/components/ui/hero-2-1";
 
 
 
@@ -90,79 +91,8 @@ export default function Home() {
         <div className="absolute w-[320px] h-[320px] bg-primary/5 rounded-full blur-[90px] bottom-[15%] left-[20%] hidden md:block md:animate-pulse" style={{ animationDuration: '12s' }} />
       </div>
 
-      {/* 1. PREMIUM DYNAMIC HERO - GoCart Inspired Hybrid Bento Layout */}
-      <motion.div 
-        ref={heroRef}
-        onMouseMove={handleMouseMove}
-        style={{ y: heroY, willChange: 'transform' }}
-        className="relative pt-32 pb-16 px-4 overflow-hidden group/hero z-10"
-      >
-        {/* Premium Minimalist Background that conforms to light/dark themes */}
-        <div className="absolute inset-0 bg-background">
-           {/* Single Elegant Static Radial Glow - 0% CPU/GPU overhead, highly sophisticated */}
-           <div className="absolute top-[-20%] left-[15%] w-[70%] h-[80%] rounded-full bg-gradient-to-br from-primary/10 via-accent/5 to-transparent blur-[130px] pointer-events-none" />
-           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20200%20200%22%20xmlns%3D%22http%3D%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22noiseFilter%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.65%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23noiseFilter)%22%2F%3E%3C%2Fsvg%3E')] opacity-[0.05] mix-blend-overlay pointer-events-none" />
-           
-           {/* Interactive Glow Follower - High performance translation using direct CSS variables */}
-           <div 
-             className="absolute pointer-events-none w-[350px] h-[350px] bg-primary opacity-0 group-hover/hero:opacity-[0.05] rounded-full blur-[80px] transition-opacity duration-700 hidden md:block"
-             style={{
-               left: '0px',
-               top: '0px',
-               transform: 'translate3d(calc(var(--mouse-x, 0px) - 175px), calc(var(--mouse-y, 0px) - 175px), 0)',
-               willChange: 'transform',
-             }}
-           />
-        </div>
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          {/* Full-width Centered Hero Showcase Panel */}
-          <div className="glass-strong rounded-[3rem] p-8 md:p-20 border border-surface-border/80 flex flex-col justify-between relative overflow-hidden group/main-card shadow-2xl">
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary via-accent to-emerald-400" />
-            <div>
-              {/* Main Headline */}
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-5xl sm:text-7xl md:text-8xl font-black text-foreground tracking-tight leading-none mb-6"
-              >
-                Campus<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-emerald-600 to-teal-500">Market</span>
-              </motion.h1>
-              {/* Description */}
-              <p className="text-foreground/70 text-sm md:text-lg font-medium mb-12 max-w-xl leading-relaxed">
-                Fuel your student hustle. Buy & sell safely on campus.
-              </p>
-            </div>
-
-            <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center w-full mt-4">
-              {/* CTA Button */}
-              <Link href="/deals" className="relative group px-8 py-4.5 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-wider text-xs transition-all overflow-hidden inline-block hover:shadow-xl hover:shadow-primary/25 active:scale-95 text-center shrink-0">
-                <span className="relative z-10">Start Digging Deals →</span>
-                <motion.div 
-                  animate={{ x: ['100%', '-100%'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
-                />
-              </Link>
-              {/* Search Bar inside Main Card */}
-              <div className="flex-1">
-                <GlobalSearch variant="hero" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Dynamic Floating Elements - CSS only (zero JS cost) */}
-        <div className="absolute inset-0 pointer-events-none hidden lg:block overflow-hidden">
-            <span className="absolute top-1/4 left-[5%] text-6xl select-none animate-float opacity-20" style={{ animationDelay: '0s', animationDuration: '6s' }}>👟</span>
-            <span className="absolute top-1/2 right-[5%] text-6xl select-none animate-float opacity-20" style={{ animationDelay: '1s', animationDuration: '7s' }}>⚡</span>
-            <span className="absolute bottom-1/4 left-[10%] text-6xl select-none animate-float opacity-20" style={{ animationDelay: '2s', animationDuration: '5s' }}>🔥</span>
-            <span className="absolute bottom-1/2 right-[8%] text-6xl select-none animate-float opacity-20" style={{ animationDelay: '3s', animationDuration: '8s' }}>🛸</span>
-            <span className="absolute top-1/3 right-[15%] text-6xl select-none animate-float opacity-20" style={{ animationDelay: '1.5s', animationDuration: '6.5s' }}>💎</span>
-        </div>
-      </motion.div>
+      {/* 1. PREMIUM DYNAMIC HERO */}
+      <Hero2 />
 
       {/* 2. LIVE TRENDING FEED */}
       <FlashSalesSection />
