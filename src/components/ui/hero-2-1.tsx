@@ -9,7 +9,7 @@ const Hero2 = () => {
   const { user } = useUser();
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black flex flex-col justify-center">
+    <div className="relative min-h-screen overflow-hidden bg-black flex flex-col justify-center pt-24 md:pt-32">
       {/* Gradient background with grain effect */}
       <div className="flex flex-col items-end absolute -right-60 -top-10 blur-xl z-0 pointer-events-none">
         <div className="h-[15rem] rounded-full w-[60rem] z-1 bg-gradient-to-b blur-[8rem] from-primary/40 to-emerald-600/30"></div>
@@ -27,7 +27,7 @@ const Hero2 = () => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mx-auto mt-12 flex max-w-fit items-center justify-center space-x-2 rounded-full bg-white/5 border border-white/10 px-5 py-2 backdrop-blur-md hover:border-primary/30 transition-colors cursor-pointer group"
+          className="mx-auto mt-4 flex max-w-fit items-center justify-center space-x-2 rounded-full bg-white/5 border border-white/10 px-5 py-2 backdrop-blur-md hover:border-primary/30 transition-colors cursor-pointer group"
         >
           <span className="text-[10px] font-black uppercase tracking-widest text-white group-hover:text-primary transition-colors">
             Ghana's #1 Campus Marketplace & Escrow Platform
