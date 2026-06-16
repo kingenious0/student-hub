@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, Menu, X, Shield, ShoppingBag, Landmark, Zap } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Shield, ShoppingBag, Landmark, Zap } from "lucide-react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 
 const Hero2 = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useUser();
 
   return (
@@ -22,102 +20,7 @@ const Hero2 = () => {
 
       {/* Content container */}
       <div className="relative z-10 flex-1 flex flex-col justify-between">
-        {/* Navigation */}
-        <nav className="container mx-auto flex items-center justify-between px-6 py-6 mt-2">
-          <Link href="/" className="flex items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-black shadow-lg shadow-primary/20">
-              <span className="font-black text-lg">H</span>
-            </div>
-            <span className="ml-3 text-2xl font-black text-white uppercase tracking-wider italic">LaHustle<span className="text-primary font-black">.</span></span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <div className="flex items-center space-x-6">
-              <Link href="/marketplace" className="text-xs font-black uppercase tracking-widest text-gray-300 hover:text-white transition-colors">Marketplace</Link>
-              <Link href="/deals" className="text-xs font-black uppercase tracking-widest text-gray-300 hover:text-white transition-colors">Deals</Link>
-              <Link href="/stories" className="text-xs font-black uppercase tracking-widest text-gray-300 hover:text-white transition-colors">Pulse Feed</Link>
-              <Link href="/become-vendor" className="text-xs font-black uppercase tracking-widest text-gray-300 hover:text-white transition-colors">Start Selling</Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              {user ? (
-                <Link href="/marketplace" className="h-12 flex items-center justify-center rounded-2xl bg-primary px-8 text-xs font-black uppercase tracking-widest text-black hover:bg-primary/95 transition-all shadow-md">
-                  Go to Marketplace
-                </Link>
-              ) : (
-                <>
-                  <Link href="/sign-in" className="text-xs font-black uppercase tracking-widest text-white hover:text-primary transition-colors">
-                    Login
-                  </Link>
-                  <Link href="/sign-up" className="h-12 flex items-center justify-center rounded-2xl bg-primary px-8 text-xs font-black uppercase tracking-widest text-black hover:bg-primary/95 transition-all shadow-md">
-                    Sign Up
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile menu button */}
-          <button
-            className="md:hidden p-2 text-white hover:text-primary transition-colors cursor-pointer"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <span className="sr-only">Toggle menu</span>
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
-        </nav>
-
-        {/* Mobile Navigation Menu with animation */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ y: "-100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "-100%", opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed inset-0 z-50 flex flex-col p-6 bg-black/95 md:hidden"
-            >
-              <div className="flex items-center justify-between">
-                <Link href="/" className="flex items-center">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-black">
-                    <span className="font-black text-lg">H</span>
-                  </div>
-                  <span className="ml-3 text-2xl font-black text-white uppercase tracking-wider italic">LaHustle<span className="text-primary font-black">.</span></span>
-                </Link>
-                <button onClick={() => setMobileMenuOpen(false)} className="p-2 text-white hover:text-primary transition-colors">
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-              <div className="mt-12 flex flex-col space-y-6">
-                <MobileLink href="/marketplace" label="Marketplace" setOpen={setMobileMenuOpen} />
-                <MobileLink href="/deals" label="Deals" setOpen={setMobileMenuOpen} />
-                <MobileLink href="/stories" label="Pulse Feed" setOpen={setMobileMenuOpen} />
-                <MobileLink href="/become-vendor" label="Start Selling" setOpen={setMobileMenuOpen} />
-                
-                <div className="pt-8 flex flex-col gap-4">
-                  {user ? (
-                    <Link href="/marketplace" onClick={() => setMobileMenuOpen(false)} className="h-12 flex items-center justify-center rounded-2xl bg-primary text-xs font-black uppercase tracking-widest text-black text-center">
-                      Go to Marketplace
-                    </Link>
-                  ) : (
-                    <>
-                      <Link href="/sign-in" onClick={() => setMobileMenuOpen(false)} className="h-12 flex items-center justify-center rounded-2xl border border-gray-800 text-xs font-black uppercase tracking-widest text-white text-center hover:bg-white/5 transition-colors">
-                        Log in
-                      </Link>
-                      <Link href="/sign-up" onClick={() => setMobileMenuOpen(false)} className="h-12 flex items-center justify-center rounded-2xl bg-primary text-xs font-black uppercase tracking-widest text-black text-center">
-                        Create Free Account
-                      </Link>
-                    </>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Content starts directly with the badge and hero content */}
 
         {/* Badge */}
         <motion.div 
@@ -221,18 +124,5 @@ const Hero2 = () => {
     </div>
   );
 };
-
-function MobileLink({ href, label, setOpen }: { href: string; label: string; setOpen: (val: boolean) => void }) {
-  return (
-    <Link 
-      href={href} 
-      onClick={() => setOpen(false)} 
-      className="flex items-center justify-between border-b border-gray-900 pb-3 text-lg font-black uppercase tracking-widest text-white hover:text-primary transition-colors"
-    >
-      <span>{label}</span>
-      <ArrowRight className="h-4 w-4 text-primary" />
-    </Link>
-  );
-}
 
 export { Hero2 };
