@@ -40,6 +40,8 @@ export default function ProductDetailsPage() {
     const [showReviewForm, setShowReviewForm] = useState(false);
     const [reviewListKey, setReviewListKey] = useState(0);
     const [selectedModifiers, setSelectedModifiers] = useState<Record<string, string | string[]>>({});
+    const [bookingDate, setBookingDate] = useState('');
+    const [bookingTime, setBookingTime] = useState('');
     const viewTrackedRef = useRef(false);
 
     // Initial Auth Check
@@ -94,6 +96,7 @@ export default function ProductDetailsPage() {
     const isOutOfStock = product.isInStock === false || (product.stockQuantity !== undefined && product.stockQuantity <= 0);
     const rating = product.averageRating || 0;
     const reviewCount = product.totalReviews || 0;
+    const isService = product.category?.slug === 'services' || product.category?.name?.toLowerCase() === 'services' || product.category?.name?.toLowerCase() === 'service';
 
     const slugify = (text: string) => {
         return text
@@ -163,8 +166,19 @@ export default function ProductDetailsPage() {
     };
 
     const handleAddToCart = () => {
-        const modifiers = getSelectedModifiersList();
+        if (isService && (!bookingDate || !bookingTime)) {
+            toast.error("Please select a booking date and time");
+            return;
+        }
 
+        const modifiers = [...getSelectedModifiersList()];
+        if (isService && bookingDate && bookingTime) {
+            modifiers.push({
+                groupName: 'Schedule',
+                optionName: `${bookingDate} @ ${bookingTime}`,
+                priceDiff: 0
+            });
+        }
 
         addToCart({
             id: product.id,
@@ -179,9 +193,11 @@ export default function ProductDetailsPage() {
 
 
         toast.success(`${product.title} added to cart`, {
-            description: modifiers.length > 0
-                ? `With ${modifiers.map(m => m.optionName).join(', ')}`
-                : "Keep shopping or proceed to checkout.",
+            description: isService 
+                ? `Booked for ${bookingDate} at ${bookingTime}`
+                : (modifiers.length > 0
+                    ? `With ${modifiers.map(m => m.optionName).join(', ')}`
+                    : "Keep shopping or proceed to checkout."),
             action: {
                 label: "View Cart",
                 onClick: () => router.push('/cart')
@@ -462,6 +478,34 @@ export default function ProductDetailsPage() {
 
                                 {/* Controls */}
                                 <div className="space-y-4">
+                                    {isService && (
+                                        <div className="space-y-2 mb-4 p-4 bg-foreground/5 rounded-2xl border border-surface-border">
+                                            <label className="text-[10px] font-black text-foreground/60 uppercase tracking-widest block">Select Booking Schedule</label>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <span className="text-[9px] font-bold text-foreground/40 block mb-1 uppercase">Date</span>
+                                                    <input
+                                                        type="date"
+                                                        required
+                                                        value={bookingDate}
+                                                        onChange={(e) => setBookingDate(e.target.value)}
+                                                        className="p-3 bg-surface rounded-xl border border-surface-border text-xs font-bold w-full text-foreground focus:border-primary outline-none"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <span className="text-[9px] font-bold text-foreground/40 block mb-1 uppercase">Time</span>
+                                                    <input
+                                                        type="time"
+                                                        required
+                                                        value={bookingTime}
+                                                        onChange={(e) => setBookingTime(e.target.value)}
+                                                        className="p-3 bg-surface rounded-xl border border-surface-border text-xs font-bold w-full text-foreground focus:border-primary outline-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="flex flex-col sm:flex-row gap-4">
                                         <div className="flex gap-4 w-full sm:w-auto">
                                             {/* Quantity Pill */}
@@ -513,14 +557,26 @@ export default function ProductDetailsPage() {
                                             className="w-full sm:flex-1 h-16 bg-primary text-black rounded-full font-black text-sm md:text-base uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 disabled:grayscale flex items-center justify-center gap-3 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                         >
                                             <div className="w-1 h-1 rounded-full bg-current"></div>
-                                            {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
+                                            {isOutOfStock ? 'Sold Out' : (isService ? 'Book Service' : 'Add to Cart')}
                                         </button>
                                     </div>
 
                                     {/* Instant Checkout */}
                                     <button
                                         onClick={() => {
-                                            const modifiers = getSelectedModifiersList();
+                                            if (isService && (!bookingDate || !bookingTime)) {
+                                                toast.error("Please select a booking date and time");
+                                                return;
+                                            }
+
+                                            const modifiers = [...getSelectedModifiersList()];
+                                            if (isService && bookingDate && bookingTime) {
+                                                modifiers.push({
+                                                    groupName: 'Schedule',
+                                                    optionName: `${bookingDate} @ ${bookingTime}`,
+                                                    priceDiff: 0
+                                                });
+                                            }
 
                                             sessionStorage.setItem('LaHustle_checkout_modifiers', JSON.stringify({
                                                 productId: product.id,
@@ -533,7 +589,7 @@ export default function ProductDetailsPage() {
                                         disabled={isOutOfStock || isGhostAdmin}
                                         className="w-full h-14 rounded-full border-2 border-primary/30 bg-primary/5 font-black uppercase tracking-widest text-xs text-primary hover:bg-primary/10 hover:border-primary/50 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
                                     >
-                                        Instant Checkout
+                                        {isService ? 'Book Instantly' : 'Instant Checkout'}
                                     </button>
 
                                     {cartItems.length > 0 && (
