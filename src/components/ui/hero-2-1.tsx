@@ -103,22 +103,7 @@ const Hero2 = () => {
             </div>
           </motion.div>
 
-          {/* Hero Image / Mockup */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.6, duration: 1 }}
-            className="relative mx-auto mt-16 mb-20 w-full max-w-4xl"
-          >
-            <div className="absolute inset-0 rounded-[2.5rem] shadow-lg bg-primary/20 blur-[8rem] pointer-events-none" />
-            <div className="relative border-4 border-white/10 rounded-[2.5rem] overflow-hidden bg-zinc-950 p-2 shadow-2xl">
-              <img
-                src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=1600&auto=format&fit=crop"
-                alt="LaHustle Platform UI Dashboard Preview"
-                className="w-full h-auto rounded-[2rem] border border-white/5 shadow-inner"
-              />
-            </div>
-          </motion.div>
+
         </div>
       </div>
     </div>
