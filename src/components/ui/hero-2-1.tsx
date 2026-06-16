@@ -63,11 +63,11 @@ const Hero2 = () => {
             transition={{ delay: 0.4, duration: 0.8 }}
             className="mt-10 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
           >
-            <Link href="/marketplace" className="h-14 flex items-center justify-center rounded-2xl bg-primary px-8 text-xs font-black uppercase tracking-widest text-black hover:bg-primary/95 transition-all shadow-xl shadow-primary/10 active:scale-95">
-              Explore Marketplace
+            <Link href="/sign-in" className="h-14 flex items-center justify-center rounded-2xl bg-primary px-8 text-xs font-black uppercase tracking-widest text-black hover:bg-primary/95 transition-all shadow-xl shadow-primary/10 active:scale-95 w-full sm:w-auto">
+              Get Started / Sign In
             </Link>
-            <Link href="/become-vendor" className="h-14 flex items-center justify-center rounded-2xl border border-gray-800 bg-white/5 px-8 text-xs font-black uppercase tracking-widest text-white hover:bg-white/10 hover:border-gray-700 transition-all active:scale-95">
-              Become a Vendor
+            <Link href="/sign-up" className="h-14 flex items-center justify-center rounded-2xl border border-gray-800 bg-white/5 px-8 text-xs font-black uppercase tracking-widest text-white hover:bg-white/10 hover:border-gray-700 transition-all active:scale-95 w-full sm:w-auto">
+              Create Account
             </Link>
           </motion.div>
 

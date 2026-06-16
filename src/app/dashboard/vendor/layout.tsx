@@ -17,14 +17,52 @@ export default function VendorLayout({
 }) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const { user } = useUser();
+    const { user, isLoaded } = useUser();
     const LaHustleToken = searchParams?.get('__LaHustle_token');
     const [vendorTier, setVendorTier] = useState<'FOOD' | 'GOODS' | 'MIXED' | null>(null);
     const [kdsEnabled, setKdsEnabled] = useState(false);
     const [pendingOrderCount, setPendingOrderCount] = useState(0);
 
+    const userRole = (user?.publicMetadata?.role as string)?.toUpperCase();
+    const isVendor = userRole === 'VENDOR' || userRole === 'ADMIN' || userRole === 'GOD_MODE';
+
+    if (isLoaded && user && !isVendor) {
+        return (
+            <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
+                <div className="max-w-md w-full p-1 bg-gradient-to-br from-surface to-background border border-surface-border rounded-[2rem] shadow-2xl text-center">
+                    <div className="p-8 md:p-12 space-y-6">
+                        <div className="w-16 h-16 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-center text-primary mx-auto">
+                            <StoreIcon className="w-8 h-8 text-primary" />
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-black uppercase tracking-tight text-foreground">Vendor Spot Required</h2>
+                            <p className="text-sm text-foreground/50 font-bold uppercase tracking-wider">You need a verified Vendor account to access the Vendor Command dashboard.</p>
+                        </div>
+                        <p className="text-xs text-foreground/60 leading-relaxed font-medium">
+                            It looks like you haven't set up a shop profile yet. Register your student shop to list products, manage orders, and withdraw earnings.
+                        </p>
+                        <div className="pt-2 flex flex-col gap-3">
+                            <Link
+                                href="/become-vendor"
+                                className="h-12 w-full bg-primary text-black rounded-xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center"
+                            >
+                                Apply to be a Vendor
+                            </Link>
+                            <Link
+                                href="/"
+                                className="h-12 w-full border border-surface-border bg-foreground/5 text-foreground rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center"
+                            >
+                                Back to Homepage
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     useEffect(() => {
-        if (!user) return;
+        if (!user || !isVendor) return;
         Promise.all([
             fetch('/api/vendor/tier').then(r => r.json()),
             fetch('/api/vendor/kds-access').then(r => r.json()),
