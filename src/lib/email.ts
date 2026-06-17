@@ -7,10 +7,11 @@ interface EmailPayload {
 }
 
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
-const API_KEY = process.env.BREVO_API_KEY;
-const SENDER = { name: 'LaHustle', email: 'noreply@LaHustle.upsa.edu.gh' };
+const SENDER = { name: 'LaHustle', email: 'noreply@kingenious.xyz' };
 
 async function sendEmail(payload: EmailPayload) {
+    const API_KEY = process.env.BREVO_API_KEY;
+
     if (!API_KEY) {
         console.warn('⚠️ Brevo API Key missing. Skipping email.');
         return;
@@ -34,7 +35,7 @@ async function sendEmail(payload: EmailPayload) {
 
         if (!res.ok) {
             const err = await res.json();
-            console.error('❌ Brevo Error:', err);
+            console.error(`❌ Brevo Error [${res.status}]:`, JSON.stringify(err));
         } else {
             console.log(`📧 Email sent to ${payload.to}`);
         }
